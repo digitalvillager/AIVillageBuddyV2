@@ -1,0 +1,127 @@
+# Digital Village AI Buddy - Building Prompt
+
+## Project Overview
+
+Create a conversational web application called "AI Buddy" for Digital Village that helps business leaders refine their AI solution ideas through a guided conversation. The application should be non-technical and business-focused, targeting SME leaders in manufacturing, education, and sustainability sectors.
+
+## Purpose & Target Users
+
+The purpose of this tool is to allow business users to iterate on their AI solution ideas with an AI buddy to determine if the solution represents the best value for their business. The target users are non-technical business leaders who have identified potential AI use cases for their organization but need help refining the idea and creating documentation to move forward.
+
+## Core Functionality
+
+The application should:
+
+1. Provide a ChatGPT-like conversational interface that guides users through refining their AI solution ideas
+2. Ask relevant questions to gather necessary information about the business problem, industry, data availability, etc.
+3. Generate comprehensive outputs including implementation plans, cost estimates, design mockups, business cases, and AI considerations
+4. Allow users to go back and refine their inputs to generate updated outputs
+5. Generate synthetic data/examples when needed to visualize potential solutions
+
+## User Flow
+
+1. User opens the application and is greeted with a welcome message explaining the purpose of the tool
+2. The AI begins asking questions in a conversational format to gather information:
+   - What business problem are you trying to solve with AI?
+   - Which industry are you in? (Manufacturing, Education, Sustainability, other)
+   - What is your current process that you're looking to improve?
+   - What data do you currently collect related to this process?
+   - How would you measure success for this AI solution?
+   - Who are the key stakeholders involved?
+   - What timeline are you considering?
+   - What budget range are you considering?
+3. After gathering this information, the AI generates detailed outputs for:
+   - Implementation plan
+   - Cost estimate
+   - Design concept
+   - Business case & ROI analysis
+   - Risks, issues, and AI considerations
+4. The user can view each output separately in a tabbed interface
+5. The user can refine their inputs through continued conversation to update the outputs
+
+## Technical Requirements
+
+1. **Frontend**:
+   - Build a responsive web interface styled similarly to the Digital Village platform (blues/teals as primary colors)
+   - Create a chat-style interface with message bubbles (blue for AI, white/light for user)
+   - Implement a tabbed output display area to show the generated outputs
+   - Include options to download or share the outputs
+
+2. **Backend**:
+   - Implement the conversational logic to guide users through the information gathering process
+   - Create templates for generating the different outputs based on user inputs
+   - Include logic to handle refinement of previous answers
+   - Generate synthetic data and visualizations when appropriate
+
+3. **AI/ML Component**:
+   - Use natural language processing to interpret user inputs
+   - Implement logic to generate realistic:
+     - Implementation plans with timelines, phases, and resources
+     - Cost estimates including different roles, hourly rates, and project durations
+     - Design concepts that describe potential user interfaces and experiences
+     - Business cases with ROI calculations, benefits, and risks
+     - AI considerations including technical, ethical, and organizational factors
+
+## Output Details
+
+### 1. Implementation Plan
+- Overall timeline estimation
+- Breakdown of project phases (Discovery, Design, Development, Testing, Deployment)
+- Required roles and responsibilities
+- Key deliverables for each phase
+- Dependencies and critical path items
+
+### 2. Cost Estimate
+- Personnel costs (roles, hours, rates)
+- Hardware/software costs
+- Ongoing maintenance costs
+- Total project budget
+- Cost considerations and assumptions
+
+### 3. Design Concept
+- Description of user interface components
+- Key user flows
+- Technical architecture overview
+- Integration points with existing systems
+- User personas and their interactions with the system
+
+### 4. Business Case & ROI
+- Executive summary
+- Problem statement
+- Proposed solution
+- Financial analysis (investment, returns, payback period)
+- Non-financial benefits
+- Risks and mitigations
+- Final recommendation
+
+### 5. AI Considerations
+- Technical considerations (data requirements, model selection, integration)
+- Ethical considerations (bias, fairness, transparency)
+- Organizational considerations (change management, capability building, governance)
+- Recommendations for responsible AI implementation
+
+## Design Guidelines
+
+- Use Digital Village's color scheme (blues, teals) based on the provided screenshot
+- Create a clean, professional interface suitable for business users
+- Ensure the design is intuitive and requires minimal explanation
+- Make the experience conversational and friendly, avoiding technical jargon
+- Use visual elements like progress bars, cards, and tabs to organize information
+
+## Additional Features (if time permits)
+
+- Allow users to save their session and return later
+- Implement export functionality (PDF, Word, Excel) for the outputs
+- Add example templates or scenarios to help users get started
+- Include a feedback mechanism to improve the tool over time
+- Integrate with Digital Village's School of Innovation and AI program
+
+## Technologies to Consider
+
+- Frontend: React.js, Tailwind CSS
+- Backend: Node.js/Express.js or Python/Flask
+- AI/NLP: OpenAI API, Hugging Face Transformers, or similar
+- Database: MongoDB or similar for saving user sessions
+- Visualization: D3.js, Chart.js, or similar for financial projections
+
+This application should serve as a bridge between the School of Innovation and AI program and the implementation of AI solutions, helping business leaders move from identifying potential use cases to having the documentation needed to secure budget and begin implementation.

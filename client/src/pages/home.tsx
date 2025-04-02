@@ -151,15 +151,32 @@ export default function Home() {
       });
       return response.json();
     },
-    onSuccess: (aiResponse) => {
-      setMessages((prev) => [...prev, aiResponse]);
+    onSuccess: (data) => {
+      // The API now returns an object with message, session, and outputs
+      if (data.message) {
+        console.log('AI response received:', data.message);
+        setMessages((prev) => [...prev, data.message]);
+      } else {
+        console.error('Received malformed response:', data);
+        toast({
+          title: "Warning",
+          description: "Received an incomplete response from the AI. Some data may be missing.",
+          variant: "default"
+        });
+      }
+      
+      // Update session state if present
+      if (data.session) {
+        setSessionState(prev => ({...prev, ...data.session}));
+      }
+      
       setLoading(false);
       
       // Refresh session state
       queryClient.invalidateQueries({ queryKey: ['/api/sessions', sessionId] });
       
       // Generate outputs if needed
-      if (aiResponse.generateOutputs) {
+      if (data.generateOutputs) {
         generateOutputsMutation.mutate();
       }
     },

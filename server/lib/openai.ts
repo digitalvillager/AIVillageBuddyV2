@@ -64,8 +64,8 @@ function extractInformationFromMessages(messages: Message[]) {
   // Filter only user messages
   const userMessages = messages.filter(msg => msg.role === 'user');
   
-  if (userMessages.length < 2) {
-    return null; // Not enough messages to extract meaningful information
+  if (userMessages.length === 0) {
+    return null; // No user messages to extract information from
   }
   
   // Combine all user messages into a single string for analysis
@@ -77,9 +77,15 @@ function extractInformationFromMessages(messages: Message[]) {
   // Process automated or custom initial request
   let businessProblem = "";
   if (initialRequest === "Automate business processes" || initialRequest === "Leverage my business data") {
-    // For predefined tags, use messages after the first to determine the business problem
+    // For predefined tags, use the tag itself as the initial business problem
+    businessProblem = initialRequest;
+    
+    // If we have more messages, refine the business problem
     if (userMessages.length > 1) {
-      businessProblem = userMessages[1].content;
+      const secondMessage = userMessages[1].content;
+      if (secondMessage && secondMessage.trim().length > 10) { // If it's a substantial message
+        businessProblem = secondMessage;
+      }
     }
   } else {
     // For custom initial message, use it as the business problem
@@ -208,8 +214,9 @@ function shouldGenerateOutputs(messages: Message[], session: Session) {
   if (session.timeline) fieldsWithInfo++;
   if (session.budget) fieldsWithInfo++;
   
-  // We need at least 4 key fields filled and a minimum of 6 messages (3 exchanges)
-  return fieldsWithInfo >= 4 && messages.length >= 6;
+  // We need at least business problem and one other field filled, 
+  // with a minimum of 4 messages (2 exchanges) for basic information
+  return session.businessProblem && fieldsWithInfo >= 2 && messages.length >= 4;
 }
 
 // Generate AI response

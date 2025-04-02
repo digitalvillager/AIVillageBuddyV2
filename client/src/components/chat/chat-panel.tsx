@@ -21,8 +21,9 @@ export function ChatPanel({ messages, isLoading, onSendMessage, onClearChat }: C
     }
   }, [messages]);
 
-  // Show suggestion tags only when no messages exist
-  const showSuggestions = messages.length === 0;
+  // Show suggestion tags when no user messages exist (only show tags if there's just the AI greeting)
+  const showSuggestions = messages.length === 0 || 
+    (messages.length === 1 && messages[0].role === 'assistant');
 
   return (
     <div className="w-full lg:w-1/2 flex flex-col bg-white rounded-lg shadow overflow-hidden">

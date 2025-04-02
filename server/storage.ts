@@ -13,6 +13,8 @@ import {
   outputDocuments
 } from "@shared/schema";
 import { db } from "./db";
+import * as schema from "@shared/schema";
+import { NeonDatabase } from "drizzle-orm/neon-serverless";
 import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
@@ -40,112 +42,130 @@ export interface IStorage {
   createOrUpdateOutput(document: InsertOutputDocument): Promise<OutputDocument>;
 }
 
-export class DatabaseStorage implements IStorage {
+// In-memory storage implementation
+export class MemStorage implements IStorage {
+  private users: User[] = [];
+  private messages: Message[] = [];
+  private sessions: Session[] = [];
+  private outputDocuments: OutputDocument[] = [];
+  private nextUserId = 1;
+  private nextMessageId = 1;
+  private nextOutputDocumentId = 1;
+
   // User methods
   async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
+    return this.users.find(user => user.id === id);
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user;
+    return this.users.find(user => user.username === username);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(insertUser).returning();
+    const now = new Date();
+    const user = {
+      id: this.nextUserId++,
+      ...insertUser,
+      created: now,
+      updated: now
+    } as User;
+    this.users.push(user);
     return user;
   }
   
   // Message methods
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
-    const [message] = await db.insert(messages).values(insertMessage).returning();
+    // Convert timestamp to string format consistently
+    const timestamp = new Date().toISOString();
+    const message = {
+      id: this.nextMessageId++,
+      ...insertMessage,
+      timestamp
+    } as unknown as Message;
+    this.messages.push(message);
     return message;
   }
   
   async getMessage(id: number): Promise<Message | undefined> {
-    const [message] = await db.select().from(messages).where(eq(messages.id, id));
-    return message;
+    return this.messages.find(message => message.id === id);
   }
   
   async getMessagesBySessionId(sessionId: string): Promise<Message[]> {
-    return await db
-      .select()
-      .from(messages)
-      .where(eq(messages.sessionId, sessionId))
-      .orderBy(messages.timestamp);
+    return this.messages
+      .filter(message => message.sessionId === sessionId)
+      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
   }
   
   // Session methods
   async createSession(insertSession: InsertSession): Promise<Session> {
-    const [session] = await db.insert(sessions).values({
+    const now = new Date();
+    const session = {
       ...insertSession,
-      isComplete: insertSession.isComplete || false
-    }).returning();
+      isComplete: insertSession.isComplete || false,
+      created: now,
+      updated: now
+    } as Session;
+    this.sessions.push(session);
     return session;
   }
   
   async getSession(id: string): Promise<Session | undefined> {
-    const [session] = await db.select().from(sessions).where(eq(sessions.id, id));
-    return session;
+    return this.sessions.find(session => session.id === id);
   }
   
   async updateSession(id: string, updates: Partial<Session>): Promise<Session | undefined> {
-    const now = new Date();
-    const [updatedSession] = await db
-      .update(sessions)
-      .set({
-        ...updates,
-        updated: now
-      })
-      .where(eq(sessions.id, id))
-      .returning();
+    const session = this.sessions.find(session => session.id === id);
+    if (!session) return undefined;
+    
+    const updatedSession = {
+      ...session,
+      ...updates,
+      updated: new Date()
+    };
+    
+    const index = this.sessions.findIndex(s => s.id === id);
+    this.sessions[index] = updatedSession;
     
     return updatedSession;
   }
   
   // Output document methods
   async createOutputDocument(insertDocument: InsertOutputDocument): Promise<OutputDocument> {
-    const [document] = await db.insert(outputDocuments).values(insertDocument).returning();
+    const now = new Date();
+    const document = {
+      id: this.nextOutputDocumentId++,
+      ...insertDocument,
+      created: now,
+      updated: now
+    } as OutputDocument;
+    this.outputDocuments.push(document);
     return document;
   }
   
   async getOutputDocument(id: number): Promise<OutputDocument | undefined> {
-    const [document] = await db.select().from(outputDocuments).where(eq(outputDocuments.id, id));
-    return document;
+    return this.outputDocuments.find(doc => doc.id === id);
   }
   
   async getOutputsBySessionId(sessionId: string): Promise<OutputDocument[]> {
-    return await db
-      .select()
-      .from(outputDocuments)
-      .where(eq(outputDocuments.sessionId, sessionId));
+    return this.outputDocuments.filter(doc => doc.sessionId === sessionId);
   }
   
   async getOutputBySessionIdAndType(sessionId: string, type: string): Promise<OutputDocument | undefined> {
-    const [document] = await db
-      .select()
-      .from(outputDocuments)
-      .where(
-        and(
-          eq(outputDocuments.sessionId, sessionId),
-          eq(outputDocuments.type, type)
-        )
-      );
-    
-    return document;
+    return this.outputDocuments.find(doc => doc.sessionId === sessionId && doc.type === type);
   }
   
   async updateOutputDocument(id: number, updates: Partial<OutputDocument>): Promise<OutputDocument | undefined> {
-    const now = new Date();
-    const [updatedDocument] = await db
-      .update(outputDocuments)
-      .set({
-        ...updates,
-        updated: now
-      })
-      .where(eq(outputDocuments.id, id))
-      .returning();
+    const document = this.outputDocuments.find(doc => doc.id === id);
+    if (!document) return undefined;
+    
+    const updatedDocument = {
+      ...document,
+      ...updates,
+      updated: new Date()
+    };
+    
+    const index = this.outputDocuments.findIndex(doc => doc.id === id);
+    this.outputDocuments[index] = updatedDocument;
     
     return updatedDocument;
   }
@@ -167,4 +187,155 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+// Database storage implementation
+export class DatabaseStorage implements IStorage {
+  constructor() {
+    // Ensure db is available
+    if (!db) {
+      throw new Error("Database is not initialized");
+    }
+  }
+  
+  // User methods
+  async getUser(id: number): Promise<User | undefined> {
+    if (!db) throw new Error("Database is not initialized");
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    if (!db) throw new Error("Database is not initialized");
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    if (!db) throw new Error("Database is not initialized");
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
+  }
+  
+  // Message methods
+  async createMessage(insertMessage: InsertMessage): Promise<Message> {
+    if (!db) throw new Error("Database is not initialized");
+    const [message] = await db.insert(messages).values(insertMessage).returning();
+    return message;
+  }
+  
+  async getMessage(id: number): Promise<Message | undefined> {
+    if (!db) throw new Error("Database is not initialized");
+    const [message] = await db.select().from(messages).where(eq(messages.id, id));
+    return message;
+  }
+  
+  async getMessagesBySessionId(sessionId: string): Promise<Message[]> {
+    if (!db) throw new Error("Database is not initialized");
+    return await db
+      .select()
+      .from(messages)
+      .where(eq(messages.sessionId, sessionId))
+      .orderBy(messages.timestamp);
+  }
+  
+  // Session methods
+  async createSession(insertSession: InsertSession): Promise<Session> {
+    if (!db) throw new Error("Database is not initialized");
+    const [session] = await db.insert(sessions).values({
+      ...insertSession,
+      isComplete: insertSession.isComplete || false
+    }).returning();
+    return session;
+  }
+  
+  async getSession(id: string): Promise<Session | undefined> {
+    if (!db) throw new Error("Database is not initialized");
+    const [session] = await db.select().from(sessions).where(eq(sessions.id, id));
+    return session;
+  }
+  
+  async updateSession(id: string, updates: Partial<Session>): Promise<Session | undefined> {
+    if (!db) throw new Error("Database is not initialized");
+    const now = new Date();
+    const [updatedSession] = await db
+      .update(sessions)
+      .set({
+        ...updates,
+        updated: now
+      })
+      .where(eq(sessions.id, id))
+      .returning();
+    
+    return updatedSession;
+  }
+  
+  // Output document methods
+  async createOutputDocument(insertDocument: InsertOutputDocument): Promise<OutputDocument> {
+    if (!db) throw new Error("Database is not initialized");
+    const [document] = await db.insert(outputDocuments).values(insertDocument).returning();
+    return document;
+  }
+  
+  async getOutputDocument(id: number): Promise<OutputDocument | undefined> {
+    if (!db) throw new Error("Database is not initialized");
+    const [document] = await db.select().from(outputDocuments).where(eq(outputDocuments.id, id));
+    return document;
+  }
+  
+  async getOutputsBySessionId(sessionId: string): Promise<OutputDocument[]> {
+    if (!db) throw new Error("Database is not initialized");
+    return await db
+      .select()
+      .from(outputDocuments)
+      .where(eq(outputDocuments.sessionId, sessionId));
+  }
+  
+  async getOutputBySessionIdAndType(sessionId: string, type: string): Promise<OutputDocument | undefined> {
+    if (!db) throw new Error("Database is not initialized");
+    const [document] = await db
+      .select()
+      .from(outputDocuments)
+      .where(
+        and(
+          eq(outputDocuments.sessionId, sessionId),
+          eq(outputDocuments.type, type)
+        )
+      );
+    
+    return document;
+  }
+  
+  async updateOutputDocument(id: number, updates: Partial<OutputDocument>): Promise<OutputDocument | undefined> {
+    if (!db) throw new Error("Database is not initialized");
+    const now = new Date();
+    const [updatedDocument] = await db
+      .update(outputDocuments)
+      .set({
+        ...updates,
+        updated: now
+      })
+      .where(eq(outputDocuments.id, id))
+      .returning();
+    
+    return updatedDocument;
+  }
+  
+  async createOrUpdateOutput(document: InsertOutputDocument): Promise<OutputDocument> {
+    if (!db) throw new Error("Database is not initialized");
+    const existingDocument = await this.getOutputBySessionIdAndType(
+      document.sessionId,
+      document.type
+    );
+    
+    if (existingDocument) {
+      const updated = await this.updateOutputDocument(existingDocument.id, {
+        content: document.content
+      });
+      return updated!;
+    } else {
+      return this.createOutputDocument(document);
+    }
+  }
+}
+
+// Decide which storage implementation to use based on whether db is initialized
+export const storage = db ? new DatabaseStorage() : new MemStorage();

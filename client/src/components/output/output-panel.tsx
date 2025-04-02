@@ -33,21 +33,30 @@ export function OutputPanel({
   // Fetch outputs data
   const { data: outputs, isLoading } = useQuery({
     queryKey: ['/api/outputs', sessionId],
-    enabled: !!sessionId,
-    onError: (error) => {
-      console.error('Failed to fetch outputs:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load output documents.",
-        variant: "destructive"
-      });
-    }
+    queryFn: async () => {
+      try {
+        const response = await fetch(`/api/outputs?sessionId=${sessionId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch outputs');
+        }
+        return response.json();
+      } catch (error: unknown) {
+        console.error('Failed to fetch outputs:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load output documents.",
+          variant: "destructive"
+        });
+        throw error;
+      }
+    },
+    enabled: !!sessionId
   });
 
   // Get the active output document based on tab
   const getActiveOutput = () => {
     if (!outputs) return null;
-    return outputs.find(output => output.type === activeTab);
+    return outputs.find((output: { type: string }) => output.type === activeTab);
   };
   
   const activeOutput = getActiveOutput();

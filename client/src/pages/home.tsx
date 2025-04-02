@@ -72,6 +72,13 @@ export default function Home() {
   // Fetch messages when sessionId changes
   const { data: fetchedMessages, isLoading: isLoadingMessages } = useQuery({
     queryKey: ['/api/messages', sessionId],
+    queryFn: async () => {
+      const response = await fetch(`/api/messages?sessionId=${sessionId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch messages');
+      }
+      return response.json();
+    },
     enabled: !!sessionId,
   });
   
@@ -92,6 +99,13 @@ export default function Home() {
   // Fetch session state
   const { data: fetchedSession, isLoading: isLoadingSession } = useQuery({
     queryKey: ['/api/sessions', sessionId],
+    queryFn: async () => {
+      const response = await fetch(`/api/sessions/${sessionId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch session');
+      }
+      return response.json();
+    },
     enabled: !!sessionId,
   });
   

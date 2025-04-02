@@ -6,7 +6,7 @@ import { OutputPanel } from "@/components/output/output-panel";
 import { useToast } from "@/hooks/use-toast";
 import { Message, OutputType, SessionState } from "@/types";
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 import { nanoid } from 'nanoid';
 
 export default function Home() {
@@ -73,30 +73,47 @@ export default function Home() {
   const { data: fetchedMessages, isLoading: isLoadingMessages } = useQuery({
     queryKey: ['/api/messages', sessionId],
     enabled: !!sessionId,
-    onSuccess: (data) => {
-      setMessages(data);
-    },
-    onError: (error) => {
-      console.error('Failed to fetch messages:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load conversation history.",
-        variant: "destructive"
-      });
-    }
   });
+  
+  // Update messages when fetchedMessages changes
+  useEffect(() => {
+    if (fetchedMessages && Array.isArray(fetchedMessages)) {
+      // Make sure we have valid Message objects
+      const validMessages = fetchedMessages.filter(msg => 
+        msg && typeof msg === 'object' && 
+        'content' in msg && 
+        'role' in msg
+      );
+      
+      setMessages(validMessages as Message[]);
+    }
+  }, [fetchedMessages]);
 
   // Fetch session state
   const { data: fetchedSession, isLoading: isLoadingSession } = useQuery({
     queryKey: ['/api/sessions', sessionId],
     enabled: !!sessionId,
-    onSuccess: (data) => {
-      setSessionState(data);
-    },
-    onError: (error) => {
-      console.error('Failed to fetch session data:', error);
-    }
   });
+  
+  // Update session state when fetchedSession changes
+  useEffect(() => {
+    if (fetchedSession) {
+      const defaultSessionState: SessionState = {
+        id: sessionId,
+        industry: "",
+        businessProblem: "",
+        currentProcess: "",
+        availableData: "",
+        successMetrics: "",
+        stakeholders: "",
+        timeline: "",
+        budget: "",
+        isComplete: false
+      };
+      
+      setSessionState({...defaultSessionState, ...fetchedSession});
+    }
+  }, [fetchedSession, sessionId]);
 
   // Send message mutation
   const sendMessageMutation = useMutation({

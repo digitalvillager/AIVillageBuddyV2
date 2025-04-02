@@ -89,7 +89,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const sessionId = req.query.sessionId as string;
       
       if (!sessionId) {
-        return res.status(400).json({ message: 'Session ID is required' });
+        return res.status(200).json([]); // Return empty array instead of error
       }
       
       const messages = await storage.getMessagesBySessionId(sessionId);
@@ -118,7 +118,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate AI response
       const { 
         aiResponse, 
-        updatedSession, 
         extractedInfo,
         generateOutputs 
       } = await generateAIResponse(messages, session);
@@ -134,7 +133,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (extractedInfo) {
         await storage.updateSession(sessionId, {
           ...extractedInfo,
-          isComplete: generateOutputs
+          isComplete: !!generateOutputs
         });
       }
       
@@ -211,7 +210,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const sessionId = req.query.sessionId as string;
       
       if (!sessionId) {
-        return res.status(400).json({ message: 'Session ID is required' });
+        return res.status(200).json([]); // Return empty array instead of error
       }
       
       const outputs = await storage.getOutputsBySessionId(sessionId);

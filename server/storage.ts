@@ -6,11 +6,14 @@ import {
   type Session,
   type InsertSession,
   type OutputDocument,
-  type InsertOutputDocument
+  type InsertOutputDocument,
+  users,
+  messages,
+  sessions,
+  outputDocuments
 } from "@shared/schema";
-
-// modify the interface with any CRUD methods
-// you might need
+import { db } from "./db";
+import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
   // User methods (kept from original)
@@ -37,146 +40,113 @@ export interface IStorage {
   createOrUpdateOutput(document: InsertOutputDocument): Promise<OutputDocument>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private messages: Map<number, Message>;
-  private sessions: Map<string, Session>;
-  private outputDocuments: Map<number, OutputDocument>;
-  
-  private userIdCounter: number;
-  private messageIdCounter: number;
-  private outputDocumentIdCounter: number;
-
-  constructor() {
-    this.users = new Map();
-    this.messages = new Map();
-    this.sessions = new Map();
-    this.outputDocuments = new Map();
-    
-    this.userIdCounter = 1;
-    this.messageIdCounter = 1;
-    this.outputDocumentIdCounter = 1;
-  }
-
-  // User methods (kept from original)
+export class DatabaseStorage implements IStorage {
+  // User methods
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.userIdCounter++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db.insert(users).values(insertUser).returning();
     return user;
   }
   
   // Message methods
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
-    const id = this.messageIdCounter++;
-    const now = new Date();
-    const message: Message = { 
-      ...insertMessage, 
-      id, 
-      timestamp: now.toISOString() 
-    };
-    this.messages.set(id, message);
+    const [message] = await db.insert(messages).values(insertMessage).returning();
     return message;
   }
   
   async getMessage(id: number): Promise<Message | undefined> {
-    return this.messages.get(id);
+    const [message] = await db.select().from(messages).where(eq(messages.id, id));
+    return message;
   }
   
   async getMessagesBySessionId(sessionId: string): Promise<Message[]> {
-    return Array.from(this.messages.values())
-      .filter(message => message.sessionId === sessionId)
-      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    return await db
+      .select()
+      .from(messages)
+      .where(eq(messages.sessionId, sessionId))
+      .orderBy(messages.timestamp);
   }
   
   // Session methods
   async createSession(insertSession: InsertSession): Promise<Session> {
-    const now = new Date();
-    const session: Session = { 
-      ...insertSession, 
-      created: now.toISOString(),
-      updated: now.toISOString(),
+    const [session] = await db.insert(sessions).values({
+      ...insertSession,
       isComplete: insertSession.isComplete || false
-    };
-    this.sessions.set(session.id, session);
+    }).returning();
     return session;
   }
   
   async getSession(id: string): Promise<Session | undefined> {
-    return this.sessions.get(id);
+    const [session] = await db.select().from(sessions).where(eq(sessions.id, id));
+    return session;
   }
   
   async updateSession(id: string, updates: Partial<Session>): Promise<Session | undefined> {
-    const session = this.sessions.get(id);
-    
-    if (!session) {
-      return undefined;
-    }
-    
     const now = new Date();
-    const updatedSession: Session = { 
-      ...session, 
-      ...updates,
-      updated: now.toISOString() 
-    };
+    const [updatedSession] = await db
+      .update(sessions)
+      .set({
+        ...updates,
+        updated: now.toISOString()
+      })
+      .where(eq(sessions.id, id))
+      .returning();
     
-    this.sessions.set(id, updatedSession);
     return updatedSession;
   }
   
   // Output document methods
   async createOutputDocument(insertDocument: InsertOutputDocument): Promise<OutputDocument> {
-    const id = this.outputDocumentIdCounter++;
-    const now = new Date();
-    const document: OutputDocument = { 
-      ...insertDocument, 
-      id,
-      created: now.toISOString(),
-      updated: now.toISOString() 
-    };
-    this.outputDocuments.set(id, document);
+    const [document] = await db.insert(outputDocuments).values(insertDocument).returning();
     return document;
   }
   
   async getOutputDocument(id: number): Promise<OutputDocument | undefined> {
-    return this.outputDocuments.get(id);
+    const [document] = await db.select().from(outputDocuments).where(eq(outputDocuments.id, id));
+    return document;
   }
   
   async getOutputsBySessionId(sessionId: string): Promise<OutputDocument[]> {
-    return Array.from(this.outputDocuments.values())
-      .filter(doc => doc.sessionId === sessionId);
+    return await db
+      .select()
+      .from(outputDocuments)
+      .where(eq(outputDocuments.sessionId, sessionId));
   }
   
   async getOutputBySessionIdAndType(sessionId: string, type: string): Promise<OutputDocument | undefined> {
-    return Array.from(this.outputDocuments.values())
-      .find(doc => doc.sessionId === sessionId && doc.type === type);
+    const [document] = await db
+      .select()
+      .from(outputDocuments)
+      .where(
+        and(
+          eq(outputDocuments.sessionId, sessionId),
+          eq(outputDocuments.type, type)
+        )
+      );
+    
+    return document;
   }
   
   async updateOutputDocument(id: number, updates: Partial<OutputDocument>): Promise<OutputDocument | undefined> {
-    const document = this.outputDocuments.get(id);
-    
-    if (!document) {
-      return undefined;
-    }
-    
     const now = new Date();
-    const updatedDocument: OutputDocument = { 
-      ...document, 
-      ...updates,
-      updated: now.toISOString() 
-    };
+    const [updatedDocument] = await db
+      .update(outputDocuments)
+      .set({
+        ...updates,
+        updated: now.toISOString()
+      })
+      .where(eq(outputDocuments.id, id))
+      .returning();
     
-    this.outputDocuments.set(id, updatedDocument);
     return updatedDocument;
   }
   
@@ -197,4 +167,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

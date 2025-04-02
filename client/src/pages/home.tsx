@@ -36,33 +36,60 @@ export default function Home() {
       
       if (savedSessionId) {
         setSessionId(savedSessionId);
+        
+        // Check if there are messages for this session
+        try {
+          const response = await fetch(`/api/messages?sessionId=${savedSessionId}`);
+          if (response.ok) {
+            const messagesData = await response.json();
+            if (!messagesData || !Array.isArray(messagesData) || messagesData.length === 0) {
+              // If no messages, treat as a new session
+              console.log("No messages found for saved session, starting fresh");
+              localStorage.removeItem('sessionId');
+              await createNewSession();
+            }
+          } else {
+            console.error("Error fetching messages for saved session, starting fresh");
+            localStorage.removeItem('sessionId');
+            await createNewSession();
+          }
+        } catch (error) {
+          console.error("Error checking session messages:", error);
+          localStorage.removeItem('sessionId');
+          await createNewSession();
+        }
       } else {
         // Create new session
-        const newSessionId = nanoid();
-        localStorage.setItem('sessionId', newSessionId);
-        setSessionId(newSessionId);
+        await createNewSession();
+      }
+    };
+    
+    // Helper function to create a new session
+    const createNewSession = async () => {
+      const newSessionId = nanoid();
+      localStorage.setItem('sessionId', newSessionId);
+      setSessionId(newSessionId);
+      
+      // Initialize the session in the database
+      try {
+        await apiRequest('POST', '/api/sessions', { id: newSessionId });
         
-        // Initialize the session in the database
-        try {
-          await apiRequest('POST', '/api/sessions', { id: newSessionId });
-          
-          // Add initial greeting message
-          const response = await apiRequest('POST', '/api/messages', {
-            sessionId: newSessionId,
-            role: 'assistant',
-            content: "Hello! I'm your AI Buddy from Digital Village. I'm here to help you refine your AI solution idea for your business. Let's start with the basics - what business problem are you trying to solve with AI?"
-          });
-          
-          const initialMessage = await response.json();
-          setMessages([initialMessage]);
-        } catch (error) {
-          console.error('Failed to initialize session:', error);
-          toast({
-            title: "Error",
-            description: "Failed to initialize session. Please try refreshing the page.",
-            variant: "destructive"
-          });
-        }
+        // Add initial greeting message
+        const response = await apiRequest('POST', '/api/messages', {
+          sessionId: newSessionId,
+          role: 'assistant',
+          content: "Hello! I'm your AI Buddy from Digital Village. I'm here to help you refine your AI solution idea for your business. Let's start with the basics - what business problem are you trying to solve with AI?"
+        });
+        
+        const initialMessage = await response.json();
+        setMessages([initialMessage]);
+      } catch (error) {
+        console.error('Failed to initialize session:', error);
+        toast({
+          title: "Error",
+          description: "Failed to initialize session. Please try refreshing the page.",
+          variant: "destructive"
+        });
       }
     };
     
@@ -236,6 +263,9 @@ export default function Home() {
     try {
       // Create new session
       const newSessionId = nanoid();
+      
+      // Clear the old sessionId from localStorage and set the new one
+      localStorage.removeItem('sessionId');
       localStorage.setItem('sessionId', newSessionId);
       
       // Initialize the session in the database
@@ -265,6 +295,10 @@ export default function Home() {
         budget: "",
         isComplete: false
       });
+      
+      // Invalidate queries for the new session
+      queryClient.invalidateQueries({ queryKey: ['/api/messages'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/outputs'] });
       
       toast({
         title: "Success",

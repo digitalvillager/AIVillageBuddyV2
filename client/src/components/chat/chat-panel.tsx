@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import { ChatMessage } from "./chat-message";
 import { ChatInput } from "./chat-input";
+import { SuggestionTags } from "./suggestion-tags";
 import { Message } from "@/types";
 
 interface ChatPanelProps {
@@ -20,6 +21,9 @@ export function ChatPanel({ messages, isLoading, onSendMessage, onClearChat }: C
     }
   }, [messages]);
 
+  // Show suggestion tags only when no messages exist
+  const showSuggestions = messages.length === 0;
+
   return (
     <div className="w-full lg:w-1/2 flex flex-col bg-white rounded-lg shadow overflow-hidden">
       {/* Chat Header */}
@@ -35,6 +39,12 @@ export function ChatPanel({ messages, isLoading, onSendMessage, onClearChat }: C
         className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide" 
         style={{ maxHeight: "calc(100vh - 300px)" }}
       >
+        {/* Suggestion tags at the beginning of conversation */}
+        <SuggestionTags 
+          onSelect={onSendMessage} 
+          visible={showSuggestions} 
+        />
+
         {messages.map((message, index) => (
           <ChatMessage
             key={message.id || index}

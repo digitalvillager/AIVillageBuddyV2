@@ -96,7 +96,7 @@ export class DatabaseStorage implements IStorage {
       .update(sessions)
       .set({
         ...updates,
-        updated: now.toISOString()
+        updated: now
       })
       .where(eq(sessions.id, id))
       .returning();
@@ -142,7 +142,7 @@ export class DatabaseStorage implements IStorage {
       .update(outputDocuments)
       .set({
         ...updates,
-        updated: now.toISOString()
+        updated: now
       })
       .where(eq(outputDocuments.id, id))
       .returning();

@@ -28,7 +28,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(session);
     } catch (error) {
       console.error('Error creating session:', error);
-      res.status(500).json({ message: 'Failed to create session' });
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to create session',
+        error: errorMessage 
+      });
     }
   });
   
@@ -44,7 +48,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(session);
     } catch (error) {
       console.error('Error fetching session:', error);
-      res.status(500).json({ message: 'Failed to fetch session' });
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to fetch session',
+        error: errorMessage 
+      });
     }
   });
   
@@ -62,7 +70,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedSession);
     } catch (error) {
       console.error('Error updating session:', error);
-      res.status(500).json({ message: 'Failed to update session' });
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to update session',
+        error: errorMessage 
+      });
     }
   });
   
@@ -80,7 +92,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(message);
     } catch (error) {
       console.error('Error creating message:', error);
-      res.status(500).json({ message: 'Failed to create message' });
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to create message',
+        error: errorMessage 
+      });
     }
   });
   
@@ -96,7 +112,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(messages);
     } catch (error) {
       console.error('Error fetching messages:', error);
-      res.status(500).json({ message: 'Failed to fetch messages' });
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to fetch messages',
+        error: errorMessage 
+      });
     }
   });
   
@@ -105,15 +125,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { sessionId } = req.body;
       
-      // Get the session
-      const session = await storage.getSession(sessionId);
+      if (!sessionId) {
+        return res.status(400).json({ message: 'Session ID is required' });
+      }
       
+      console.log(`Processing chat response for session: ${sessionId}`);
+      
+      // Get the session
+      let session = await storage.getSession(sessionId);
+      
+      // If session doesn't exist, create a new one
       if (!session) {
-        return res.status(404).json({ message: 'Session not found' });
+        console.log(`Session not found: ${sessionId}. Creating new session.`);
+        session = await storage.createSession({
+          id: sessionId,
+          isComplete: false
+        });
       }
       
       // Get the messages for this session
       const messages = await storage.getMessagesBySessionId(sessionId);
+      
+      console.log(`Found ${messages.length} messages for session: ${sessionId}`);
       
       // Generate AI response
       const { 
@@ -126,25 +159,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const aiMessage = await storage.createMessage({
         sessionId,
         role: 'assistant',
-        content: aiResponse
+        content: aiResponse || "Hello! I'm AI Buddy from Digital Village. How can I help you plan your AI solution today?"
       });
       
+      console.log(`Created new assistant message with ID: ${aiMessage.id}`);
+      
       // Update the session with extracted information
+      let updatedSession = session;
       if (extractedInfo) {
-        await storage.updateSession(sessionId, {
+        updatedSession = await storage.updateSession(sessionId, {
           ...extractedInfo,
           isComplete: !!generateOutputs
-        });
+        }) || session;
+        
+        console.log(`Updated session with extracted information: ${JSON.stringify(extractedInfo)}`);
       }
       
-      // Return the AI message
+      // Get any existing outputs
+      const outputs = generateOutputs ? await storage.getOutputsBySessionId(sessionId) : [];
+      
+      // Return the AI message, session, and outputs
       res.json({
-        ...aiMessage,
+        message: aiMessage,
+        session: updatedSession,
+        outputs,
         generateOutputs
       });
     } catch (error) {
       console.error('Error generating AI response:', error);
-      res.status(500).json({ message: 'Failed to generate AI response' });
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error && process.env.NODE_ENV === 'development' ? error.stack : undefined;
+      
+      res.status(500).json({ 
+        message: 'Failed to generate AI response',
+        error: errorMessage,
+        stack: errorStack
+      });
     }
   });
   
@@ -201,7 +251,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(outputs);
     } catch (error) {
       console.error('Error generating outputs:', error);
-      res.status(500).json({ message: 'Failed to generate outputs' });
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to generate outputs',
+        error: errorMessage 
+      });
     }
   });
   
@@ -217,7 +271,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(outputs);
     } catch (error) {
       console.error('Error fetching outputs:', error);
-      res.status(500).json({ message: 'Failed to fetch outputs' });
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to fetch outputs',
+        error: errorMessage 
+      });
     }
   });
   
@@ -236,7 +294,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: openaiResponse });
     } catch (error) {
       console.error('Error calling OpenAI API:', error);
-      res.status(500).json({ message: 'Failed to call OpenAI API' });
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to call OpenAI API',
+        error: errorMessage 
+      });
     }
   });
 

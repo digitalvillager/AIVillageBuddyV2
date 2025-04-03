@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { OutputTabs } from "./output-tabs";
 import { ImplementationPlan } from "./implementation-plan";
 import { CostEstimate } from "./cost-estimate";
@@ -31,14 +31,31 @@ export function OutputPanel({
   const { toast } = useToast();
   const [isContentMounted, setIsContentMounted] = useState(false);
   
+  const contentRef = useRef<HTMLDivElement>(null);
+  
   // Handle ResizeObserver errors
   useEffect(() => {
+    // Global error handler for ResizeObserver errors
+    const handleError = (event: ErrorEvent) => {
+      if (event.message && event.message.includes('ResizeObserver')) {
+        // Prevent the error from showing in console
+        event.preventDefault();
+        event.stopPropagation();
+        console.debug('ResizeObserver error suppressed');
+      }
+    };
+    
+    window.addEventListener('error', handleError as any);
+    
     // Give the component time to fully mount before showing content
     const timer = setTimeout(() => {
       setIsContentMounted(true);
     }, 200);
     
-    return () => clearTimeout(timer);
+    return () => {
+      window.removeEventListener('error', handleError as any);
+      clearTimeout(timer);
+    };
   }, []);
   
   // Fetch outputs data
@@ -106,6 +123,7 @@ export function OutputPanel({
 
       {/* Tab Content */}
       <div 
+        ref={contentRef}
         className="flex-1 overflow-y-auto p-4 scrollbar-hide" 
         style={{ maxHeight: "calc(100vh - 300px)" }}
       >
@@ -114,57 +132,49 @@ export function OutputPanel({
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
         ) : (
-          <>
-            {activeTab === "implementation" && (
-              <div key="implementation">
+          <div key={activeTab} className="relative">
+            <div className="transition-opacity duration-300 ease-in-out">
+              {activeTab === "implementation" && (
                 <ImplementationPlan 
                   output={activeOutput} 
                   sessionState={sessionState}
                   isLoading={isLoading} 
                 />
-              </div>
-            )}
-            
-            {activeTab === "cost" && (
-              <div key="cost">
+              )}
+              
+              {activeTab === "cost" && (
                 <CostEstimate 
                   output={activeOutput} 
                   sessionState={sessionState}
                   isLoading={isLoading} 
                 />
-              </div>
-            )}
-            
-            {activeTab === "design" && (
-              <div key="design">
+              )}
+              
+              {activeTab === "design" && (
                 <DesignConcept 
                   output={activeOutput} 
                   sessionState={sessionState}
                   isLoading={isLoading} 
                 />
-              </div>
-            )}
-            
-            {activeTab === "business-case" && (
-              <div key="business-case">
+              )}
+              
+              {activeTab === "business-case" && (
                 <BusinessCase 
                   output={activeOutput} 
                   sessionState={sessionState}
                   isLoading={isLoading} 
                 />
-              </div>
-            )}
-            
-            {activeTab === "ai-considerations" && (
-              <div key="ai-considerations">
+              )}
+              
+              {activeTab === "ai-considerations" && (
                 <AIConsiderations 
                   output={activeOutput} 
                   sessionState={sessionState}
                   isLoading={isLoading} 
                 />
-              </div>
-            )}
-          </>
+              )}
+            </div>
+          </div>
         )}
       </div>
 

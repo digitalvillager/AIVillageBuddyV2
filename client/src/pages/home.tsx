@@ -1,8 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import { Sidebar } from "@/components/layout/sidebar";
-import { SidebarMini } from "@/components/layout/sidebar";
 import { ChatPanel } from "@/components/chat/chat-panel";
 import { OutputPanel } from "@/components/output/output-panel";
 import { useToast } from "@/hooks/use-toast";
@@ -10,7 +7,6 @@ import { Message, OutputType, SessionState } from "@/types";
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { nanoid } from 'nanoid';
-import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Home() {
   const { toast } = useToast();
@@ -328,25 +324,13 @@ export default function Home() {
   const handleRegenerateOutputs = () => {
     generateOutputsMutation.mutate();
   };
-
-  const isMobile = useIsMobile();
   
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <div className="flex-1 flex">
-        {/* Desktop Sidebar - only visible on md and above */}
-        <div className="hidden md:block w-[200px] lg:w-[240px] shrink-0">
-          <Sidebar />
-        </div>
-        
-        {/* Mini Sidebar for tablet view */}
-        <div className="hidden sm:block md:hidden w-[60px] shrink-0">
-          <SidebarMini />
-        </div>
-        
-        <main className="flex-1 container mx-auto p-4 md:py-6 flex flex-col lg:flex-row gap-4 md:gap-6">
+      <div className="flex-1">
+        <main className="container mx-auto p-4 md:py-6 flex flex-col lg:flex-row gap-4 md:gap-6">
           <ChatPanel 
             messages={messages}
             isLoading={loading || isLoadingMessages}
@@ -364,8 +348,6 @@ export default function Home() {
           />
         </main>
       </div>
-      
-      <Footer />
     </div>
   );
 }

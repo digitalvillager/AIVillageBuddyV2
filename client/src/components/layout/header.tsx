@@ -1,6 +1,6 @@
 import React from "react";
-import { Link } from "wouter";
-import { User } from "lucide-react";
+import { Link, useLocation } from "wouter";
+import { User, LogOut, FolderOpen, Home, HelpCircle, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import {
   DropdownMenu,
@@ -11,17 +11,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MobileDrawer } from "./mobile-drawer";
 
 export function Header() {
-  const { user } = useAuth();
+  const { user, logoutMutation } = useAuth();
+  const [location, navigate] = useLocation();
+
+  const handleLogout = () => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        navigate("/auth");
+      }
+    });
+  };
 
   return (
     <header className="bg-white shadow-md">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        {/* Mobile sidebar drawer */}
-        {user && <MobileDrawer />}
-        
         <div className="flex items-center">
           <Link href="/">
             <div className="text-gray-800 font-bold text-xl md:text-2xl flex items-center cursor-pointer">
@@ -44,14 +49,47 @@ export function Header() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>Navigation</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 
                 <DropdownMenuItem asChild>
-                  <Link href="/profile">Profile</Link>
+                  <Link href="/">
+                    <Home className="h-4 w-4 mr-2" />
+                    <span>Home</span>
+                  </Link>
                 </DropdownMenuItem>
+                
                 <DropdownMenuItem asChild>
-                  <Link href="/settings">Settings</Link>
+                  <Link href="/projects">
+                    <FolderOpen className="h-4 w-4 mr-2" />
+                    <span>Projects</span>
+                  </Link>
+                </DropdownMenuItem>
+                
+                <DropdownMenuSeparator />
+                
+                <DropdownMenuLabel>Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                
+                <DropdownMenuItem asChild>
+                  <Link href="/settings">
+                    <Settings className="h-4 w-4 mr-2" />
+                    <span>Settings</span>
+                  </Link>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem asChild>
+                  <Link href="/help">
+                    <HelpCircle className="h-4 w-4 mr-2" />
+                    <span>Help</span>
+                  </Link>
+                </DropdownMenuItem>
+                
+                <DropdownMenuSeparator />
+                
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  <span>Logout</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

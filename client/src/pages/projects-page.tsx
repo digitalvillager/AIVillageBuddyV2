@@ -5,6 +5,7 @@ import { Link, useLocation } from "wouter";
 import { getQueryFn, apiRequest, queryClient } from "@/lib/queryClient";
 import { Project } from "@shared/schema";
 import { Header } from "@/components/layout/header";
+import { ProjectDrawer } from "@/components/layout/project-drawer";
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -143,153 +144,15 @@ export default function ProjectsPage() {
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <div className="flex-1 flex">
-        {/* Projects Sidebar - the only sidebar now */}
-        <div 
-          className={`bg-gray-50 border-r border-gray-200 flex flex-col transition-all duration-300 ${
-            sidebarOpen ? "w-64" : "w-16"
-          }`}
-        >
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            {sidebarOpen && <h2 className="font-semibold text-gray-700">My Projects</h2>}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="ml-auto"
-            >
-              {sidebarOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-            </Button>
-          </div>
-          
-          <div className="flex-1 overflow-y-auto">
-            {isLoadingProjects ? (
-              <div className="flex justify-center items-center h-32">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              </div>
-            ) : projectsError ? (
-              <div className="p-4 text-red-500 text-sm">
-                Error loading projects
-              </div>
-            ) : projects.length === 0 ? (
-              <div className="p-4 text-gray-500 text-sm text-center">
-                {sidebarOpen ? "No projects yet" : ""}
-              </div>
-            ) : (
-              <ul className="py-2">
-                {projects.map((project) => (
-                  <li 
-                    key={project.id}
-                    className={`
-                      flex items-center py-2 px-4 cursor-pointer hover:bg-gray-100
-                      ${selectedProjectId === project.id ? "bg-gray-100" : ""}
-                    `}
-                    onClick={() => handleProjectSelect(project.id)}
-                  >
-                    <Folder className={`h-5 w-5 ${sidebarOpen ? "mr-3" : ""} text-primary`} />
-                    {sidebarOpen && (
-                      <div className="flex items-center justify-between w-full">
-                        <span className="text-sm truncate">{project.name}</span>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleDeleteProject(project.id)}>
-                              <Trash2 className="h-4 w-4 mr-2 text-red-500" />
-                              <span>Delete</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          
-          <div className="p-4 border-t border-gray-200">
-            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-              <DialogTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size={sidebarOpen ? "default" : "icon"} 
-                  className="w-full"
-                >
-                  {sidebarOpen ? (
-                    <>
-                      <Plus className="h-4 w-4 mr-2" /> New Project
-                    </>
-                  ) : (
-                    <FolderPlus className="h-4 w-4" />
-                  )}
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Create New Project</DialogTitle>
-                  <DialogDescription>
-                    Add a new project to organize your AI conversations.
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Title</FormLabel>
-                          <FormControl>
-                            <Input placeholder="My AI Project" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Description (Optional)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Brief description of your project" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <DialogFooter>
-                      <Button 
-                        type="submit" 
-                        disabled={createProjectMutation.isPending}
-                      >
-                        {createProjectMutation.isPending ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Creating...
-                          </>
-                        ) : (
-                          "Create Project"
-                        )}
-                      </Button>
-                    </DialogFooter>
-                  </form>
-                </Form>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
+      <div className="flex-1 relative">
+        {/* Project Drawer - ChatGPT style */}
+        <ProjectDrawer
+          selectedProjectId={selectedProjectId}
+          onProjectSelect={handleProjectSelect}
+        />
         
         {/* Main Content */}
-        <div className="flex-1 bg-white p-6 overflow-y-auto">
+        <main className="container mx-auto p-4 md:py-6">
           {selectedProjectId ? (
             <div>
               {/* Selected project display with sessions */}
@@ -343,7 +206,7 @@ export default function ProjectsPage() {
               </div>
             </div>
           )}
-        </div>
+        </main>
       </div>
     </div>
   );

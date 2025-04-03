@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Header } from "@/components/layout/header";
 import { ChatPanel } from "@/components/chat/chat-panel";
 import { OutputPanel } from "@/components/output/output-panel";
+import { ProjectDrawer } from "@/components/layout/project-drawer";
 import { useToast } from "@/hooks/use-toast";
 import { Message, OutputType, SessionState } from "@/types";
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -329,7 +330,10 @@ export default function Home() {
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <div className="flex-1">
+      <div className="flex-1 relative">
+        {/* Project Drawer - ChatGPT style */}
+        <ProjectDrawer />
+        
         <main className="container mx-auto p-4 md:py-6 flex flex-col lg:flex-row gap-4 md:gap-6">
           <ChatPanel 
             messages={messages}

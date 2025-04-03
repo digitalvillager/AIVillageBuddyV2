@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { OutputTabs } from "./output-tabs";
 import { ImplementationPlan } from "./implementation-plan";
 import { CostEstimate } from "./cost-estimate";
@@ -29,6 +29,17 @@ export function OutputPanel({
   sessionState
 }: OutputPanelProps) {
   const { toast } = useToast();
+  const [isContentMounted, setIsContentMounted] = useState(false);
+  
+  // Handle ResizeObserver errors
+  useEffect(() => {
+    // Give the component time to fully mount before showing content
+    const timer = setTimeout(() => {
+      setIsContentMounted(true);
+    }, 200);
+    
+    return () => clearTimeout(timer);
+  }, []);
   
   // Fetch outputs data
   const { data: outputs, isLoading } = useQuery({
@@ -98,50 +109,60 @@ export function OutputPanel({
         className="flex-1 overflow-y-auto p-4 scrollbar-hide" 
         style={{ maxHeight: "calc(100vh - 300px)" }}
       >
-        {isLoading ? (
+        {!isContentMounted || isLoading ? (
           <div className="flex justify-center items-center h-full">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
         ) : (
           <>
             {activeTab === "implementation" && (
-              <ImplementationPlan 
-                output={activeOutput} 
-                sessionState={sessionState}
-                isLoading={isLoading} 
-              />
+              <div key="implementation">
+                <ImplementationPlan 
+                  output={activeOutput} 
+                  sessionState={sessionState}
+                  isLoading={isLoading} 
+                />
+              </div>
             )}
             
             {activeTab === "cost" && (
-              <CostEstimate 
-                output={activeOutput} 
-                sessionState={sessionState}
-                isLoading={isLoading} 
-              />
+              <div key="cost">
+                <CostEstimate 
+                  output={activeOutput} 
+                  sessionState={sessionState}
+                  isLoading={isLoading} 
+                />
+              </div>
             )}
             
             {activeTab === "design" && (
-              <DesignConcept 
-                output={activeOutput} 
-                sessionState={sessionState}
-                isLoading={isLoading} 
-              />
+              <div key="design">
+                <DesignConcept 
+                  output={activeOutput} 
+                  sessionState={sessionState}
+                  isLoading={isLoading} 
+                />
+              </div>
             )}
             
             {activeTab === "business-case" && (
-              <BusinessCase 
-                output={activeOutput} 
-                sessionState={sessionState}
-                isLoading={isLoading} 
-              />
+              <div key="business-case">
+                <BusinessCase 
+                  output={activeOutput} 
+                  sessionState={sessionState}
+                  isLoading={isLoading} 
+                />
+              </div>
             )}
             
             {activeTab === "ai-considerations" && (
-              <AIConsiderations 
-                output={activeOutput} 
-                sessionState={sessionState}
-                isLoading={isLoading} 
-              />
+              <div key="ai-considerations">
+                <AIConsiderations 
+                  output={activeOutput} 
+                  sessionState={sessionState}
+                  isLoading={isLoading} 
+                />
+              </div>
             )}
           </>
         )}

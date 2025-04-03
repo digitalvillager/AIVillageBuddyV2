@@ -3,11 +3,77 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --primary-blue: #4094f7;
+    --primary-purple: #8a4bff;
+    --primary-green: #4caf50;
+    --background-light-blue: #f0f6ff;
+    --text-gray: #6c757d;
+    --status-red: #ff0000;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --border-radius-sm: 8px;
+    --border-radius-md: 12px;
+  }
+
   * {
     @apply border-border;
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased text-[#333];
+    background-color: var(--background-light-blue);
+    font-size: var(--font-size-base, 14px);
+  }
+}
+
+@layer components {
+  .dashboard-card {
+    @apply bg-white rounded-xl shadow-sm p-4 mb-4;
+  }
+
+  .status-card {
+    @apply flex items-center justify-between p-4 rounded-lg text-white;
+  }
+
+  .status-card-blue {
+    background-color: var(--primary-blue);
+  }
+
+  .status-card-purple {
+    background-color: var(--primary-purple);
+  }
+
+  .status-card-green {
+    background-color: var(--primary-green);
+  }
+
+  .btn-upload {
+    background-color: var(--primary-blue);
+    @apply text-white border-none rounded-lg px-4 py-2 font-medium;
+  }
+
+  .project-income-status {
+    @apply flex items-center justify-between;
+  }
+
+  .status-tag {
+    background-color: var(--status-red);
+    @apply text-white rounded-lg px-2 py-1 text-xs;
+  }
+
+  .team-avatar-group {
+    @apply flex items-center;
+  }
+
+  .team-avatar {
+    @apply w-8 h-8 rounded-full -mr-2.5 border-2 border-white;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 12px;
   }
 }

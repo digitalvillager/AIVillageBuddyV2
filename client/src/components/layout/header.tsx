@@ -4,11 +4,11 @@ import { User, HelpCircle } from "lucide-react";
 
 export function Header() {
   return (
-    <header className="bg-primary shadow-md">
+    <header className="bg-white shadow-md">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center">
           <Link href="/">
-            <div className="text-white font-bold text-xl md:text-2xl flex items-center cursor-pointer">
+            <div className="text-gray-800 font-bold text-xl md:text-2xl flex items-center cursor-pointer">
               <img 
                 src="/assets/logo.png" 
                 alt="Digital Village Logo" 
@@ -19,10 +19,10 @@ export function Header() {
           </Link>
         </div>
         <div className="hidden md:flex items-center space-x-4">
-          <button className="text-white hover:text-neutral-200 transition">
+          <button className="text-gray-800 hover:text-gray-600 transition">
             <HelpCircle className="h-5 w-5" />
           </button>
-          <button className="text-white hover:text-neutral-200 transition">
+          <button className="text-gray-800 hover:text-gray-600 transition">
             <User className="h-5 w-5" />
           </button>
         </div>

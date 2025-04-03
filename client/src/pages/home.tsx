@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
 import { ChatPanel } from "@/components/chat/chat-panel";
 import { OutputPanel } from "@/components/output/output-panel";
 import { useToast } from "@/hooks/use-toast";
@@ -324,30 +325,30 @@ export default function Home() {
   const handleRegenerateOutputs = () => {
     generateOutputsMutation.mutate();
   };
-  
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <div className="flex-1">
-        <main className="container mx-auto p-4 md:py-6 flex flex-col lg:flex-row gap-4 md:gap-6">
-          <ChatPanel 
-            messages={messages}
-            isLoading={loading || isLoadingMessages}
-            onSendMessage={handleSendMessage}
-            onClearChat={clearConversation}
-          />
-          
-          <OutputPanel 
-            sessionId={sessionId}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            onRegenerateOutputs={handleRegenerateOutputs}
-            isGenerating={generateOutputsMutation.isPending}
-            sessionState={sessionState}
-          />
-        </main>
-      </div>
+      <main className="flex-1 container mx-auto p-4 md:py-6 flex flex-col lg:flex-row gap-4 md:gap-6">
+        <ChatPanel 
+          messages={messages}
+          isLoading={loading || isLoadingMessages}
+          onSendMessage={handleSendMessage}
+          onClearChat={clearConversation}
+        />
+        
+        <OutputPanel 
+          sessionId={sessionId}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          onRegenerateOutputs={handleRegenerateOutputs}
+          isGenerating={generateOutputsMutation.isPending}
+          sessionState={sessionState}
+        />
+      </main>
+      
+      <Footer />
     </div>
   );
 }

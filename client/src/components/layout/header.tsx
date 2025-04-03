@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
-import { User, LogOut, FolderOpen, Home, HelpCircle, Settings } from "lucide-react";
+import { User, HelpCircle, LogOut, FolderOpen, Home } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import {
   DropdownMenu,
@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 export function Header() {
   const { user, logoutMutation } = useAuth();
   const [location, navigate] = useLocation();
-
+  
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
@@ -40,7 +40,32 @@ export function Header() {
           </Link>
         </div>
         
-        <div className="flex items-center">
+        {/* Navigation Menu */}
+        {user && (
+          <div className="hidden md:flex items-center space-x-2">
+            <Button variant="ghost" size="sm" asChild className={location === "/" ? "bg-gray-100" : ""}>
+              <Link href="/">
+                <Home className="h-4 w-4 mr-2" />
+                Home
+              </Link>
+            </Button>
+            
+            <Button variant="ghost" size="sm" asChild className={location === "/projects" ? "bg-gray-100" : ""}>
+              <Link href="/projects">
+                <FolderOpen className="h-4 w-4 mr-2" />
+                My Projects
+              </Link>
+            </Button>
+          </div>
+        )}
+        
+        <div className="flex items-center space-x-4">
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/help">
+              <HelpCircle className="h-5 w-5" />
+            </Link>
+          </Button>
+          
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -49,44 +74,35 @@ export function Header() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Navigation</DropdownMenuLabel>
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 
-                <DropdownMenuItem asChild>
-                  <Link href="/">
-                    <Home className="h-4 w-4 mr-2" />
-                    <span>Home</span>
-                  </Link>
-                </DropdownMenuItem>
+                {/* Mobile navigation */}
+                <div className="md:hidden">
+                  <DropdownMenuItem asChild>
+                    <Link href="/">
+                      <Home className="h-4 w-4 mr-2" />
+                      Home
+                    </Link>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem asChild>
+                    <Link href="/projects">
+                      <FolderOpen className="h-4 w-4 mr-2" />
+                      My Projects
+                    </Link>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuSeparator />
+                </div>
                 
                 <DropdownMenuItem asChild>
-                  <Link href="/projects">
-                    <FolderOpen className="h-4 w-4 mr-2" />
-                    <span>Projects</span>
-                  </Link>
+                  <Link href="/profile">Profile</Link>
                 </DropdownMenuItem>
-                
+                <DropdownMenuItem asChild>
+                  <Link href="/settings">Settings</Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                
-                <DropdownMenuLabel>Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                
-                <DropdownMenuItem asChild>
-                  <Link href="/settings">
-                    <Settings className="h-4 w-4 mr-2" />
-                    <span>Settings</span>
-                  </Link>
-                </DropdownMenuItem>
-
-                <DropdownMenuItem asChild>
-                  <Link href="/help">
-                    <HelpCircle className="h-4 w-4 mr-2" />
-                    <span>Help</span>
-                  </Link>
-                </DropdownMenuItem>
-                
-                <DropdownMenuSeparator />
-                
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="h-4 w-4 mr-2" />
                   <span>Logout</span>

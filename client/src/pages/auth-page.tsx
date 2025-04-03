@@ -30,7 +30,7 @@ type RegisterData = z.infer<typeof registerSchema>;
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<string>("login");
-  const { user, loginMutation, registerMutation } = useAuth();
+  const { user, isLoading, loginMutation, registerMutation } = useAuth();
   const [_, navigate] = useLocation();
 
   // Login form
@@ -53,12 +53,22 @@ export default function AuthPage() {
     },
   });
   
-  // Use useEffect for navigation to avoid React errors
+  // Handle navigation to home when authenticated
   useEffect(() => {
     if (user) {
+      console.log("User authenticated, redirecting to home");
       navigate("/");
     }
   }, [user, navigate]);
+  
+  // Early return if loading to prevent any rendering issues
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const onLoginSubmit = (data: LoginData) => {
     loginMutation.mutate(data, {

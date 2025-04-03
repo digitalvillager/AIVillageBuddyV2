@@ -9,7 +9,15 @@ import { User as UserType } from "@shared/schema";
 
 declare global {
   namespace Express {
-    interface User extends UserType {}
+    // Define User interface properly to avoid circular reference
+    interface User {
+      id: number;
+      username: string;
+      password: string;
+      email: string;
+      name: string | null;
+      created: Date;
+    }
   }
 }
 

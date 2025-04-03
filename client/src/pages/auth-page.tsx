@@ -254,21 +254,43 @@ export default function AuthPage() {
       </div>
 
       {/* Right column with hero/info */}
-      <div className="hidden lg:block lg:w-1/2 bg-primary text-white p-10 flex flex-col justify-center">
+      <div className="hidden lg:block lg:w-1/2 bg-primary text-white p-10 flex flex-col justify-center overflow-y-auto">
         <div className="max-w-lg mx-auto">
-          <h1 className="text-4xl font-bold mb-6">Digital Village AI Buddy</h1>
-          <p className="text-xl mb-8">
-            Your AI-powered conversational platform that guides you through innovative solution ideation.
+          <h1 className="text-4xl font-bold mb-4">Digital Village AI Buddy</h1>
+          <p className="text-lg mb-6">
+            Iterate and refine your idea with your dedicated AI Buddy, clearly identifying the business value of your AI solution. Quickly and easily determine whether moving forward with a proof of concept is worthwhile.
           </p>
-          <div className="space-y-4">
-            <div className="bg-white/10 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold mb-1">Automate Business Processes</h3>
-              <p>Identify opportunities to streamline workflows and reduce manual tasks.</p>
-            </div>
-            <div className="bg-white/10 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold mb-1">Leverage Business Data</h3>
-              <p>Transform your data into actionable insights and competitive advantages.</p>
-            </div>
+          
+          <h2 className="text-2xl font-semibold mb-4">What AI Buddy Provides:</h2>
+          
+          <ul className="space-y-3 list-disc pl-5 mb-6">
+            <li className="text-base">
+              <span className="font-medium">Business Case, Cost Estimate and Expected ROI</span>
+            </li>
+            <li className="text-base">
+              <span className="font-medium">Implementation Plan</span>
+            </li>
+            <li className="text-base">
+              <span className="font-medium">Risks, Issues, and AI-specific Considerations</span>
+            </li>
+            <li className="text-base">
+              <span className="font-medium">Feasibility Assessment</span> (including readiness and capability)
+            </li>
+            <li className="text-base">
+              <span className="font-medium">Architecture Overview</span> - a simple map showing how the technology works
+            </li>
+            <li className="text-base">
+              <span className="font-medium">Key User Flows</span> - the steps people will follow to get things done
+            </li>
+            <li className="text-base">
+              <span className="font-medium">Wireframes</span> - a rough sketch showing how the solution might look
+            </li>
+          </ul>
+          
+          <div className="bg-white/10 p-4 rounded-lg">
+            <p className="italic">
+              Sign in to start building your AI solution with guidance every step of the way.
+            </p>
           </div>
         </div>
       </div>

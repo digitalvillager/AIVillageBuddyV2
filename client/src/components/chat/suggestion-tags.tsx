@@ -15,16 +15,16 @@ export function SuggestionTags({ onSelect, visible }: SuggestionTagsProps) {
   ];
 
   return (
-    <div className="flex flex-col space-y-4 mb-6">
-      <div className="bg-primary text-white p-4 rounded-md">
+    <div className="mb-6">
+      <div className="bg-primary text-white p-3 rounded-md mb-3">
         <p className="text-sm">Choose a starting point or type your own question:</p>
       </div>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-col space-y-2">
         {suggestions.map((suggestion) => (
           <Badge 
             key={suggestion} 
             variant="outline" 
-            className="px-3 py-2 text-sm cursor-pointer hover:bg-primary/10 transition-colors bg-white"
+            className="px-4 py-3 text-sm cursor-pointer hover:bg-primary/10 transition-colors bg-white rounded-full border border-gray-200 font-normal shadow-sm w-fit"
             onClick={() => onSelect(suggestion)}
           >
             {suggestion}

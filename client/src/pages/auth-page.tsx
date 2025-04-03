@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,6 +33,13 @@ export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
   const [_, navigate] = useLocation();
 
+  // Use useEffect for navigation to avoid React errors
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
+
   // Login form
   const loginForm = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
@@ -53,10 +60,8 @@ export default function AuthPage() {
     },
   });
   
-  // If user is already logged in, redirect to home
-  // We need to make sure this happens after all hooks are called
+  // If user is already logged in, don't render the auth page
   if (user) {
-    navigate("/");
     return null;
   }
 

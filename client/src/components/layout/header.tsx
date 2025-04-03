@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
-import { User, HelpCircle, LogOut } from "lucide-react";
+import { User, HelpCircle, LogOut, FolderOpen, Home } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import {
   DropdownMenu,
@@ -39,6 +39,26 @@ export function Header() {
             </div>
           </Link>
         </div>
+        
+        {/* Navigation Menu */}
+        {user && (
+          <div className="hidden md:flex items-center space-x-2">
+            <Button variant="ghost" size="sm" asChild className={location === "/" ? "bg-gray-100" : ""}>
+              <Link href="/">
+                <Home className="h-4 w-4 mr-2" />
+                Home
+              </Link>
+            </Button>
+            
+            <Button variant="ghost" size="sm" asChild className={location === "/projects" ? "bg-gray-100" : ""}>
+              <Link href="/projects">
+                <FolderOpen className="h-4 w-4 mr-2" />
+                My Projects
+              </Link>
+            </Button>
+          </div>
+        )}
+        
         <div className="flex items-center space-x-4">
           <Button variant="ghost" size="icon" asChild>
             <Link href="/help">
@@ -56,11 +76,31 @@ export function Header() {
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  Profile
+                
+                {/* Mobile navigation */}
+                <div className="md:hidden">
+                  <DropdownMenuItem asChild>
+                    <Link href="/">
+                      <Home className="h-4 w-4 mr-2" />
+                      Home
+                    </Link>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem asChild>
+                    <Link href="/projects">
+                      <FolderOpen className="h-4 w-4 mr-2" />
+                      My Projects
+                    </Link>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuSeparator />
+                </div>
+                
+                <DropdownMenuItem asChild>
+                  <Link href="/profile">Profile</Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  Settings
+                <DropdownMenuItem asChild>
+                  <Link href="/settings">Settings</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>

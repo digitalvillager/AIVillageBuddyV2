@@ -5,11 +5,11 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
-import { User } from "@shared/schema";
+import { User as UserType } from "@shared/schema";
 
 declare global {
   namespace Express {
-    interface User extends User {}
+    interface User extends UserType {}
   }
 }
 
@@ -116,7 +116,7 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", (req, res, next) => {
-    passport.authenticate("local", (err, user, info) => {
+    passport.authenticate("local", (err: Error | null, user: UserType | false, info: any) => {
       if (err) return next(err);
       if (!user) {
         return res.status(401).json({

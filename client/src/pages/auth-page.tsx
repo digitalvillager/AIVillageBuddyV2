@@ -33,13 +33,6 @@ export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
   const [_, navigate] = useLocation();
 
-  // Use useEffect for navigation to avoid React errors
-  useEffect(() => {
-    if (user) {
-      navigate("/");
-    }
-  }, [user, navigate]);
-
   // Login form
   const loginForm = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
@@ -60,10 +53,12 @@ export default function AuthPage() {
     },
   });
   
-  // If user is already logged in, don't render the auth page
-  if (user) {
-    return null;
-  }
+  // Use useEffect for navigation to avoid React errors
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const onLoginSubmit = (data: LoginData) => {
     loginMutation.mutate(data, {

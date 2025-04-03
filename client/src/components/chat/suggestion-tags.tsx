@@ -16,7 +16,8 @@ export function SuggestionTags({ onSelect, visible }: SuggestionTagsProps) {
 
   return (
     <div className="mb-6">
-      <div className="bg-primary text-white p-3 rounded-md mb-3">
+      <div className="status-card status-card-blue mb-3" 
+           style={{ borderRadius: 'var(--border-radius-sm)' }}>
         <p className="text-sm">Choose a starting point or type your own question:</p>
       </div>
       <div className="flex flex-col space-y-2">
@@ -24,7 +25,12 @@ export function SuggestionTags({ onSelect, visible }: SuggestionTagsProps) {
           <Badge 
             key={suggestion} 
             variant="outline" 
-            className="px-4 py-3 text-sm cursor-pointer hover:bg-primary/10 transition-colors bg-white rounded-full border border-gray-200 font-normal shadow-sm w-fit"
+            className="dashboard-card px-4 py-3 text-sm cursor-pointer hover:bg-primary/10 transition-colors w-fit"
+            style={{ 
+              borderRadius: 'var(--border-radius-sm)',
+              backgroundColor: 'white',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+            }}
             onClick={() => onSelect(suggestion)}
           >
             {suggestion}

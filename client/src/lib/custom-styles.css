@@ -1,0 +1,101 @@
+:root {
+  /* Color Palette */
+  --primary-blue: #4094f7;
+  --primary-purple: #8a4bff;
+  --primary-green: #4caf50;
+  --background-light-blue: #f0f6ff;
+  --text-gray: #6c757d;
+  --status-red: #ff0000;
+  
+  /* Typography */
+  --font-family-base: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --font-size-base: 14px;
+  
+  /* Spacing */
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  
+  /* Border Radius */
+  --border-radius-sm: 8px;
+  --border-radius-md: 12px;
+}
+
+body {
+  font-family: var(--font-family-base);
+  background-color: var(--background-light-blue);
+  font-size: var(--font-size-base);
+  color: #333;
+}
+
+.dashboard-card {
+  background-color: white;
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.status-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  color: white;
+}
+
+.status-card-blue {
+  background-color: var(--primary-blue);
+}
+
+.status-card-purple {
+  background-color: var(--primary-purple);
+}
+
+.status-card-green {
+  background-color: var(--primary-green);
+}
+
+.btn-upload {
+  background-color: var(--primary-blue);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: 8px 16px;
+  font-weight: 500;
+}
+
+.project-income-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.status-tag {
+  background-color: var(--status-red);
+  color: white;
+  border-radius: var(--border-radius-sm);
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.team-avatar-group {
+  display: flex;
+  align-items: center;
+}
+
+.team-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-right: -10px;
+  border: 2px solid white;
+}
+
+/* Responsive Typography */
+@media (max-width: 768px) {
+  :root {
+    --font-size-base: 12px;
+  }
+}

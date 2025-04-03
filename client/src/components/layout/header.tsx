@@ -1,6 +1,6 @@
 import React from "react";
-import { Link, useLocation } from "wouter";
-import { User, HelpCircle, LogOut, FolderOpen, Home } from "lucide-react";
+import { Link } from "wouter";
+import { User } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import {
   DropdownMenu,
@@ -11,22 +11,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { MobileDrawer } from "./mobile-drawer";
 
 export function Header() {
-  const { user, logoutMutation } = useAuth();
-  const [location, navigate] = useLocation();
-  
-  const handleLogout = () => {
-    logoutMutation.mutate(undefined, {
-      onSuccess: () => {
-        navigate("/auth");
-      }
-    });
-  };
+  const { user } = useAuth();
 
   return (
     <header className="bg-white shadow-md">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+        {/* Mobile sidebar drawer */}
+        {user && <MobileDrawer />}
+        
         <div className="flex items-center">
           <Link href="/">
             <div className="text-gray-800 font-bold text-xl md:text-2xl flex items-center cursor-pointer">
@@ -40,32 +35,7 @@ export function Header() {
           </Link>
         </div>
         
-        {/* Navigation Menu */}
-        {user && (
-          <div className="hidden md:flex items-center space-x-2">
-            <Button variant="ghost" size="sm" asChild className={location === "/" ? "bg-gray-100" : ""}>
-              <Link href="/">
-                <Home className="h-4 w-4 mr-2" />
-                Home
-              </Link>
-            </Button>
-            
-            <Button variant="ghost" size="sm" asChild className={location === "/projects" ? "bg-gray-100" : ""}>
-              <Link href="/projects">
-                <FolderOpen className="h-4 w-4 mr-2" />
-                My Projects
-              </Link>
-            </Button>
-          </div>
-        )}
-        
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/help">
-              <HelpCircle className="h-5 w-5" />
-            </Link>
-          </Button>
-          
+        <div className="flex items-center">
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -77,35 +47,11 @@ export function Header() {
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 
-                {/* Mobile navigation */}
-                <div className="md:hidden">
-                  <DropdownMenuItem asChild>
-                    <Link href="/">
-                      <Home className="h-4 w-4 mr-2" />
-                      Home
-                    </Link>
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuItem asChild>
-                    <Link href="/projects">
-                      <FolderOpen className="h-4 w-4 mr-2" />
-                      My Projects
-                    </Link>
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuSeparator />
-                </div>
-                
                 <DropdownMenuItem asChild>
                   <Link href="/profile">Profile</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/settings">Settings</Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  <span>Logout</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

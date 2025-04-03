@@ -7,10 +7,13 @@ import {
   type InsertSession,
   type OutputDocument,
   type InsertOutputDocument,
+  type Project,
+  type InsertProject,
   users,
   messages,
   sessions,
-  outputDocuments
+  outputDocuments,
+  projects
 } from "@shared/schema";
 import { db } from "./db";
 import * as schema from "@shared/schema";
@@ -18,10 +21,19 @@ import { NeonDatabase } from "drizzle-orm/neon-serverless";
 import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
-  // User methods (kept from original)
+  // User methods
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, updates: Partial<User>): Promise<User | undefined>;
+  
+  // Project methods
+  createProject(project: InsertProject): Promise<Project>;
+  getProject(id: number): Promise<Project | undefined>;
+  getProjectsByUserId(userId: number): Promise<Project[]>;
+  updateProject(id: number, updates: Partial<Project>): Promise<Project | undefined>;
+  deleteProject(id: number): Promise<boolean>;
   
   // Message methods
   createMessage(message: InsertMessage): Promise<Message>;
@@ -31,7 +43,10 @@ export interface IStorage {
   // Session methods
   createSession(session: InsertSession): Promise<Session>;
   getSession(id: string): Promise<Session | undefined>;
+  getSessionsByUserId(userId: number): Promise<Session[]>;
+  getSessionsByProjectId(projectId: number): Promise<Session[]>;
   updateSession(id: string, updates: Partial<Session>): Promise<Session | undefined>;
+  deleteSession(id: string): Promise<boolean>;
   
   // Output document methods
   createOutputDocument(document: InsertOutputDocument): Promise<OutputDocument>;
@@ -48,9 +63,11 @@ export class MemStorage implements IStorage {
   private messages: Message[] = [];
   private sessions: Session[] = [];
   private outputDocuments: OutputDocument[] = [];
+  private projects: Project[] = [];
   private nextUserId = 1;
   private nextMessageId = 1;
   private nextOutputDocumentId = 1;
+  private nextProjectId = 1;
 
   // User methods
   async getUser(id: number): Promise<User | undefined> {
@@ -60,17 +77,80 @@ export class MemStorage implements IStorage {
   async getUserByUsername(username: string): Promise<User | undefined> {
     return this.users.find(user => user.username === username);
   }
+  
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return this.users.find(user => user.email === email);
+  }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const now = new Date();
     const user = {
       id: this.nextUserId++,
       ...insertUser,
-      created: now,
-      updated: now
+      created: now
     } as User;
     this.users.push(user);
     return user;
+  }
+  
+  async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {
+    const user = this.users.find(user => user.id === id);
+    if (!user) return undefined;
+    
+    const updatedUser = {
+      ...user,
+      ...updates
+    };
+    
+    const index = this.users.findIndex(u => u.id === id);
+    this.users[index] = updatedUser;
+    
+    return updatedUser;
+  }
+  
+  // Project methods
+  async createProject(insertProject: InsertProject): Promise<Project> {
+    const now = new Date();
+    const project = {
+      id: this.nextProjectId++,
+      ...insertProject,
+      created: now,
+      updated: now
+    } as Project;
+    this.projects.push(project);
+    return project;
+  }
+  
+  async getProject(id: number): Promise<Project | undefined> {
+    return this.projects.find(project => project.id === id);
+  }
+  
+  async getProjectsByUserId(userId: number): Promise<Project[]> {
+    return this.projects
+      .filter(project => project.userId === userId)
+      .sort((a, b) => new Date(b.updated).getTime() - new Date(a.updated).getTime());
+  }
+  
+  async updateProject(id: number, updates: Partial<Project>): Promise<Project | undefined> {
+    const project = this.projects.find(project => project.id === id);
+    if (!project) return undefined;
+    
+    const updatedProject = {
+      ...project,
+      ...updates,
+      updated: new Date()
+    };
+    
+    const index = this.projects.findIndex(p => p.id === id);
+    this.projects[index] = updatedProject;
+    
+    return updatedProject;
+  }
+  
+  async deleteProject(id: number): Promise<boolean> {
+    const initialLength = this.projects.length;
+    this.projects = this.projects.filter(project => project.id !== id);
+    return this.projects.length < initialLength;
   }
   
   // Message methods
@@ -113,6 +193,18 @@ export class MemStorage implements IStorage {
     return this.sessions.find(session => session.id === id);
   }
   
+  async getSessionsByUserId(userId: number): Promise<Session[]> {
+    return this.sessions
+      .filter(session => session.userId === userId)
+      .sort((a, b) => new Date(b.updated).getTime() - new Date(a.updated).getTime());
+  }
+  
+  async getSessionsByProjectId(projectId: number): Promise<Session[]> {
+    return this.sessions
+      .filter(session => session.projectId === projectId)
+      .sort((a, b) => new Date(b.updated).getTime() - new Date(a.updated).getTime());
+  }
+  
   async updateSession(id: string, updates: Partial<Session>): Promise<Session | undefined> {
     const session = this.sessions.find(session => session.id === id);
     if (!session) return undefined;
@@ -127,6 +219,12 @@ export class MemStorage implements IStorage {
     this.sessions[index] = updatedSession;
     
     return updatedSession;
+  }
+  
+  async deleteSession(id: string): Promise<boolean> {
+    const initialLength = this.sessions.length;
+    this.sessions = this.sessions.filter(session => session.id !== id);
+    return this.sessions.length < initialLength;
   }
   
   // Output document methods
@@ -208,11 +306,71 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db.select().from(users).where(eq(users.username, username));
     return user;
   }
+  
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    if (!db) throw new Error("Database is not initialized");
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     if (!db) throw new Error("Database is not initialized");
     const [user] = await db.insert(users).values(insertUser).returning();
     return user;
+  }
+  
+  async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {
+    if (!db) throw new Error("Database is not initialized");
+    const [updatedUser] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, id))
+      .returning();
+    
+    return updatedUser;
+  }
+  
+  // Project methods
+  async createProject(project: InsertProject): Promise<Project> {
+    if (!db) throw new Error("Database is not initialized");
+    const [newProject] = await db.insert(projects).values(project).returning();
+    return newProject;
+  }
+  
+  async getProject(id: number): Promise<Project | undefined> {
+    if (!db) throw new Error("Database is not initialized");
+    const [project] = await db.select().from(projects).where(eq(projects.id, id));
+    return project;
+  }
+  
+  async getProjectsByUserId(userId: number): Promise<Project[]> {
+    if (!db) throw new Error("Database is not initialized");
+    return await db
+      .select()
+      .from(projects)
+      .where(eq(projects.userId, userId))
+      .orderBy(desc(projects.updated));
+  }
+  
+  async updateProject(id: number, updates: Partial<Project>): Promise<Project | undefined> {
+    if (!db) throw new Error("Database is not initialized");
+    const now = new Date();
+    const [updatedProject] = await db
+      .update(projects)
+      .set({
+        ...updates,
+        updated: now
+      })
+      .where(eq(projects.id, id))
+      .returning();
+    
+    return updatedProject;
+  }
+  
+  async deleteProject(id: number): Promise<boolean> {
+    if (!db) throw new Error("Database is not initialized");
+    const result = await db.delete(projects).where(eq(projects.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
   }
   
   // Message methods
@@ -253,6 +411,24 @@ export class DatabaseStorage implements IStorage {
     return session;
   }
   
+  async getSessionsByUserId(userId: number): Promise<Session[]> {
+    if (!db) throw new Error("Database is not initialized");
+    return await db
+      .select()
+      .from(sessions)
+      .where(eq(sessions.userId, userId))
+      .orderBy(desc(sessions.updated));
+  }
+  
+  async getSessionsByProjectId(projectId: number): Promise<Session[]> {
+    if (!db) throw new Error("Database is not initialized");
+    return await db
+      .select()
+      .from(sessions)
+      .where(eq(sessions.projectId, projectId))
+      .orderBy(desc(sessions.updated));
+  }
+  
   async updateSession(id: string, updates: Partial<Session>): Promise<Session | undefined> {
     if (!db) throw new Error("Database is not initialized");
     const now = new Date();
@@ -266,6 +442,12 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return updatedSession;
+  }
+  
+  async deleteSession(id: string): Promise<boolean> {
+    if (!db) throw new Error("Database is not initialized");
+    const result = await db.delete(sessions).where(eq(sessions.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
   }
   
   // Output document methods

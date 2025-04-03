@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { generateAIResponse } from "./lib/openai";
@@ -10,19 +10,181 @@ import {
   generateAIConsiderations 
 } from "./lib/output-generator";
 import { nanoid } from "nanoid";
+import { setupAuth } from "./auth";
+
+// Middleware to check if user is authenticated
+const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ error: "Unauthorized" });
+};
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup authentication
+  setupAuth(app);
+  
   // API routes
   
-  // Sessions
-  app.post('/api/sessions', async (req, res) => {
+  // Projects (authenticated)
+  app.post('/api/projects', isAuthenticated, async (req, res) => {
     try {
-      const { id } = req.body;
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      
+      const project = await storage.createProject({
+        ...req.body,
+        userId: req.user.id
+      });
+      
+      res.status(201).json(project);
+    } catch (error) {
+      console.error('Error creating project:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to create project',
+        error: errorMessage 
+      });
+    }
+  });
+  
+  app.get('/api/projects', isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      
+      const projects = await storage.getProjectsByUserId(req.user.id);
+      res.json(projects);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to fetch projects',
+        error: errorMessage 
+      });
+    }
+  });
+  
+  app.get('/api/projects/:id', isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      
+      const projectId = parseInt(req.params.id);
+      if (isNaN(projectId)) {
+        return res.status(400).json({ message: 'Invalid project ID' });
+      }
+      
+      const project = await storage.getProject(projectId);
+      
+      if (!project) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+      
+      // Check if user owns the project
+      if (project.userId !== req.user.id) {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+      
+      res.json(project);
+    } catch (error) {
+      console.error('Error fetching project:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to fetch project',
+        error: errorMessage 
+      });
+    }
+  });
+  
+  app.patch('/api/projects/:id', isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      
+      const projectId = parseInt(req.params.id);
+      if (isNaN(projectId)) {
+        return res.status(400).json({ message: 'Invalid project ID' });
+      }
+      
+      const project = await storage.getProject(projectId);
+      
+      if (!project) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+      
+      // Check if user owns the project
+      if (project.userId !== req.user.id) {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+      
+      const updatedProject = await storage.updateProject(projectId, req.body);
+      res.json(updatedProject);
+    } catch (error) {
+      console.error('Error updating project:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to update project',
+        error: errorMessage 
+      });
+    }
+  });
+  
+  app.delete('/api/projects/:id', isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      
+      const projectId = parseInt(req.params.id);
+      if (isNaN(projectId)) {
+        return res.status(400).json({ message: 'Invalid project ID' });
+      }
+      
+      const project = await storage.getProject(projectId);
+      
+      if (!project) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+      
+      // Check if user owns the project
+      if (project.userId !== req.user.id) {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+      
+      await storage.deleteProject(projectId);
+      res.status(204).end();
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to delete project',
+        error: errorMessage 
+      });
+    }
+  });
+  
+  // Sessions
+  app.post('/api/sessions', isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      
+      const { id, projectId, title } = req.body;
       const sessionId = id || nanoid();
       
+      // Create session
       const session = await storage.createSession({
         id: sessionId,
-        isComplete: false
+        isComplete: false,
+        userId: req.user.id,
+        projectId: projectId || null,
+        title: title || 'New Session'
       });
       
       res.status(201).json(session);
@@ -36,13 +198,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.get('/api/sessions/:id', async (req, res) => {
+  // Get all sessions for a user
+  app.get('/api/sessions', isAuthenticated, async (req, res) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      
+      // Check if project ID is provided
+      const projectId = req.query.projectId ? parseInt(req.query.projectId as string) : null;
+      
+      let sessions;
+      if (projectId && !isNaN(projectId)) {
+        // Get sessions for a project
+        sessions = await storage.getSessionsByProjectId(projectId);
+        
+        // Verify the project belongs to the user
+        const project = await storage.getProject(projectId);
+        if (!project || project.userId !== req.user.id) {
+          return res.status(403).json({ message: 'Forbidden' });
+        }
+      } else {
+        // Get all sessions for the user
+        sessions = await storage.getSessionsByUserId(req.user.id);
+      }
+      
+      res.json(sessions);
+    } catch (error) {
+      console.error('Error fetching sessions:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to fetch sessions',
+        error: errorMessage 
+      });
+    }
+  });
+  
+  app.get('/api/sessions/:id', isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      
       const { id } = req.params;
       const session = await storage.getSession(id);
       
       if (!session) {
         return res.status(404).json({ message: 'Session not found' });
+      }
+      
+      // Verify the session belongs to the user
+      if (session.userId && session.userId !== req.user.id) {
+        return res.status(403).json({ message: 'Forbidden' });
       }
       
       res.json(session);
@@ -56,23 +263,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.patch('/api/sessions/:id', async (req, res) => {
+  app.patch('/api/sessions/:id', isAuthenticated, async (req, res) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      
       const { id } = req.params;
       const updates = req.body;
       
-      const updatedSession = await storage.updateSession(id, updates);
+      // Get the current session
+      const session = await storage.getSession(id);
       
-      if (!updatedSession) {
+      if (!session) {
         return res.status(404).json({ message: 'Session not found' });
       }
       
+      // Verify the session belongs to the user
+      if (session.userId && session.userId !== req.user.id) {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+      
+      // If updating projectId, verify the project belongs to the user
+      if (updates.projectId && updates.projectId !== session.projectId) {
+        const project = await storage.getProject(updates.projectId);
+        if (!project || project.userId !== req.user.id) {
+          return res.status(403).json({ message: 'Forbidden - Cannot assign to another user\'s project' });
+        }
+      }
+      
+      const updatedSession = await storage.updateSession(id, updates);
       res.json(updatedSession);
     } catch (error) {
       console.error('Error updating session:', error);
       const errorMessage = error instanceof Error ? error.message : String(error);
       res.status(500).json({ 
         message: 'Failed to update session',
+        error: errorMessage 
+      });
+    }
+  });
+  
+  app.delete('/api/sessions/:id', isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      
+      const { id } = req.params;
+      
+      // Get the current session
+      const session = await storage.getSession(id);
+      
+      if (!session) {
+        return res.status(404).json({ message: 'Session not found' });
+      }
+      
+      // Verify the session belongs to the user
+      if (session.userId && session.userId !== req.user.id) {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+      
+      const result = await storage.deleteSession(id);
+      
+      if (result) {
+        res.status(204).end();
+      } else {
+        res.status(500).json({ message: 'Failed to delete session' });
+      }
+    } catch (error) {
+      console.error('Error deleting session:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to delete session',
         error: errorMessage 
       });
     }
@@ -139,7 +402,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`Session not found: ${sessionId}. Creating new session.`);
         session = await storage.createSession({
           id: sessionId,
-          isComplete: false
+          isComplete: false,
+          title: 'New Session'
         });
       }
       

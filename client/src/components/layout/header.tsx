@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
-import { User, HelpCircle, LogOut, FolderOpen, Home } from "lucide-react";
+import { User, HelpCircle, LogOut, FolderOpen, Home, Menu } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import {
   DropdownMenu,
@@ -11,6 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { MobileDrawer } from "./mobile-drawer";
 
 export function Header() {
   const { user, logoutMutation } = useAuth();
@@ -28,6 +30,7 @@ export function Header() {
     <header className="bg-white shadow-md">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center">
+          {user && <MobileDrawer />}
           <Link href="/">
             <div className="text-gray-800 font-bold text-xl md:text-2xl flex items-center cursor-pointer">
               <img 

@@ -8,6 +8,7 @@ import { Message, OutputType, SessionState } from "@/types";
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { nanoid } from 'nanoid';
+import ErrorBoundary from '@/components/error-boundary';
 
 export default function Home() {
   const { toast } = useToast();
@@ -326,29 +327,69 @@ export default function Home() {
     generateOutputsMutation.mutate();
   };
 
-  return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      
-      <main className="flex-1 container mx-auto p-4 md:py-6 flex flex-col lg:flex-row gap-4 md:gap-6">
-        <ChatPanel 
-          messages={messages}
-          isLoading={loading || isLoadingMessages}
-          onSendMessage={handleSendMessage}
-          onClearChat={clearConversation}
-        />
+  // Add a loading state while resources are being initialized
+  if (!sessionId || isLoadingMessages || isLoadingSession) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+          <span className="ml-3 text-lg">Loading your AI Buddy...</span>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  try {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
         
-        <OutputPanel 
-          sessionId={sessionId}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          onRegenerateOutputs={handleRegenerateOutputs}
-          isGenerating={generateOutputsMutation.isPending}
-          sessionState={sessionState}
-        />
-      </main>
-      
-      <Footer />
-    </div>
-  );
+        <main className="flex-1 container mx-auto p-4 md:py-6 flex flex-col lg:flex-row gap-4 md:gap-6">
+          <ErrorBoundary>
+            <ChatPanel 
+              messages={messages}
+              isLoading={loading || isLoadingMessages}
+              onSendMessage={handleSendMessage}
+              onClearChat={clearConversation}
+            />
+          </ErrorBoundary>
+          
+          <ErrorBoundary>
+            <OutputPanel 
+              sessionId={sessionId}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              onRegenerateOutputs={handleRegenerateOutputs}
+              isGenerating={generateOutputsMutation.isPending}
+              sessionState={sessionState}
+            />
+          </ErrorBoundary>
+        </main>
+        
+        <Footer />
+      </div>
+    );
+  } catch (error) {
+    console.error("Error rendering Home component:", error);
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
+            <h2 className="text-2xl font-bold mb-4">Something went wrong</h2>
+            <p className="mb-4">We encountered an error loading your AI Buddy. Please try reloading the page.</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
+            >
+              Reload Page
+            </button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 }

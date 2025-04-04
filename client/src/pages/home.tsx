@@ -16,6 +16,7 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<OutputType>("implementation");
+  const [isChatPanelOpen, setIsChatPanelOpen] = useState(false);
   const [sessionState, setSessionState] = useState<SessionState>({
     id: "",
     industry: "",
@@ -346,26 +347,41 @@ export default function Home() {
       <div className="min-h-screen flex flex-col">
         <Header />
         
-        <main className="flex-1 container mx-auto p-4 md:py-6 flex flex-col lg:flex-row gap-4 md:gap-6">
-          <ErrorBoundary>
-            <ChatPanel 
-              messages={messages}
-              isLoading={loading || isLoadingMessages}
-              onSendMessage={handleSendMessage}
-              onClearChat={clearConversation}
-            />
-          </ErrorBoundary>
+        <main className="flex-1 container mx-auto p-4 md:py-6 flex flex-col lg:flex-row gap-4 md:gap-6 relative">
+          <div className={`transition-all duration-300 ease-in-out flex ${isChatPanelOpen ? 'lg:w-1/2' : 'lg:w-0 overflow-hidden'}`}>
+            <ErrorBoundary>
+              {isChatPanelOpen && (
+                <ChatPanel 
+                  messages={messages}
+                  isLoading={loading || isLoadingMessages}
+                  onSendMessage={handleSendMessage}
+                  onClearChat={clearConversation}
+                />
+              )}
+            </ErrorBoundary>
+          </div>
           
-          <ErrorBoundary>
-            <OutputPanel 
-              sessionId={sessionId}
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-              onRegenerateOutputs={handleRegenerateOutputs}
-              isGenerating={generateOutputsMutation.isPending}
-              sessionState={sessionState}
-            />
-          </ErrorBoundary>
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="absolute left-4 top-8 shadow-md z-10"
+            onClick={() => setIsChatPanelOpen(!isChatPanelOpen)}
+          >
+            {isChatPanelOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          </Button>
+          
+          <div className={`transition-all duration-300 ${isChatPanelOpen ? 'lg:w-1/2' : 'lg:w-full'}`}>
+            <ErrorBoundary>
+              <OutputPanel 
+                sessionId={sessionId}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                onRegenerateOutputs={handleRegenerateOutputs}
+                isGenerating={generateOutputsMutation.isPending}
+                sessionState={sessionState}
+              />
+            </ErrorBoundary>
+          </div>
         </main>
         
         <Footer />

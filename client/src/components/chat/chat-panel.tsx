@@ -26,7 +26,7 @@ export function ChatPanel({ messages, isLoading, onSendMessage, onClearChat }: C
     (messages.length === 1 && messages[0].role === 'assistant');
 
   return (
-    <div className="w-full lg:w-1/2 flex flex-col bg-white rounded-lg shadow overflow-hidden">
+    <div className="w-full flex flex-col bg-white rounded-lg shadow overflow-hidden">
       {/* Chat Header */}
       <div className="bg-primary text-white p-4">
         <h2 className="font-semibold text-lg">AI Buddy Conversation</h2>

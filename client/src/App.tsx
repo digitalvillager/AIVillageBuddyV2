@@ -8,6 +8,26 @@ import AuthPage from "@/pages/auth-page";
 import ProjectsPage from "@/pages/projects-page";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
+import ErrorBoundary from "@/components/error-boundary";
+import { useEffect } from "react";
+
+// Add global error handler for uncaught runtime errors
+function ErrorHandler() {
+  useEffect(() => {
+    const errorHandler = (event: ErrorEvent) => {
+      console.error("Unhandled error:", event.error);
+      // We could send this to a logging service if needed
+    };
+
+    window.addEventListener("error", errorHandler);
+    
+    return () => {
+      window.removeEventListener("error", errorHandler);
+    };
+  }, []);
+
+  return null;
+}
 
 function Router() {
   return (
@@ -23,12 +43,15 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router />
-        <Toaster />
-      </AuthProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <ErrorHandler />
+          <Router />
+          <Toaster />
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

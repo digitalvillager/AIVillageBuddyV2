@@ -16,7 +16,7 @@ export function Header() {
   
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b">
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <Link to="/">
             <div className="flex items-center gap-2">
@@ -35,7 +35,7 @@ export function Header() {
           <Separator orientation="vertical" className="h-6 mx-2 hidden sm:block" />
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-end gap-4">
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

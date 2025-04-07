@@ -84,7 +84,7 @@ export default function Home() {
         const response = await apiRequest('POST', '/api/messages', {
           sessionId: newSessionId,
           role: 'assistant',
-          content: "Hello! I'm your AI Buddy from Digital Village. I'm here to help you refine your AI solution idea for your business. Let's start with the basics - what business problem are you trying to solve with AI?"
+          content: "Hello! I'm your AI Buddy from Digital Village. I'm here to help you refine your AI solution idea for your business.\n\nChoose a starting point or type your own question:"
         });
         
         const initialMessage = await response.json();
@@ -281,7 +281,7 @@ export default function Home() {
       const response = await apiRequest('POST', '/api/messages', {
         sessionId: newSessionId,
         role: 'assistant',
-        content: "Hello! I'm your AI Buddy from Digital Village. I'm here to help you refine your AI solution idea for your business. Let's start with the basics - what business problem are you trying to solve with AI?"
+        content: "Hello! I'm your AI Buddy from Digital Village. I'm here to help you refine your AI solution idea for your business.\n\nChoose a starting point or type your own question:"
       });
       
       const initialMessage = await response.json();

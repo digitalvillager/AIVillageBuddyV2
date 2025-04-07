@@ -17,7 +17,7 @@ interface SuggestionTagProps {
 
 const SuggestionTag = ({ text, onClick }: SuggestionTagProps) => (
   <div 
-    className="p-3 bg-card rounded-md border border-border shadow-sm hover:bg-accent cursor-pointer transition-colors"
+    className="p-3 bg-card rounded-md border border-border shadow-sm hover:bg-accent hover:border-primary cursor-pointer transition-all transform hover:scale-105 text-center"
     onClick={() => onClick(text)}
   >
     <p className="text-sm font-medium">{text}</p>
@@ -143,10 +143,10 @@ export function ChatPanel({
                 {/* Show suggestion tags after messages when showSuggestions is true */}
                 {showSuggestions && (
                   <div className="pt-6 pb-2 border-t border-border mt-4">
-                    <p className="text-sm font-medium mb-3">What would you like to focus on?</p>
-                    <div className="flex flex-col gap-2 max-w-xs">
+                    <p className="text-sm font-medium mb-3 text-center">Choose a starting point or type your own question:</p>
+                    <div className="flex justify-center gap-4 max-w-lg mx-auto">
                       <SuggestionTag 
-                        text="Automate my business processes" 
+                        text="Automate business processes" 
                         onClick={handleSuggestionClick} 
                       />
                       <SuggestionTag 
@@ -169,9 +169,9 @@ export function ChatPanel({
                   Chat with your AI Buddy to explore how to create a digital solution for your business needs.
                 </p>
                 
-                <div className="flex flex-col gap-2 w-full max-w-xs">
+                <div className="flex justify-center gap-4 w-full max-w-lg mx-auto">
                   <SuggestionTag 
-                    text="Automate my business processes" 
+                    text="Automate business processes" 
                     onClick={handleSuggestionClick} 
                   />
                   <SuggestionTag 

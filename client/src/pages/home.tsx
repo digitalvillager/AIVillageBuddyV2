@@ -76,6 +76,9 @@ export default function Home() {
       localStorage.setItem('sessionId', newSessionId);
       setSessionId(newSessionId);
       
+      // Set showSolutionSuggestions to true for new sessions
+      setShowSolutionSuggestions(true);
+      
       // Initialize the session in the database
       try {
         await apiRequest('POST', '/api/sessions', { id: newSessionId });
@@ -289,6 +292,8 @@ export default function Home() {
       // Update state
       setSessionId(newSessionId);
       setMessages([initialMessage]);
+      // Show solution suggestions for new/cleared sessions
+      setShowSolutionSuggestions(true);
       setSessionState({
         id: newSessionId,
         industry: "",

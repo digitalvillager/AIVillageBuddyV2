@@ -16,13 +16,13 @@ export function Header() {
   
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b">
-      <div className="container flex h-16 items-center justify-between px-4">
+      <div className="container flex h-16 items-center justify-between px-4 mx-auto">
         <div className="flex items-center gap-2">
           <Link to="/">
             <div className="flex items-center gap-2">
               <div className="bg-primary rounded-full w-8 h-8 flex items-center justify-center">
                 <img
-                  src="/icon.png"
+                  src="/assets/logo.png"
                   alt="Digital Village Logo"
                   className="h-6 w-6 object-contain"
                 />

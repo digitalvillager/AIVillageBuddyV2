@@ -451,7 +451,7 @@ export default function Home() {
           <Button 
             variant="outline" 
             size="icon" 
-            className="absolute left-6 top-8 shadow-md z-10"
+            className="fixed left-4 top-24 shadow-md z-10 bg-background"
             onClick={() => setIsProjectsPanelOpen(!isProjectsPanelOpen)}
           >
             {isProjectsPanelOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}

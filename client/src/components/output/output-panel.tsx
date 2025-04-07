@@ -47,6 +47,11 @@ export function OutputPanel({
   // Find the active output document
   const activeOutput = outputs?.find((output: any) => output.type === activeTab);
   
+  // Log for debugging
+  console.log("Active tab:", activeTab);
+  console.log("Available outputs:", outputs);
+  console.log("Selected output:", activeOutput);
+  
   // Check if we have enough data to generate outputs
   const canGenerateOutputs = sessionState?.businessProblem && (
     sessionState?.industry || 

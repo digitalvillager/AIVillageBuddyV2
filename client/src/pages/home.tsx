@@ -3,6 +3,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { ChatPanel } from "@/components/chat/chat-panel";
 import { OutputPanel } from "@/components/output/output-panel";
+import { ProjectsPanel } from "@/components/projects/projects-panel";
 import { useToast } from "@/hooks/use-toast";
 import { Message, OutputType, SessionState } from "@/types";
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -18,7 +19,7 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<OutputType>("implementation");
-  const [isChatPanelOpen, setIsChatPanelOpen] = useState(false);
+  const [isProjectsPanelOpen, setIsProjectsPanelOpen] = useState(false);
   const [sessionState, setSessionState] = useState<SessionState>({
     id: "",
     industry: "",
@@ -350,38 +351,55 @@ export default function Home() {
         <Header />
         
         <main className="flex-1 container mx-auto p-4 md:py-6 flex flex-col lg:flex-row gap-4 md:gap-6 relative">
-          <div className={`transition-all duration-300 ease-in-out flex ${isChatPanelOpen ? 'lg:w-1/2' : 'lg:w-0 overflow-hidden'}`}>
+          {/* Projects Panel - Hidden by default, toggleable */}
+          <div className={`transition-all duration-300 ease-in-out ${isProjectsPanelOpen ? 'lg:w-1/4' : 'lg:w-0 overflow-hidden'}`}>
             <ErrorBoundary>
-              {isChatPanelOpen && (
+              {isProjectsPanelOpen && (
+                <ProjectsPanel 
+                  currentProjectId={sessionId}
+                  onSelectProject={(projectId) => {
+                    // Logic to switch to the selected project would go here
+                    console.log(`Selected project: ${projectId}`);
+                  }}
+                />
+              )}
+            </ErrorBoundary>
+          </div>
+          
+          {/* Toggle button for Projects Panel */}
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="absolute left-4 top-8 shadow-md z-10"
+            onClick={() => setIsProjectsPanelOpen(!isProjectsPanelOpen)}
+          >
+            {isProjectsPanelOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          </Button>
+          
+          {/* Main content area - Chat and Output panels side by side */}
+          <div className={`transition-all duration-300 flex flex-col lg:flex-row gap-4 ${isProjectsPanelOpen ? 'lg:w-3/4' : 'lg:w-full'}`}>
+            <ErrorBoundary>
+              <div className="w-full lg:w-1/2">
                 <ChatPanel 
                   messages={messages}
                   isLoading={loading || isLoadingMessages}
                   onSendMessage={handleSendMessage}
                   onClearChat={clearConversation}
                 />
-              )}
+              </div>
             </ErrorBoundary>
-          </div>
-          
-          <Button 
-            variant="outline" 
-            size="icon" 
-            className="absolute left-4 top-8 shadow-md z-10"
-            onClick={() => setIsChatPanelOpen(!isChatPanelOpen)}
-          >
-            {isChatPanelOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          </Button>
-          
-          <div className={`transition-all duration-300 ${isChatPanelOpen ? 'lg:w-1/2' : 'lg:w-full'}`}>
+            
             <ErrorBoundary>
-              <OutputPanel 
-                sessionId={sessionId}
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-                onRegenerateOutputs={handleRegenerateOutputs}
-                isGenerating={generateOutputsMutation.isPending}
-                sessionState={sessionState}
-              />
+              <div className="w-full lg:w-1/2">
+                <OutputPanel 
+                  sessionId={sessionId}
+                  activeTab={activeTab}
+                  onTabChange={setActiveTab}
+                  onRegenerateOutputs={handleRegenerateOutputs}
+                  isGenerating={generateOutputsMutation.isPending}
+                  sessionState={sessionState}
+                />
+              </div>
             </ErrorBoundary>
           </div>
         </main>

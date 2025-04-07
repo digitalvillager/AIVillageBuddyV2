@@ -1,10 +1,32 @@
-import React from "react";
+import React from 'react';
+import { Link } from 'wouter';
 
 export function Footer() {
   return (
-    <footer className="bg-neutral-800 text-neutral-400 py-4">
-      <div className="container mx-auto px-4 text-center text-sm">
-        <p>© {new Date().getFullYear()} Digital Village. AI Buddy is a conceptual tool. All outputs should be reviewed by domain experts.</p>
+    <footer className="w-full border-t bg-white">
+      <div className="container flex flex-col sm:flex-row items-center justify-between py-4 md:py-6">
+        <div className="flex items-center gap-2 mb-2 sm:mb-0">
+          <img
+            src="/icon.png"
+            alt="Digital Village Logo"
+            className="h-5 w-5 object-contain"
+          />
+          <span className="text-sm text-muted-foreground">
+            © {new Date().getFullYear()} Digital Village. All rights reserved.
+          </span>
+        </div>
+        
+        <div className="flex gap-4 text-sm text-muted-foreground">
+          <Link href="/privacy">
+            <span className="hover:text-foreground transition-colors">Privacy</span>
+          </Link>
+          <Link href="/terms">
+            <span className="hover:text-foreground transition-colors">Terms</span>
+          </Link>
+          <Link href="/contact">
+            <span className="hover:text-foreground transition-colors">Contact</span>
+          </Link>
+        </div>
       </div>
     </footer>
   );

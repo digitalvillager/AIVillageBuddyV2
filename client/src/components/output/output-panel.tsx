@@ -1,15 +1,12 @@
-import React from "react";
-import { OutputTabs } from "./output-tabs";
-import { ImplementationPlan } from "./implementation-plan";
-import { CostEstimate } from "./cost-estimate";
-import { DesignConcept } from "./design-concept";
-import { BusinessCase } from "./business-case";
-import { AIConsiderations } from "./ai-considerations";
-import { OutputType, SessionState } from "@/types";
+import React from 'react';
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Share, Download } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
+import { OutputType, SessionState } from "@/types";
+import { useQuery } from '@tanstack/react-query';
+import { Loader2, RefreshCw } from 'lucide-react';
+import ErrorBoundary from '@/components/error-boundary';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface OutputPanelProps {
   sessionId: string;
@@ -28,160 +25,163 @@ export function OutputPanel({
   isGenerating,
   sessionState
 }: OutputPanelProps) {
-  const { toast } = useToast();
   
-  // Fetch outputs data
+  // Fetch output documents
   const { data: outputs, isLoading } = useQuery({
     queryKey: ['/api/outputs', sessionId],
     queryFn: async () => {
-      try {
-        const response = await fetch(`/api/outputs?sessionId=${sessionId}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch outputs');
-        }
-        return response.json();
-      } catch (error: unknown) {
-        console.error('Failed to fetch outputs:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load output documents.",
-          variant: "destructive"
-        });
-        throw error;
+      const response = await fetch(`/api/outputs?sessionId=${sessionId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch outputs');
       }
+      return response.json();
     },
-    enabled: !!sessionId
+    enabled: !!sessionId,
   });
-
-  // Get the active output document based on tab
-  const getActiveOutput = () => {
-    if (!outputs) return null;
-    return outputs.find((output: { type: string }) => output.type === activeTab);
-  };
   
-  const activeOutput = getActiveOutput();
+  // Find the active output document
+  const activeOutput = outputs?.find((output: any) => output.type === activeTab);
   
-  // Handle sharing outputs
-  const handleShare = () => {
-    toast({
-      title: "Coming Soon",
-      description: "Sharing functionality will be available in a future update.",
-    });
-  };
+  // Check if we have enough data to generate outputs
+  const canGenerateOutputs = sessionState?.businessProblem && (
+    sessionState?.industry || 
+    sessionState?.currentProcess || 
+    sessionState?.availableData
+  );
   
-  // Handle exporting all outputs
-  const handleExportAll = () => {
-    toast({
-      title: "Coming Soon",
-      description: "Export functionality will be available in a future update.",
-    });
-  };
-
   return (
-    <div className="w-full lg:w-1/2 bg-white rounded-lg shadow overflow-hidden flex flex-col">
-      {/* Output Header */}
-      <div className="bg-[#2A9D8F] text-white p-4">
-        <h2 className="font-semibold text-lg">Generated Outputs</h2>
-        <p className="text-sm text-neutral-100 mt-1">
-          Review and refine these documents based on our conversation
-        </p>
-      </div>
-
-      {/* Tab Navigation */}
-      <OutputTabs 
-        activeTab={activeTab} 
-        onTabChange={onTabChange} 
-      />
-
-      {/* Tab Content */}
-      <div 
-        className="flex-1 overflow-y-auto p-4 scrollbar-hide" 
-        style={{ maxHeight: "calc(100vh - 300px)" }}
-      >
-        {isLoading ? (
-          <div className="flex justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          </div>
-        ) : (
-          <>
-            {activeTab === "implementation" && (
-              <ImplementationPlan 
-                output={activeOutput} 
-                sessionState={sessionState}
-                isLoading={isLoading} 
-              />
-            )}
-            
-            {activeTab === "cost" && (
-              <CostEstimate 
-                output={activeOutput} 
-                sessionState={sessionState}
-                isLoading={isLoading} 
-              />
-            )}
-            
-            {activeTab === "design" && (
-              <DesignConcept 
-                output={activeOutput} 
-                sessionState={sessionState}
-                isLoading={isLoading} 
-              />
-            )}
-            
-            {activeTab === "business-case" && (
-              <BusinessCase 
-                output={activeOutput} 
-                sessionState={sessionState}
-                isLoading={isLoading} 
-              />
-            )}
-            
-            {activeTab === "ai-considerations" && (
-              <AIConsiderations 
-                output={activeOutput} 
-                sessionState={sessionState}
-                isLoading={isLoading} 
-              />
-            )}
-          </>
-        )}
-      </div>
-
-      {/* Actions Footer */}
-      <div className="border-t border-neutral-200 p-3 flex justify-between">
-        <div>
+    <Card className="w-full h-[calc(100vh-10rem)] flex flex-col">
+      <CardHeader className="py-3 px-4 border-b">
+        <div className="flex justify-between items-center">
+          <h3 className="font-semibold">Solution Explorer</h3>
           <Button
-            onClick={onRegenerateOutputs}
-            disabled={isGenerating || isLoading || !sessionState.isComplete}
             variant="outline"
-            className="bg-neutral-200 hover:bg-neutral-300 text-neutral-700 px-3 py-1.5 rounded text-sm flex items-center gap-1 transition"
+            size="sm"
+            onClick={onRegenerateOutputs}
+            disabled={isGenerating || !canGenerateOutputs}
           >
             {isGenerating ? (
-              <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
               <RefreshCw className="h-4 w-4 mr-2" />
             )}
-            Regenerate
+            {isGenerating ? 'Generating...' : 'Regenerate All'}
           </Button>
         </div>
-        <div className="flex gap-2">
-          <Button
-            onClick={handleShare}
-            variant="outline"
-            className="bg-neutral-200 hover:bg-neutral-300 text-neutral-700 px-3 py-1.5 rounded text-sm flex items-center gap-1 transition"
-          >
-            <Share className="h-4 w-4 mr-2" />
-            Share
-          </Button>
-          <Button
-            onClick={handleExportAll}
-            className="bg-primary hover:bg-primary-dark text-white px-3 py-1.5 rounded text-sm flex items-center gap-1 transition"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export All
-          </Button>
+      </CardHeader>
+      
+      <Tabs
+        defaultValue="implementation"
+        value={activeTab}
+        className="flex-1 flex flex-col"
+        onValueChange={(value) => onTabChange(value as OutputType)}
+      >
+        <TabsList className="px-4 py-2 bg-card border-b">
+          <TabsTrigger value="implementation">Implementation</TabsTrigger>
+          <TabsTrigger value="cost">Cost</TabsTrigger>
+          <TabsTrigger value="design">Design</TabsTrigger>
+          <TabsTrigger value="business">Business Case</TabsTrigger>
+          <TabsTrigger value="ai">AI Considerations</TabsTrigger>
+        </TabsList>
+        
+        <div className="flex-1 overflow-hidden">
+          <ErrorBoundary>
+            <TabsContent value="implementation" className="h-full m-0">
+              <OutputContent 
+                title="Implementation Plan" 
+                isLoading={isLoading || isGenerating}
+                content={activeOutput?.content}
+                isEmpty={!canGenerateOutputs}
+                emptyMessage="We need more information about your business problem to create an implementation plan."
+              />
+            </TabsContent>
+            
+            <TabsContent value="cost" className="h-full m-0">
+              <OutputContent 
+                title="Cost Estimate" 
+                isLoading={isLoading || isGenerating}
+                content={activeOutput?.content}
+                isEmpty={!canGenerateOutputs}
+                emptyMessage="We need more information about your business problem to create a cost estimate."
+              />
+            </TabsContent>
+            
+            <TabsContent value="design" className="h-full m-0">
+              <OutputContent 
+                title="Design Concept" 
+                isLoading={isLoading || isGenerating}
+                content={activeOutput?.content}
+                isEmpty={!canGenerateOutputs}
+                emptyMessage="We need more information about your business problem to create a design concept."
+              />
+            </TabsContent>
+            
+            <TabsContent value="business" className="h-full m-0">
+              <OutputContent 
+                title="Business Case" 
+                isLoading={isLoading || isGenerating}
+                content={activeOutput?.content}
+                isEmpty={!canGenerateOutputs}
+                emptyMessage="We need more information about your business problem to create a business case."
+              />
+            </TabsContent>
+            
+            <TabsContent value="ai" className="h-full m-0">
+              <OutputContent 
+                title="AI Considerations" 
+                isLoading={isLoading || isGenerating}
+                content={activeOutput?.content}
+                isEmpty={!canGenerateOutputs}
+                emptyMessage="We need more information about your business problem to provide AI considerations."
+              />
+            </TabsContent>
+          </ErrorBoundary>
+        </div>
+      </Tabs>
+    </Card>
+  );
+}
+
+interface OutputContentProps {
+  title: string;
+  isLoading: boolean;
+  content?: string;
+  isEmpty: boolean;
+  emptyMessage: string;
+}
+
+function OutputContent({ title, isLoading, content, isEmpty, emptyMessage }: OutputContentProps) {
+  if (isLoading) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center p-6">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+        <p className="text-muted-foreground">Generating {title}...</p>
+      </div>
+    );
+  }
+  
+  if (isEmpty || !content) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+        <p className="text-muted-foreground max-w-md">{emptyMessage}</p>
+        <p className="text-muted-foreground text-sm mt-2">
+          Continue the conversation to gather more information.
+        </p>
+      </div>
+    );
+  }
+  
+  return (
+    <ScrollArea className="h-full">
+      <div className="p-4">
+        <h2 className="text-lg font-bold mb-4">{title}</h2>
+        <div className="prose max-w-none">
+          {/* Convert content string with line breaks to paragraphs */}
+          {content.split("\n\n").map((para, idx) => (
+            <p key={idx}>{para}</p>
+          ))}
         </div>
       </div>
-    </div>
+    </ScrollArea>
   );
 }

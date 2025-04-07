@@ -1,345 +1,109 @@
-import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/use-auth";
-import { Link, useLocation } from "wouter";
-import { getQueryFn, apiRequest, queryClient } from "@/lib/queryClient";
-import { Project } from "@shared/schema";
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Plus, 
-  Folder, 
-  FolderPlus,
-  Trash2,
-  Loader2, 
-  MoreHorizontal 
-} from "lucide-react";
+import React, { useState } from 'react';
+import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogDescription,
-  DialogFooter,
-  DialogTrigger
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useToast } from "@/hooks/use-toast";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-
-// Validation schema for project creation
-const projectSchema = z.object({
-  name: z.string().min(1, "Project name is required"),
-  description: z.string().optional(),
-});
-
-type ProjectFormData = z.infer<typeof projectSchema>;
+import { useQuery } from '@tanstack/react-query';
+import { Plus, ArrowUpRight } from 'lucide-react';
+import { Link, useLocation } from 'wouter';
+import { ProjectsPanel } from '@/components/projects/projects-panel';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function ProjectsPage() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
   const { user } = useAuth();
-  const { toast } = useToast();
-  const [_, navigate] = useLocation();
+  const [, setLocation] = useLocation();
   
-  // Fetch projects
-  const { 
-    data: projects = [], 
-    isLoading: isLoadingProjects,
-    error: projectsError,
-    refetch: refetchProjects
-  } = useQuery<Project[]>({
-    queryKey: ["/api/projects"],
-    queryFn: getQueryFn({ on401: "throw" }),
-    enabled: !!user,
-  });
-  
-  // Create project mutation
-  const createProjectMutation = useMutation({
-    mutationFn: async (data: ProjectFormData) => {
-      const res = await apiRequest("POST", "/api/projects", data);
-      return await res.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Project created",
-        description: "Your new project has been created",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
-      setIsCreateDialogOpen(false);
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Failed to create project",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-  
-  // Delete project mutation
-  const deleteProjectMutation = useMutation({
-    mutationFn: async (projectId: number) => {
-      await apiRequest("DELETE", `/api/projects/${projectId}`);
-    },
-    onSuccess: () => {
-      toast({
-        title: "Project deleted",
-        description: "The project has been deleted",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
-      if (selectedProjectId === null) {
-        setSelectedProjectId(null);
+  // Fetch all user projects
+  const { data: projects, isLoading } = useQuery({
+    queryKey: ['/api/projects'],
+    queryFn: async () => {
+      const response = await fetch('/api/projects');
+      if (!response.ok) {
+        throw new Error('Failed to fetch projects');
       }
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Failed to delete project",
-        description: error.message,
-        variant: "destructive",
-      });
+      return response.json();
     },
   });
   
-  // Form for creating a project
-  const form = useForm<ProjectFormData>({
-    resolver: zodResolver(projectSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-    },
-  });
-  
-  const onSubmit = (data: ProjectFormData) => {
-    createProjectMutation.mutate(data);
-  };
-  
-  // Handle project selection
-  const handleProjectSelect = (projectId: number) => {
-    setSelectedProjectId(projectId);
-    // Navigate to the project detail view or load sessions for this project
-  };
-  
-  // Handle project deletion
-  const handleDeleteProject = (projectId: number) => {
-    if (confirm("Are you sure you want to delete this project? This action cannot be undone.")) {
-      deleteProjectMutation.mutate(projectId);
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+          <span className="ml-3 text-lg">Loading your projects...</span>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
   
   return (
-    <div className="flex h-[calc(100vh-4rem)]">
-      {/* Projects Sidebar */}
-      <div 
-        className={`bg-gray-50 border-r border-gray-200 flex flex-col transition-all duration-300 ${
-          sidebarOpen ? "w-64" : "w-16"
-        }`}
-      >
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          {sidebarOpen && <h2 className="font-semibold text-gray-700">My Projects</h2>}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="ml-auto"
-          >
-            {sidebarOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          </Button>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto">
-          {isLoadingProjects ? (
-            <div className="flex justify-center items-center h-32">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            </div>
-          ) : projectsError ? (
-            <div className="p-4 text-red-500 text-sm">
-              Error loading projects
-            </div>
-          ) : projects.length === 0 ? (
-            <div className="p-4 text-gray-500 text-sm text-center">
-              {sidebarOpen ? "No projects yet" : ""}
-            </div>
-          ) : (
-            <ul className="py-2">
-              {projects.map((project) => (
-                <li 
-                  key={project.id}
-                  className={`
-                    flex items-center py-2 px-4 cursor-pointer hover:bg-gray-100
-                    ${selectedProjectId === project.id ? "bg-gray-100" : ""}
-                  `}
-                  onClick={() => handleProjectSelect(project.id)}
-                >
-                  <Folder className={`h-5 w-5 ${sidebarOpen ? "mr-3" : ""} text-primary`} />
-                  {sidebarOpen && (
-                    <div className="flex items-center justify-between w-full">
-                      <span className="text-sm truncate">{project.name}</span>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleDeleteProject(project.id)}>
-                            <Trash2 className="h-4 w-4 mr-2 text-red-500" />
-                            <span>Delete</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-        
-        <div className="p-4 border-t border-gray-200">
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                size={sidebarOpen ? "default" : "icon"} 
-                className="w-full"
-              >
-                {sidebarOpen ? (
-                  <>
-                    <Plus className="h-4 w-4 mr-2" /> New Project
-                  </>
-                ) : (
-                  <FolderPlus className="h-4 w-4" />
-                )}
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Project</DialogTitle>
-                <DialogDescription>
-                  Add a new project to organize your AI conversations.
-                </DialogDescription>
-              </DialogHeader>
-              
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Title</FormLabel>
-                        <FormControl>
-                          <Input placeholder="My AI Project" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description (Optional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Brief description of your project" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <DialogFooter>
-                    <Button 
-                      type="submit" 
-                      disabled={createProjectMutation.isPending}
-                    >
-                      {createProjectMutation.isPending ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Creating...
-                        </>
-                      ) : (
-                        "Create Project"
-                      )}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
+    <div className="min-h-screen flex flex-col">
+      <Header />
       
-      {/* Main Content */}
-      <div className="flex-1 bg-white p-6 overflow-y-auto">
-        {selectedProjectId ? (
-          <div>
-            {/* Selected project display with sessions */}
-            {projects.find(project => project.id === selectedProjectId) ? (
-              <div>
-                <h1 className="text-2xl font-bold mb-6">
-                  {projects.find(project => project.id === selectedProjectId)?.name}
-                </h1>
-                <p className="text-gray-600 mb-8">
-                  {projects.find(project => project.id === selectedProjectId)?.description || 
-                   "No description provided."}
-                </p>
-                
-                {/* Project sessions will be displayed here */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {/* We'll implement session cards here later */}
-                  <div className="border border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    <Button variant="outline" className="mx-auto mb-2">
-                      <Plus className="h-4 w-4 mr-2" /> New Session
-                    </Button>
-                    <p className="text-sm text-gray-500">Start a new AI conversation</p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                  <h2 className="text-xl font-semibold mb-2">Project not found</h2>
-                  <p className="text-gray-600 mb-4">The selected project may have been deleted.</p>
-                  <Button onClick={() => setSelectedProjectId(null)}>
-                    Go Back
+      <main className="flex-1 container mx-auto p-4 md:py-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">My Projects</h1>
+          <Link to="/projects/new">
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              New Project
+            </Button>
+          </Link>
+        </div>
+        
+        {projects && projects.length > 0 ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {projects.map((project: any) => (
+              <Card 
+                key={project.id} 
+                className="cursor-pointer hover:border-primary/50 transition-colors"
+                onClick={() => setLocation(`/projects/${project.id}`)}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle>{project.name}</CardTitle>
+                  <CardDescription>
+                    Created on {new Date(project.created).toLocaleDateString()}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm line-clamp-3">
+                    {project.description || 'No description provided.'}
+                  </p>
+                </CardContent>
+                <CardFooter className="pt-2 flex justify-between">
+                  <span className="text-xs text-muted-foreground">
+                    {project.sessions ? `${project.sessions.length} sessions` : 'No sessions'}
+                  </span>
+                  <Button variant="ghost" size="sm">
+                    <ArrowUpRight className="h-4 w-4 mr-1" />
+                    Open
                   </Button>
-                </div>
-              </div>
-            )}
+                </CardFooter>
+              </Card>
+            ))}
           </div>
         ) : (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center max-w-md">
-              <h2 className="text-2xl font-bold mb-4">Welcome to Projects</h2>
-              <p className="text-gray-600 mb-6">
-                Create or select a project to start organizing your AI conversations.
-                Each project can contain multiple sessions for different AI solutions.
-              </p>
-              <Button 
-                onClick={() => setIsCreateDialogOpen(true)}
-                className="mx-auto"
-              >
-                <Plus className="h-4 w-4 mr-2" /> Create Your First Project
-              </Button>
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="bg-muted rounded-full p-4 mb-4">
+              <Plus className="h-8 w-8 text-muted-foreground" />
             </div>
+            <h2 className="text-xl font-semibold mb-2">No projects yet</h2>
+            <p className="text-muted-foreground mb-6 max-w-md text-center">
+              Create your first AI solution project to start exploring possibilities for your business.
+            </p>
+            <Link to="/projects/new">
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Create your first project
+              </Button>
+            </Link>
           </div>
         )}
-      </div>
+      </main>
+      
+      <Footer />
     </div>
   );
 }

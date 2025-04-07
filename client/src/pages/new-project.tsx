@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -58,6 +58,9 @@ export default function NewProject() {
       }
       
       const project = await response.json();
+      
+      // Invalidate the projects cache to refresh the list
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
       
       toast({
         title: "Project Created",

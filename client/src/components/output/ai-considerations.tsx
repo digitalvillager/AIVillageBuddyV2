@@ -11,7 +11,7 @@ interface AIConsiderationsProps {
 }
 
 export function AIConsiderations({ output, sessionState, isLoading }: AIConsiderationsProps) {
-  if (!output && !sessionState.isComplete) {
+  if (isLoading) {
     return (
       <div className="space-y-4">
         <div className="flex justify-between items-center">

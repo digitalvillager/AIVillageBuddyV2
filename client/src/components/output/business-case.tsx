@@ -11,7 +11,7 @@ interface BusinessCaseProps {
 }
 
 export function BusinessCase({ output, sessionState, isLoading }: BusinessCaseProps) {
-  if (!output && !sessionState.isComplete) {
+  if (isLoading) {
     return (
       <div className="space-y-4">
         <div className="flex justify-between items-center">

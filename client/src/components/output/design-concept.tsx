@@ -11,7 +11,7 @@ interface DesignConceptProps {
 }
 
 export function DesignConcept({ output, sessionState, isLoading }: DesignConceptProps) {
-  if (!output && !sessionState.isComplete) {
+  if (isLoading) {
     return (
       <div className="space-y-4">
         <div className="flex justify-between items-center">

@@ -12,7 +12,7 @@ interface ImplementationPlanProps {
 }
 
 export function ImplementationPlan({ output, sessionState, isLoading }: ImplementationPlanProps) {
-  if (!output && !sessionState.isComplete) {
+  if (isLoading) {
     return (
       <div className="space-y-4">
         <div className="flex justify-between items-center">

@@ -11,25 +11,6 @@ interface AIConsiderationsProps {
 }
 
 export function AIConsiderations({ output, sessionState, isLoading }: AIConsiderationsProps) {
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-xl font-semibold text-neutral-800">AI Solution - AI Considerations</h3>
-        </div>
-        
-        <div className="flex items-center justify-center h-64 border border-dashed border-neutral-300 rounded-lg bg-neutral-50">
-          <div className="text-center p-6">
-            <h4 className="text-lg font-medium text-neutral-600 mb-2">AI Considerations will appear here</h4>
-            <p className="text-neutral-500 max-w-md">
-              Continue the conversation with AI Buddy to gather more information about your AI solution needs. Once we have enough details, we'll generate comprehensive AI considerations.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
   if (isLoading || !output) {
     return (
       <div className="space-y-4">

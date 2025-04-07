@@ -87,7 +87,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] bg-gray-50">
+    <div className="flex min-h-[calc(100vh-4rem)] bg-gray-50" style={{ height: 'calc(100vh - 4rem)' }}>
       {/* Left column with forms */}
       <div className="w-full lg:w-1/2 p-6 flex items-center justify-center">
         <div className="w-full max-w-md">
@@ -265,8 +265,8 @@ export default function AuthPage() {
       </div>
 
       {/* Right column with hero/info */}
-      <div className="hidden lg:block lg:w-1/2 bg-primary text-white p-10 flex items-center justify-center overflow-y-auto">
-        <div className="w-full max-w-lg px-4 mx-auto text-center">
+      <div className="hidden lg:flex lg:w-1/2 bg-primary text-white items-center justify-center">
+        <div className="w-full max-w-lg px-6 mx-auto text-center">
           <h1 className="text-4xl font-bold mb-4">Digital Village AI Buddy</h1>
           <p className="text-lg mb-6">
             Iterate and refine your idea with your dedicated AI Buddy, clearly identifying the business value of your AI solution. Quickly and easily determine whether moving forward with a proof of concept is worthwhile.

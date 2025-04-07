@@ -50,8 +50,18 @@ export function OutputPanel({
   );
   
   // Safe way to handle content rendering with line breaks
-  const formatContent = (content?: string) => {
+  const formatContent = (content?: any) => {
     if (!content) return [];
+    if (typeof content !== 'string') {
+      // If content is not a string (could be an object or something else), 
+      // try to convert it to a string or return empty array
+      try {
+        content = String(content);
+      } catch (e) {
+        console.error("Error converting content to string:", e);
+        return [];
+      }
+    }
     return content.split('\n\n').filter(Boolean);
   };
   
@@ -158,8 +168,18 @@ interface OutputContentProps {
 
 function OutputContent({ title, isLoading, content, isEmpty, emptyMessage }: OutputContentProps) {
   // Helper function to format content
-  const formatContent = (text?: string): string[] => {
+  const formatContent = (text?: any): string[] => {
     if (!text) return [];
+    if (typeof text !== 'string') {
+      // If text is not a string (could be an object or something else), 
+      // try to convert it to a string or return empty array
+      try {
+        text = String(text);
+      } catch (e) {
+        console.error("Error converting content to string:", e);
+        return [];
+      }
+    }
     return text.split('\n\n').filter(Boolean);
   };
   

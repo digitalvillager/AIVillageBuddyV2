@@ -1,7 +1,7 @@
 import { OutputDocument as SchemaOutputDocument } from '@shared/schema';
 
 // Output type used in the tabs
-export type OutputType = 'implementation' | 'cost' | 'design' | 'business' | 'ai';
+export type OutputType = 'implementation' | 'cost' | 'design' | 'business-case' | 'ai-considerations';
 
 // Session state for tracking information gathered from conversations
 export interface SessionState {

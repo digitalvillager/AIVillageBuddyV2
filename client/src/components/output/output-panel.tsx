@@ -7,6 +7,11 @@ import { useQuery } from '@tanstack/react-query';
 import { Loader2, RefreshCw } from 'lucide-react';
 import ErrorBoundary from '@/components/error-boundary';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ImplementationPlan } from './implementation-plan';
+import { CostEstimate } from './cost-estimate';
+import { DesignConcept } from './design-concept';
+import { BusinessCase } from './business-case';
+import { AIConsiderations } from './ai-considerations';
 
 interface OutputPanelProps {
   sessionId: string;
@@ -96,60 +101,70 @@ export function OutputPanel({
           <TabsTrigger value="implementation">Implementation</TabsTrigger>
           <TabsTrigger value="cost">Cost</TabsTrigger>
           <TabsTrigger value="design">Design</TabsTrigger>
-          <TabsTrigger value="business">Business Case</TabsTrigger>
-          <TabsTrigger value="ai">AI Considerations</TabsTrigger>
+          <TabsTrigger value="business-case">Business Case</TabsTrigger>
+          <TabsTrigger value="ai-considerations">AI Considerations</TabsTrigger>
         </TabsList>
         
         <div className="flex-1 overflow-hidden">
           <ErrorBoundary>
             <TabsContent value="implementation" className="h-full m-0">
-              <OutputContent 
-                title="Implementation Plan" 
-                isLoading={isLoading || isGenerating}
-                content={activeOutput?.content}
-                isEmpty={!canGenerateOutputs}
-                emptyMessage="We need more information about your business problem to create an implementation plan."
-              />
+              <ScrollArea className="h-full">
+                <div className="p-4">
+                  <ImplementationPlan
+                    output={activeOutput}
+                    sessionState={sessionState}
+                    isLoading={isLoading || isGenerating}
+                  />
+                </div>
+              </ScrollArea>
             </TabsContent>
             
             <TabsContent value="cost" className="h-full m-0">
-              <OutputContent 
-                title="Cost Estimate" 
-                isLoading={isLoading || isGenerating}
-                content={activeOutput?.content}
-                isEmpty={!canGenerateOutputs}
-                emptyMessage="We need more information about your business problem to create a cost estimate."
-              />
+              <ScrollArea className="h-full">
+                <div className="p-4">
+                  <CostEstimate
+                    output={activeOutput}
+                    sessionState={sessionState}
+                    isLoading={isLoading || isGenerating}
+                  />
+                </div>
+              </ScrollArea>
             </TabsContent>
             
             <TabsContent value="design" className="h-full m-0">
-              <OutputContent 
-                title="Design Concept" 
-                isLoading={isLoading || isGenerating}
-                content={activeOutput?.content}
-                isEmpty={!canGenerateOutputs}
-                emptyMessage="We need more information about your business problem to create a design concept."
-              />
+              <ScrollArea className="h-full">
+                <div className="p-4">
+                  <DesignConcept
+                    output={activeOutput}
+                    sessionState={sessionState}
+                    isLoading={isLoading || isGenerating}
+                  />
+                </div>
+              </ScrollArea>
             </TabsContent>
             
-            <TabsContent value="business" className="h-full m-0">
-              <OutputContent 
-                title="Business Case" 
-                isLoading={isLoading || isGenerating}
-                content={activeOutput?.content}
-                isEmpty={!canGenerateOutputs}
-                emptyMessage="We need more information about your business problem to create a business case."
-              />
+            <TabsContent value="business-case" className="h-full m-0">
+              <ScrollArea className="h-full">
+                <div className="p-4">
+                  <BusinessCase
+                    output={activeOutput}
+                    sessionState={sessionState}
+                    isLoading={isLoading || isGenerating}
+                  />
+                </div>
+              </ScrollArea>
             </TabsContent>
             
-            <TabsContent value="ai" className="h-full m-0">
-              <OutputContent 
-                title="AI Considerations" 
-                isLoading={isLoading || isGenerating}
-                content={activeOutput?.content}
-                isEmpty={!canGenerateOutputs}
-                emptyMessage="We need more information about your business problem to provide AI considerations."
-              />
+            <TabsContent value="ai-considerations" className="h-full m-0">
+              <ScrollArea className="h-full">
+                <div className="p-4">
+                  <AIConsiderations
+                    output={activeOutput}
+                    sessionState={sessionState}
+                    isLoading={isLoading || isGenerating}
+                  />
+                </div>
+              </ScrollArea>
             </TabsContent>
           </ErrorBoundary>
         </div>

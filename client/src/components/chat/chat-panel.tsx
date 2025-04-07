@@ -74,8 +74,6 @@ export function ChatPanel({
   onClearChat,
   showSuggestions = false
 }: ChatPanelProps) {
-  // Debug log for showSuggestions prop
-  console.log('ChatPanel - showSuggestions value:', showSuggestions);
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -143,7 +141,6 @@ export function ChatPanel({
                 ))}
                 
                 {/* Show suggestion tags after messages when showSuggestions is true */}
-                {console.log('Attempting to render suggestions, showSuggestions =', showSuggestions)}
                 {showSuggestions ? (
                   <div className="pt-6 pb-2 border-t border-border mt-4">
                     <p className="text-sm font-medium mb-3 text-center">Choose a starting point or type your own question:</p>

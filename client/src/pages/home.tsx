@@ -53,6 +53,17 @@ export default function Home() {
               console.log("No messages found for saved session, starting fresh");
               localStorage.removeItem('sessionId');
               await createNewSession();
+            } else {
+              // Check if it's just the welcome message or if the user has already chatted
+              // If only 1 message (assistant welcome), show suggestions
+              setMessages(messagesData);
+              if (messagesData.length === 1 && messagesData[0]?.role === 'assistant') {
+                // If only welcome message exists, show suggestions
+                setShowSolutionSuggestions(true);
+              } else {
+                // For existing conversations with history, hide suggestions
+                setShowSolutionSuggestions(false);
+              }
             }
           } else {
             console.error("Error fetching messages for saved session, starting fresh");
@@ -78,7 +89,6 @@ export default function Home() {
       
       // Set showSolutionSuggestions to true for new sessions
       setShowSolutionSuggestions(true);
-      console.log('Setting showSolutionSuggestions to true for new session');
       
       // Initialize the session in the database
       try {
@@ -205,7 +215,6 @@ export default function Home() {
     onSuccess: (data) => {
       // The API now returns an object with message, session, and outputs
       if (data.message) {
-        console.log('AI response received:', data.message);
         setMessages((prev) => [...prev, data.message]);
       } else {
         console.error('Received malformed response:', data);
@@ -295,7 +304,6 @@ export default function Home() {
       setMessages([initialMessage]);
       // Show solution suggestions for new/cleared sessions
       setShowSolutionSuggestions(true);
-      console.log('Setting showSolutionSuggestions to true after clearing conversation');
       setSessionState({
         id: newSessionId,
         industry: "",
@@ -439,17 +447,6 @@ export default function Home() {
         <Header />
         
         <main className="flex-1 container mx-auto p-4 md:py-6 flex flex-col lg:flex-row gap-4 md:gap-6 relative">
-          {/* Debug Button */}
-          <Button
-            onClick={() => {
-              setShowSolutionSuggestions(true);
-              console.log('DEBUG: Manually toggled showSolutionSuggestions to true');
-            }}
-            className="absolute top-0 right-4 z-10 bg-yellow-500 hover:bg-yellow-600 text-white"
-            size="sm"
-          >
-            Show Suggestions (Debug)
-          </Button>
           
           {/* Projects Panel - Hidden by default, toggleable */}
           <div className={`transition-all duration-300 ease-in-out ${isProjectsPanelOpen ? 'lg:w-1/4' : 'lg:w-0 overflow-hidden'}`}>

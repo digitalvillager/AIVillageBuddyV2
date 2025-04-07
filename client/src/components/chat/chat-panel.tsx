@@ -38,7 +38,7 @@ const ChatMessage = ({ message, isLast }: ChatMessageProps) => {
       isLast ? '' : 'border-b border-border'
     )}>
       <Avatar className={cn(
-        "h-8 w-8 rounded-md",
+        "h-8 w-8 rounded-md flex items-center justify-center",
         isUser ? "bg-primary text-primary-foreground" : "bg-muted"
       )}>
         {isUser ? (

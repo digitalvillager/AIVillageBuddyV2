@@ -118,11 +118,11 @@ export function ChatPanel({
           <h3 className="font-semibold">Chat with your AI Buddy</h3>
           <Button 
             variant="ghost" 
-            size="icon" 
+            size="sm" 
             onClick={onClearChat}
-            title="Clear conversation"
+            className="text-sm"
           >
-            <Trash2 className="h-4 w-4" />
+            Clear Chat
           </Button>
         </div>
       </CardHeader>

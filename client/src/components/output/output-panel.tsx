@@ -71,8 +71,8 @@ export function OutputPanel({
   };
   
   return (
-    <Card className="w-full h-[calc(100vh-10rem)] flex flex-col">
-      <CardHeader className="py-3 px-4 border-b">
+    <Card className="w-full h-[calc(100vh-10rem)] flex flex-col overflow-hidden">
+      <CardHeader className="py-3 px-4 border-b flex-shrink-0">
         <div className="flex justify-between items-center">
           <h3 className="font-semibold">Solution Explorer</h3>
           <Button
@@ -94,10 +94,10 @@ export function OutputPanel({
       <Tabs
         defaultValue="implementation"
         value={activeTab}
-        className="flex-1 flex flex-col"
+        className="flex-1 flex flex-col overflow-hidden"
         onValueChange={(value) => onTabChange(value as OutputType)}
       >
-        <TabsList className="px-4 py-2 bg-card border-b">
+        <TabsList className="px-4 py-2 bg-card border-b flex-shrink-0">
           <TabsTrigger value="implementation">Implementation</TabsTrigger>
           <TabsTrigger value="cost">Cost</TabsTrigger>
           <TabsTrigger value="design">Design</TabsTrigger>
@@ -107,8 +107,8 @@ export function OutputPanel({
         
         <div className="flex-1 overflow-hidden">
           <ErrorBoundary>
-            <TabsContent value="implementation" className="h-full m-0 overflow-hidden">
-              <ScrollArea className="h-full">
+            <TabsContent value="implementation" className="h-full m-0 overflow-hidden flex flex-col">
+              <ScrollArea className="h-full flex-1">
                 <div className="p-4">
                   <ImplementationPlan
                     output={activeOutput}
@@ -119,8 +119,8 @@ export function OutputPanel({
               </ScrollArea>
             </TabsContent>
             
-            <TabsContent value="cost" className="h-full m-0 overflow-hidden">
-              <ScrollArea className="h-full">
+            <TabsContent value="cost" className="h-full m-0 overflow-hidden flex flex-col">
+              <ScrollArea className="h-full flex-1">
                 <div className="p-4">
                   <CostEstimate
                     output={activeOutput}
@@ -131,8 +131,8 @@ export function OutputPanel({
               </ScrollArea>
             </TabsContent>
             
-            <TabsContent value="design" className="h-full m-0 overflow-hidden">
-              <ScrollArea className="h-full">
+            <TabsContent value="design" className="h-full m-0 overflow-hidden flex flex-col">
+              <ScrollArea className="h-full flex-1">
                 <div className="p-4">
                   <DesignConcept
                     output={activeOutput}
@@ -143,8 +143,8 @@ export function OutputPanel({
               </ScrollArea>
             </TabsContent>
             
-            <TabsContent value="business" className="h-full m-0 overflow-hidden">
-              <ScrollArea className="h-full">
+            <TabsContent value="business" className="h-full m-0 overflow-hidden flex flex-col">
+              <ScrollArea className="h-full flex-1">
                 <div className="p-4">
                   <BusinessCase
                     output={activeOutput}
@@ -155,8 +155,8 @@ export function OutputPanel({
               </ScrollArea>
             </TabsContent>
             
-            <TabsContent value="ai" className="h-full m-0 overflow-hidden">
-              <ScrollArea className="h-full">
+            <TabsContent value="ai" className="h-full m-0 overflow-hidden flex flex-col">
+              <ScrollArea className="h-full flex-1">
                 <div className="p-4">
                   <AIConsiderations
                     output={activeOutput}
@@ -247,11 +247,13 @@ function OutputContent({ title, isLoading, content, isEmpty, emptyMessage }: Out
   };
   
   return (
-    <ScrollArea className="h-full">
-      <div className="p-4">
-        <h2 className="text-lg font-bold mb-4">{title}</h2>
-        {renderJsonContent()}
-      </div>
-    </ScrollArea>
+    <div className="h-full flex flex-col overflow-hidden">
+      <ScrollArea className="flex-1">
+        <div className="p-4">
+          <h2 className="text-lg font-bold mb-4">{title}</h2>
+          {renderJsonContent()}
+        </div>
+      </ScrollArea>
+    </div>
   );
 }

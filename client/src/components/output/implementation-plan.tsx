@@ -48,7 +48,35 @@ export function ImplementationPlan({ output, sessionState, isLoading }: Implemen
     );
   }
   
-  const implementationData = output.content;
+  // Debug the content we've received
+  console.log("Implementation tab received output:", output);
+  
+  // Safe default structure to prevent errors
+  let implementationData = {
+    title: "",
+    overview: "",
+    timeline: {
+      overall: "",
+      phases: []
+    },
+    roles: [],
+    deliverables: [],
+    dependencies: []
+  };
+  
+  if (output && output.content) {
+    if (typeof output.content === 'string') {
+      try {
+        // Try to parse if it's a JSON string
+        implementationData = JSON.parse(output.content);
+      } catch (e) {
+        console.error("Failed to parse implementation output content:", e);
+      }
+    } else if (typeof output.content === 'object') {
+      // Use the object directly
+      implementationData = output.content;
+    }
+  }
   
   return (
     <div className="space-y-4">

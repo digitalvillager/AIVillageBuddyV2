@@ -47,7 +47,36 @@ export function BusinessCase({ output, sessionState, isLoading }: BusinessCasePr
     );
   }
   
-  const businessData = output.content;
+  // Debug the content we've received
+  console.log("Business Case tab received output:", output);
+  
+  // Safe default structure to prevent errors
+  let businessData = {
+    title: "",
+    overview: "",
+    problemStatement: "",
+    objectives: [],
+    benefits: [],
+    roi: {
+      description: "",
+      metrics: []
+    },
+    risksAndMitigation: []
+  };
+  
+  if (output && output.content) {
+    if (typeof output.content === 'string') {
+      try {
+        // Try to parse if it's a JSON string
+        businessData = JSON.parse(output.content);
+      } catch (e) {
+        console.error("Failed to parse business case output content:", e);
+      }
+    } else if (typeof output.content === 'object') {
+      // Use the object directly
+      businessData = output.content;
+    }
+  }
   
   return (
     <div className="space-y-4">

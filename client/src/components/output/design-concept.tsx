@@ -47,7 +47,33 @@ export function DesignConcept({ output, sessionState, isLoading }: DesignConcept
     );
   }
   
-  const designData = output.content;
+  // Debug the content we've received
+  console.log("Design tab received output:", output);
+  
+  // Safe default structure to prevent errors
+  let designData = {
+    title: "",
+    overview: "",
+    interfaceComponents: [],
+    userFlows: [],
+    architecture: { description: "", components: [] },
+    integrations: [],
+    personas: []
+  };
+  
+  if (output && output.content) {
+    if (typeof output.content === 'string') {
+      try {
+        // Try to parse if it's a JSON string
+        designData = JSON.parse(output.content);
+      } catch (e) {
+        console.error("Failed to parse design output content:", e);
+      }
+    } else if (typeof output.content === 'object') {
+      // Use the object directly
+      designData = output.content;
+    }
+  }
   
   return (
     <div className="space-y-4">

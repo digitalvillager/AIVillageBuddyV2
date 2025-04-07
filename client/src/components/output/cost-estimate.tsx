@@ -50,8 +50,8 @@ export function CostEstimate({ output, sessionState, isLoading }: CostEstimatePr
   // Add debugging output on what we received from the parent
   console.log("Cost tab received output:", output);
   
-  // Add defensive content handling - output may be null even though tab is active
-  const costData = output?.content || {
+  // Add defensive content handling
+  let costData = {
     title: "",
     overview: "",
     personnel: [],
@@ -63,6 +63,20 @@ export function CostEstimate({ output, sessionState, isLoading }: CostEstimatePr
     totalImplementation: 0,
     considerations: []
   };
+  
+  if (output && output.content) {
+    if (typeof output.content === 'string') {
+      try {
+        // Try to parse if it's a JSON string
+        costData = JSON.parse(output.content);
+      } catch (e) {
+        console.error("Failed to parse cost output content:", e);
+      }
+    } else if (typeof output.content === 'object') {
+      // Use the object directly
+      costData = output.content;
+    }
+  }
   
   return (
     <div className="space-y-4">

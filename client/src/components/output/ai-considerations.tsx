@@ -47,7 +47,32 @@ export function AIConsiderations({ output, sessionState, isLoading }: AIConsider
     );
   }
   
-  const aiData = output.content;
+  // Debug the content we've received
+  console.log("AI Considerations tab received output:", output);
+  
+  // Safe default structure to prevent errors
+  let aiData = {
+    title: "",
+    overview: "",
+    ethicalConsiderations: [],
+    dataPrivacy: [],
+    implementation: [],
+    risks: []
+  };
+  
+  if (output && output.content) {
+    if (typeof output.content === 'string') {
+      try {
+        // Try to parse if it's a JSON string
+        aiData = JSON.parse(output.content);
+      } catch (e) {
+        console.error("Failed to parse AI considerations output content:", e);
+      }
+    } else if (typeof output.content === 'object') {
+      // Use the object directly
+      aiData = output.content;
+    }
+  }
   
   return (
     <div className="space-y-4">

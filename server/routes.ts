@@ -89,7 +89,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: 'Forbidden' });
       }
       
-      res.json(project);
+      // Get the sessions for this project
+      const projectSessions = await storage.getSessionsByProjectId(projectId);
+      
+      // Return project with sessions
+      res.json({
+        ...project,
+        sessions: projectSessions.map(s => s.id)
+      });
     } catch (error) {
       console.error('Error fetching project:', error);
       const errorMessage = error instanceof Error ? error.message : String(error);

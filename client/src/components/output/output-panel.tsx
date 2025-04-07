@@ -157,6 +157,12 @@ interface OutputContentProps {
 }
 
 function OutputContent({ title, isLoading, content, isEmpty, emptyMessage }: OutputContentProps) {
+  // Helper function to format content
+  const formatContent = (text?: string): string[] => {
+    if (!text) return [];
+    return text.split('\n\n').filter(Boolean);
+  };
+  
   if (isLoading) {
     return (
       <div className="h-full flex flex-col items-center justify-center p-6">
@@ -183,7 +189,7 @@ function OutputContent({ title, isLoading, content, isEmpty, emptyMessage }: Out
         <h2 className="text-lg font-bold mb-4">{title}</h2>
         <div className="prose max-w-none">
           {/* Convert content string with line breaks to paragraphs */}
-          {formatContent(content).map((para, idx) => (
+          {formatContent(content).map((para: string, idx: number) => (
             <p key={idx}>{para}</p>
           ))}
         </div>

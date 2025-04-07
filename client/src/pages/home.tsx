@@ -330,6 +330,73 @@ export default function Home() {
   const handleRegenerateOutputs = () => {
     generateOutputsMutation.mutate();
   };
+  
+  // Function to load a specific project's session
+  const loadProjectSession = async (projectId: string) => {
+    try {
+      setLoading(true);
+      
+      // Fetch the project details first
+      const projectResponse = await fetch(`/api/projects/${projectId}`);
+      if (!projectResponse.ok) {
+        throw new Error('Failed to fetch project');
+      }
+      
+      const project = await projectResponse.json();
+      
+      // Get the latest session ID for this project, or create a new one
+      let sessionToLoad = project.sessions && project.sessions.length > 0 
+        ? project.sessions[project.sessions.length - 1]
+        : null;
+      
+      if (!sessionToLoad) {
+        // Create a new session for this project if none exists
+        const newSessionResponse = await apiRequest('POST', '/api/sessions', { 
+          projectId: Number(projectId)
+        });
+        
+        if (!newSessionResponse.ok) {
+          throw new Error('Failed to create new session for project');
+        }
+        
+        const newSession = await newSessionResponse.json();
+        sessionToLoad = newSession.id;
+        
+        // Add initial greeting message
+        await apiRequest('POST', '/api/messages', {
+          sessionId: sessionToLoad,
+          role: 'assistant',
+          content: `Welcome to your project "${project.name}". How would you like to continue working on this AI solution?`
+        });
+      }
+      
+      // Update local storage with the new session ID
+      localStorage.setItem('sessionId', sessionToLoad);
+      
+      // Update state with the new session ID
+      setSessionId(sessionToLoad);
+      
+      // Invalidate queries to reload data
+      queryClient.invalidateQueries({ queryKey: ['/api/messages'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/outputs'] });
+      
+      toast({
+        title: "Project Loaded",
+        description: `Switched to project: ${project.name}`,
+      });
+      
+    } catch (error) {
+      console.error('Failed to load project session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load the selected project. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Add a loading state while resources are being initialized
   if (!sessionId || isLoadingMessages || isLoadingSession) {
@@ -358,8 +425,8 @@ export default function Home() {
                 <ProjectsPanel 
                   currentProjectId={sessionId}
                   onSelectProject={(projectId) => {
-                    // Logic to switch to the selected project would go here
-                    console.log(`Selected project: ${projectId}`);
+                    // Load the selected project's session and associated data
+                    loadProjectSession(projectId);
                   }}
                 />
               )}

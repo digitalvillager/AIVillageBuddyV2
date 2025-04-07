@@ -47,7 +47,22 @@ export function CostEstimate({ output, sessionState, isLoading }: CostEstimatePr
     );
   }
   
-  const costData = output.content;
+  // Add debugging output on what we received from the parent
+  console.log("Cost tab received output:", output);
+  
+  // Add defensive content handling - output may be null even though tab is active
+  const costData = output?.content || {
+    title: "",
+    overview: "",
+    personnel: [],
+    hardware: [],
+    maintenance: [],
+    subtotals: { personnel: 0, hardware: 0, maintenance: 0 },
+    contingencyPercentage: 15,
+    contingency: 0,
+    totalImplementation: 0,
+    considerations: []
+  };
   
   return (
     <div className="space-y-4">

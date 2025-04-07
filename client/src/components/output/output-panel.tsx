@@ -123,7 +123,7 @@ export function OutputPanel({
               <ScrollArea className="h-full flex-1">
                 <div className="p-4">
                   <ImplementationPlan
-                    output={activeOutput}
+                    output={outputs?.find((o: any) => o.type === "implementation")}
                     sessionState={sessionState}
                     isLoading={isLoading || isGenerating}
                   />
@@ -135,7 +135,7 @@ export function OutputPanel({
               <ScrollArea className="h-full flex-1">
                 <div className="p-4">
                   <CostEstimate
-                    output={activeOutput}
+                    output={outputs?.find((o: any) => o.type === "cost")}
                     sessionState={sessionState}
                     isLoading={isLoading || isGenerating}
                   />
@@ -147,7 +147,7 @@ export function OutputPanel({
               <ScrollArea className="h-full flex-1">
                 <div className="p-4">
                   <DesignConcept
-                    output={activeOutput}
+                    output={outputs?.find((o: any) => o.type === "design")}
                     sessionState={sessionState}
                     isLoading={isLoading || isGenerating}
                   />
@@ -159,7 +159,7 @@ export function OutputPanel({
               <ScrollArea className="h-full flex-1">
                 <div className="p-4">
                   <BusinessCase
-                    output={activeOutput}
+                    output={outputs?.find((o: any) => o.type === "business")}
                     sessionState={sessionState}
                     isLoading={isLoading || isGenerating}
                   />
@@ -171,7 +171,7 @@ export function OutputPanel({
               <ScrollArea className="h-full flex-1">
                 <div className="p-4">
                   <AIConsiderations
-                    output={activeOutput}
+                    output={outputs?.find((o: any) => o.type === "ai")}
                     sessionState={sessionState}
                     isLoading={isLoading || isGenerating}
                   />

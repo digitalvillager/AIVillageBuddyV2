@@ -265,8 +265,8 @@ export default function AuthPage() {
       </div>
 
       {/* Right column with hero/info */}
-      <div className="hidden lg:block lg:w-1/2 bg-primary text-white p-10 flex flex-col justify-center overflow-y-auto">
-        <div className="max-w-lg mx-auto">
+      <div className="hidden lg:block lg:w-1/2 bg-primary text-white p-10 flex flex-col items-center justify-center overflow-y-auto">
+        <div className="max-w-lg">
           <h1 className="text-4xl font-bold mb-4">Digital Village AI Buddy</h1>
           <p className="text-lg mb-6">
             Iterate and refine your idea with your dedicated AI Buddy, clearly identifying the business value of your AI solution. Quickly and easily determine whether moving forward with a proof of concept is worthwhile.

@@ -170,11 +170,18 @@ function OutputContent({ title, isLoading, content, isEmpty, emptyMessage }: Out
   // Helper function to format content
   const formatContent = (text?: any): string[] => {
     if (!text) return [];
+    
+    console.log(`OutputContent - Raw content type: ${typeof content}`, content);
+    
     if (typeof text !== 'string') {
       // If text is not a string (could be an object or something else), 
       // try to convert it to a string or return empty array
       try {
-        text = String(text);
+        if (typeof text === 'object') {
+          text = JSON.stringify(text, null, 2);
+        } else {
+          text = String(text);
+        }
       } catch (e) {
         console.error("Error converting content to string:", e);
         return [];
@@ -203,16 +210,32 @@ function OutputContent({ title, isLoading, content, isEmpty, emptyMessage }: Out
     );
   }
   
+  // Render JSON content more appropriately
+  const renderJsonContent = () => {
+    // If it's already a structured JSON object
+    if (typeof content === 'object' && content !== null) {
+      return (
+        <pre className="bg-gray-100 p-4 rounded overflow-auto">
+          {JSON.stringify(content, null, 2)}
+        </pre>
+      );
+    }
+    
+    // Otherwise render paragraphs as normal
+    return (
+      <div className="prose max-w-none">
+        {formatContent(content).map((para: string, idx: number) => (
+          <p key={idx}>{para}</p>
+        ))}
+      </div>
+    );
+  };
+  
   return (
     <ScrollArea className="h-full">
       <div className="p-4">
         <h2 className="text-lg font-bold mb-4">{title}</h2>
-        <div className="prose max-w-none">
-          {/* Convert content string with line breaks to paragraphs */}
-          {formatContent(content).map((para: string, idx: number) => (
-            <p key={idx}>{para}</p>
-          ))}
-        </div>
+        {renderJsonContent()}
       </div>
     </ScrollArea>
   );

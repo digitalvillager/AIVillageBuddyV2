@@ -9,6 +9,8 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { nanoid } from 'nanoid';
 import ErrorBoundary from '@/components/error-boundary';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function Home() {
   const { toast } = useToast();

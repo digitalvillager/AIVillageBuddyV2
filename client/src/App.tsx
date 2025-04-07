@@ -6,6 +6,7 @@ import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
 import ProjectsPage from "@/pages/projects-page";
+import NewProject from "@/pages/new-project";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import ErrorBoundary from "@/components/error-boundary";
@@ -34,6 +35,7 @@ function Router() {
     <Switch>
       <ProtectedRoute path="/" component={Home} />
       <ProtectedRoute path="/projects" component={ProjectsPage} />
+      <ProtectedRoute path="/projects/new" component={NewProject} />
       <Route path="/auth" component={AuthPage} />
       {/* Fallback to 404 */}
       <Route component={NotFound} />

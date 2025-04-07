@@ -266,15 +266,15 @@ export default function AuthPage() {
 
       {/* Right column with hero/info */}
       <div className="hidden lg:flex lg:w-1/2 bg-primary text-white items-center justify-center">
-        <div className="w-full max-w-lg px-6 mx-auto text-center">
-          <h1 className="text-4xl font-bold mb-4">Digital Village AI Buddy</h1>
+        <div className="w-full max-w-lg px-8 mx-auto text-left">
+          <h1 className="text-4xl font-bold mb-4 text-left">Digital Village AI Buddy</h1>
           <p className="text-lg mb-6">
             Iterate and refine your idea with your dedicated AI Buddy, clearly identifying the business value of your AI solution. Quickly and easily determine whether moving forward with a proof of concept is worthwhile.
           </p>
           
           <h2 className="text-2xl font-semibold mb-4">What AI Buddy Provides:</h2>
           
-          <ul className="space-y-3 list-disc mx-auto mb-6 text-left pl-8 pr-8" style={{ display: 'table', margin: '0 auto' }}>
+          <ul className="space-y-3 list-disc mb-6 text-left pl-5">
             <li className="text-base">
               <span className="font-medium">Business Case, Cost Estimate and Expected ROI</span>
             </li>
@@ -299,7 +299,7 @@ export default function AuthPage() {
           </ul>
           
           <div className="bg-white/10 p-4 rounded-lg">
-            <p className="italic">
+            <p className="italic text-left">
               Sign in to start building your AI solution with guidance every step of the way.
             </p>
           </div>

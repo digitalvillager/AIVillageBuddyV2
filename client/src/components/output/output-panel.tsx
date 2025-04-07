@@ -47,10 +47,17 @@ export function OutputPanel({
   // Find the active output document
   const activeOutput = outputs?.find((output: any) => output.type === activeTab);
   
-  // Log for debugging
+  // Enhanced logging for debugging
   console.log("Active tab:", activeTab);
   console.log("Available outputs:", outputs);
-  console.log("Selected output:", activeOutput);
+  console.log("Selected output for tab:", activeTab, "=", activeOutput);
+  
+  // Log individual outputs by type to check what's available
+  if (outputs) {
+    outputs.forEach((out: any) => {
+      console.log(`Output type: ${out.type}, ID: ${out.id}, Has content:`, !!out.content);
+    });
+  }
   
   // Check if we have enough data to generate outputs
   const canGenerateOutputs = sessionState?.businessProblem && (

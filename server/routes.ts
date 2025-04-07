@@ -1,25 +1,3 @@
-
-// Add this endpoint to your routes
-app.post('/api/admin/ai-config', async (req, res) => {
-  try {
-    const config = req.body;
-    // Save to database
-    await db.update('ai_configuration').set(config);
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to save configuration' });
-  }
-});
-
-app.get('/api/admin/ai-config', async (req, res) => {
-  try {
-    const config = await db.query.ai_configuration.findFirst();
-    res.json(config);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch configuration' });
-  }
-});
-
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
@@ -39,7 +17,7 @@ const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
   if (req.isAuthenticated()) {
     return next();
   }
-  res.status(401).json({ error: "Unauthorized" });
+  res.status(401).json({ message: "Not authenticated" });
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -531,12 +509,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }),
         storage.createOrUpdateOutput({
           sessionId,
-          type: 'business-case',
+          type: 'business',
           content: businessCase
         }),
         storage.createOrUpdateOutput({
           sessionId,
-          type: 'ai-considerations',
+          type: 'ai',
           content: aiConsiderations
         })
       ]);
@@ -572,38 +550,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // OpenAI API
-  app.post('/api/openai/chat', async (req, res) => {
+  app.get('/api/outputs/:type', async (req, res) => {
     try {
-      const { messages } = req.body;
+      const { type } = req.params;
+      const sessionId = req.query.sessionId as string;
       
-      if (!messages || !Array.isArray(messages)) {
-        return res.status(400).json({ message: 'Messages array is required' });
+      if (!sessionId) {
+        return res.status(400).json({ message: 'Session ID is required' });
       }
       
-      // Call OpenAI API
-      const openaiResponse = await fetchOpenAIResponse(messages);
+      const output = await storage.getOutputBySessionIdAndType(sessionId, type);
       
-      res.json({ message: openaiResponse });
+      if (!output) {
+        return res.status(404).json({ message: 'Output not found' });
+      }
+      
+      res.json(output);
     } catch (error) {
-      console.error('Error calling OpenAI API:', error);
+      console.error('Error fetching output:', error);
       const errorMessage = error instanceof Error ? error.message : String(error);
       res.status(500).json({ 
-        message: 'Failed to call OpenAI API',
+        message: 'Failed to fetch output',
         error: errorMessage 
       });
     }
   });
-
+  
+  // User routes
+  app.get('/api/user', async (req, res) => {
+    if (req.isAuthenticated()) {
+      return res.json(req.user);
+    }
+    res.status(401).json({ message: 'Not authenticated' });
+  });
+  
+  // Create HTTP server
   const httpServer = createServer(app);
+  
   return httpServer;
-}
-
-// Mock function for OpenAI response - this should be replaced with actual OpenAI API call
-async function fetchOpenAIResponse(messages: any[]) {
-  // In a real implementation, this would call the OpenAI API
-  return {
-    role: 'assistant',
-    content: 'This is a simulated response. In a real implementation, this would be a response from the OpenAI API.'
-  };
 }

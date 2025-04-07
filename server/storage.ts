@@ -369,8 +369,45 @@ export class DatabaseStorage implements IStorage {
   
   async deleteProject(id: number): Promise<boolean> {
     if (!db) throw new Error("Database is not initialized");
-    const result = await db.delete(projects).where(eq(projects.id, id));
-    return result.rowCount !== null && result.rowCount > 0;
+    
+    try {
+      // Start a transaction
+      return await db.transaction(async (tx) => {
+        // 1. Get all sessions associated with this project
+        const projectSessions = await tx
+          .select()
+          .from(sessions)
+          .where(eq(sessions.projectId, id));
+        
+        // 2. For each session, delete related output documents 
+        for (const session of projectSessions) {
+          // Delete output documents for this session
+          await tx
+            .delete(outputDocuments)
+            .where(eq(outputDocuments.sessionId, session.id));
+            
+          // Delete messages for this session
+          await tx
+            .delete(messages)
+            .where(eq(messages.sessionId, session.id));
+        }
+        
+        // 3. Delete all sessions associated with this project
+        await tx
+          .delete(sessions)
+          .where(eq(sessions.projectId, id));
+        
+        // 4. Finally, delete the project
+        const result = await tx
+          .delete(projects)
+          .where(eq(projects.id, id));
+        
+        return result.rowCount !== null && result.rowCount > 0;
+      });
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      throw error;
+    }
   }
   
   // Message methods

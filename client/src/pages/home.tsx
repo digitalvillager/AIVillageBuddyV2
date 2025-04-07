@@ -78,6 +78,7 @@ export default function Home() {
       
       // Set showSolutionSuggestions to true for new sessions
       setShowSolutionSuggestions(true);
+      console.log('Setting showSolutionSuggestions to true for new session');
       
       // Initialize the session in the database
       try {
@@ -294,6 +295,7 @@ export default function Home() {
       setMessages([initialMessage]);
       // Show solution suggestions for new/cleared sessions
       setShowSolutionSuggestions(true);
+      console.log('Setting showSolutionSuggestions to true after clearing conversation');
       setSessionState({
         id: newSessionId,
         industry: "",
@@ -437,6 +439,18 @@ export default function Home() {
         <Header />
         
         <main className="flex-1 container mx-auto p-4 md:py-6 flex flex-col lg:flex-row gap-4 md:gap-6 relative">
+          {/* Debug Button */}
+          <Button
+            onClick={() => {
+              setShowSolutionSuggestions(true);
+              console.log('DEBUG: Manually toggled showSolutionSuggestions to true');
+            }}
+            className="absolute top-0 right-4 z-10 bg-yellow-500 hover:bg-yellow-600 text-white"
+            size="sm"
+          >
+            Show Suggestions (Debug)
+          </Button>
+          
           {/* Projects Panel - Hidden by default, toggleable */}
           <div className={`transition-all duration-300 ease-in-out ${isProjectsPanelOpen ? 'lg:w-1/4' : 'lg:w-0 overflow-hidden'}`}>
             <ErrorBoundary>

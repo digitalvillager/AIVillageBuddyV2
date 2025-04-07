@@ -11,8 +11,8 @@ export function OutputTabs({ activeTab, onTabChange }: OutputTabsProps) {
     { id: "implementation", label: "Implementation Plan" },
     { id: "cost", label: "Cost Estimate" },
     { id: "design", label: "Design Concept" },
-    { id: "business-case", label: "Business Case" },
-    { id: "ai-considerations", label: "AI Considerations" },
+    { id: "business", label: "Business Case" },
+    { id: "ai", label: "AI Considerations" },
   ];
 
   return (

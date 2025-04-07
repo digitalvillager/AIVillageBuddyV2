@@ -101,13 +101,13 @@ export function OutputPanel({
           <TabsTrigger value="implementation">Implementation</TabsTrigger>
           <TabsTrigger value="cost">Cost</TabsTrigger>
           <TabsTrigger value="design">Design</TabsTrigger>
-          <TabsTrigger value="business-case">Business Case</TabsTrigger>
-          <TabsTrigger value="ai-considerations">AI Considerations</TabsTrigger>
+          <TabsTrigger value="business">Business Case</TabsTrigger>
+          <TabsTrigger value="ai">AI Considerations</TabsTrigger>
         </TabsList>
         
         <div className="flex-1 overflow-hidden">
           <ErrorBoundary>
-            <TabsContent value="implementation" className="h-full m-0">
+            <TabsContent value="implementation" className="h-full m-0 overflow-hidden">
               <ScrollArea className="h-full">
                 <div className="p-4">
                   <ImplementationPlan
@@ -119,7 +119,7 @@ export function OutputPanel({
               </ScrollArea>
             </TabsContent>
             
-            <TabsContent value="cost" className="h-full m-0">
+            <TabsContent value="cost" className="h-full m-0 overflow-hidden">
               <ScrollArea className="h-full">
                 <div className="p-4">
                   <CostEstimate
@@ -131,7 +131,7 @@ export function OutputPanel({
               </ScrollArea>
             </TabsContent>
             
-            <TabsContent value="design" className="h-full m-0">
+            <TabsContent value="design" className="h-full m-0 overflow-hidden">
               <ScrollArea className="h-full">
                 <div className="p-4">
                   <DesignConcept
@@ -143,7 +143,7 @@ export function OutputPanel({
               </ScrollArea>
             </TabsContent>
             
-            <TabsContent value="business-case" className="h-full m-0">
+            <TabsContent value="business" className="h-full m-0 overflow-hidden">
               <ScrollArea className="h-full">
                 <div className="p-4">
                   <BusinessCase
@@ -155,7 +155,7 @@ export function OutputPanel({
               </ScrollArea>
             </TabsContent>
             
-            <TabsContent value="ai-considerations" className="h-full m-0">
+            <TabsContent value="ai" className="h-full m-0 overflow-hidden">
               <ScrollArea className="h-full">
                 <div className="p-4">
                   <AIConsiderations

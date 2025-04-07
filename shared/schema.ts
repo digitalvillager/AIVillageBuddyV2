@@ -1,3 +1,18 @@
+
+export interface AIConfiguration {
+  systemPrompt: string;
+  temperature: number;
+  rules: string[];
+  industries: string[];
+  recommendationGuidelines: string[];
+}
+
+export interface AIConfigurationDocument extends AIConfiguration {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 import { pgTable, text, serial, integer, jsonb, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";

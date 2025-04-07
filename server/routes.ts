@@ -1,3 +1,25 @@
+
+// Add this endpoint to your routes
+app.post('/api/admin/ai-config', async (req, res) => {
+  try {
+    const config = req.body;
+    // Save to database
+    await db.update('ai_configuration').set(config);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to save configuration' });
+  }
+});
+
+app.get('/api/admin/ai-config', async (req, res) => {
+  try {
+    const config = await db.query.ai_configuration.findFirst();
+    res.json(config);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch configuration' });
+  }
+});
+
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";

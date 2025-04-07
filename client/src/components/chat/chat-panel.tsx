@@ -64,13 +64,15 @@ interface ChatPanelProps {
   isLoading: boolean;
   onSendMessage: (content: string) => void;
   onClearChat: () => void;
+  showSuggestions?: boolean;
 }
 
 export function ChatPanel({ 
   messages, 
   isLoading, 
   onSendMessage, 
-  onClearChat 
+  onClearChat,
+  showSuggestions = false
 }: ChatPanelProps) {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -129,13 +131,32 @@ export function ChatPanel({
         <ScrollArea className="h-full">
           <div className="p-4 space-y-1">
             {messages.length > 0 ? (
-              messages.map((message, i) => (
-                <ChatMessage 
-                  key={i} 
-                  message={message} 
-                  isLast={i === messages.length - 1} 
-                />
-              ))
+              <>
+                {messages.map((message, i) => (
+                  <ChatMessage 
+                    key={i} 
+                    message={message} 
+                    isLast={i === messages.length - 1 && !showSuggestions} 
+                  />
+                ))}
+                
+                {/* Show suggestion tags after messages when showSuggestions is true */}
+                {showSuggestions && (
+                  <div className="pt-6 pb-2 border-t border-border mt-4">
+                    <p className="text-sm font-medium mb-3">What would you like to focus on?</p>
+                    <div className="flex flex-col gap-2 max-w-xs">
+                      <SuggestionTag 
+                        text="Automate my business processes" 
+                        onClick={handleSuggestionClick} 
+                      />
+                      <SuggestionTag 
+                        text="Leverage my business data" 
+                        onClick={handleSuggestionClick} 
+                      />
+                    </div>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="flex flex-col items-center justify-center h-full py-12">
                 <div className="mb-6">

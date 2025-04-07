@@ -20,6 +20,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<OutputType>("implementation");
   const [isProjectsPanelOpen, setIsProjectsPanelOpen] = useState(false);
+  const [showSolutionSuggestions, setShowSolutionSuggestions] = useState(false);
   const [sessionState, setSessionState] = useState<SessionState>({
     id: "",
     industry: "",
@@ -323,6 +324,11 @@ export default function Home() {
   const handleSendMessage = (content: string) => {
     if (!content.trim()) return;
     
+    // Hide solution suggestions after a message is sent
+    if (showSolutionSuggestions) {
+      setShowSolutionSuggestions(false);
+    }
+    
     sendMessageMutation.mutate({ content });
   };
 
@@ -332,6 +338,8 @@ export default function Home() {
   };
   
   // Function to load a specific project's session
+
+
   const loadProjectSession = async (projectId: string) => {
     try {
       setLoading(true);
@@ -349,7 +357,10 @@ export default function Home() {
         ? project.sessions[project.sessions.length - 1]
         : null;
       
+      let isNewSession = false;
+      
       if (!sessionToLoad) {
+        isNewSession = true;
         // Create a new session for this project if none exists
         const newSessionResponse = await apiRequest('POST', '/api/sessions', { 
           projectId: Number(projectId)
@@ -366,7 +377,7 @@ export default function Home() {
         await apiRequest('POST', '/api/messages', {
           sessionId: sessionToLoad,
           role: 'assistant',
-          content: `Welcome to your project "${project.name}". How would you like to continue working on this AI solution?`
+          content: `Welcome to your project "${project.name}". What would you like to focus on for your AI solution?`
         });
       }
       
@@ -375,6 +386,9 @@ export default function Home() {
       
       // Update state with the new session ID
       setSessionId(sessionToLoad);
+      
+      // Show solution type suggestions for new sessions
+      setShowSolutionSuggestions(isNewSession);
       
       // Invalidate queries to reload data
       queryClient.invalidateQueries({ queryKey: ['/api/messages'] });
@@ -452,6 +466,7 @@ export default function Home() {
                   isLoading={loading || isLoadingMessages}
                   onSendMessage={handleSendMessage}
                   onClearChat={clearConversation}
+                  showSuggestions={showSolutionSuggestions}
                 />
               </div>
             </ErrorBoundary>

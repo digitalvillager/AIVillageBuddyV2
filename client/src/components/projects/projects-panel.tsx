@@ -1,9 +1,11 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 interface ProjectsPanelProps {
   currentProjectId?: string;
@@ -11,6 +13,9 @@ interface ProjectsPanelProps {
 }
 
 export function ProjectsPanel({ currentProjectId, onSelectProject }: ProjectsPanelProps) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
   // Fetch projects for the current user
   const { data: projects, isLoading } = useQuery({
     queryKey: ['/api/projects'],
@@ -22,6 +27,39 @@ export function ProjectsPanel({ currentProjectId, onSelectProject }: ProjectsPan
       return response.json();
     },
   });
+  
+  // Delete project mutation
+  const deleteProjectMutation = useMutation({
+    mutationFn: async (projectId: number) => {
+      const response = await apiRequest('DELETE', `/api/projects/${projectId}`);
+      return response;
+    },
+    onSuccess: () => {
+      // Invalidate and refetch projects
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      
+      toast({
+        title: "Project deleted",
+        description: "The project has been successfully deleted.",
+      });
+    },
+    onError: (error) => {
+      console.error('Failed to delete project:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete the project. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+  
+  // Handle delete project
+  const handleDeleteProject = (e: React.MouseEvent, projectId: number) => {
+    e.stopPropagation(); // Prevent card click event
+    if (confirm("Are you sure you want to delete this project? This action cannot be undone.")) {
+      deleteProjectMutation.mutate(projectId);
+    }
+  };
 
   return (
     <div className="w-full bg-white rounded-lg shadow">
@@ -50,13 +88,24 @@ export function ProjectsPanel({ currentProjectId, onSelectProject }: ProjectsPan
               projects.map((project: any) => (
                 <Card 
                   key={project.id} 
-                  className={`cursor-pointer hover:border-primary/50 transition-colors ${
+                  className={`cursor-pointer hover:border-primary/50 transition-colors relative ${
                     currentProjectId === String(project.id) ? 'border-primary' : ''
                   }`}
                   onClick={() => onSelectProject && onSelectProject(String(project.id))}
                 >
+                  {/* Delete Button - Top Right */}
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="absolute top-2 right-2 h-7 w-7 opacity-70 hover:opacity-100 hover:bg-red-50 hover:text-red-500 z-10"
+                    onClick={(e) => handleDeleteProject(e, project.id)}
+                    title="Delete project"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+
                   <CardHeader className="py-3">
-                    <CardTitle className="text-md">{project.name}</CardTitle>
+                    <CardTitle className="text-md pr-8">{project.name}</CardTitle>
                     <CardDescription className="text-xs">
                       Created on {new Date(project.created).toLocaleDateString()}
                     </CardDescription>

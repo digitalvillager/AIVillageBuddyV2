@@ -3,15 +3,19 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useQuery } from '@tanstack/react-query';
-import { Plus, ArrowUpRight } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Plus, ArrowUpRight, Trash2 } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { ProjectsPanel } from '@/components/projects/projects-panel';
 import { useAuth } from '@/hooks/use-auth';
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function ProjectsPage() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // Fetch all user projects
   const { data: projects, isLoading } = useQuery({
@@ -24,6 +28,39 @@ export default function ProjectsPage() {
       return response.json();
     },
   });
+  
+  // Delete project mutation
+  const deleteProjectMutation = useMutation({
+    mutationFn: async (projectId: number) => {
+      const response = await apiRequest('DELETE', `/api/projects/${projectId}`);
+      return response;
+    },
+    onSuccess: () => {
+      // Invalidate and refetch projects
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      
+      toast({
+        title: "Project deleted",
+        description: "The project has been successfully deleted.",
+      });
+    },
+    onError: (error) => {
+      console.error('Failed to delete project:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete the project. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+  
+  // Handle delete project
+  const handleDeleteProject = (e: React.MouseEvent, projectId: number) => {
+    e.stopPropagation(); // Prevent card click event
+    if (confirm("Are you sure you want to delete this project? This action cannot be undone.")) {
+      deleteProjectMutation.mutate(projectId);
+    }
+  };
   
   if (isLoading) {
     return (
@@ -58,11 +95,22 @@ export default function ProjectsPage() {
             {projects.map((project: any) => (
               <Card 
                 key={project.id} 
-                className="cursor-pointer hover:border-primary/50 transition-colors"
+                className="cursor-pointer hover:border-primary/50 transition-colors relative"
                 onClick={() => setLocation(`/projects/${project.id}`)}
               >
+                {/* Delete Button - Top Right */}
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="absolute top-2 right-2 h-7 w-7 opacity-70 hover:opacity-100 hover:bg-red-50 hover:text-red-500 z-10"
+                  onClick={(e) => handleDeleteProject(e, project.id)}
+                  title="Delete project"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+                
                 <CardHeader className="pb-2">
-                  <CardTitle>{project.name}</CardTitle>
+                  <CardTitle className="pr-8">{project.name}</CardTitle>
                   <CardDescription>
                     Created on {new Date(project.created).toLocaleDateString()}
                   </CardDescription>

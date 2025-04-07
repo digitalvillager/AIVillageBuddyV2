@@ -17,13 +17,13 @@ export function Footer() {
         </div>
         
         <div className="flex gap-4 text-sm text-muted-foreground">
-          <Link href="/privacy">
+          <Link to="/privacy">
             <span className="hover:text-foreground transition-colors">Privacy</span>
           </Link>
-          <Link href="/terms">
+          <Link to="/terms">
             <span className="hover:text-foreground transition-colors">Terms</span>
           </Link>
-          <Link href="/contact">
+          <Link to="/contact">
             <span className="hover:text-foreground transition-colors">Contact</span>
           </Link>
         </div>

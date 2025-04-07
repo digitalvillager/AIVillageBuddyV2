@@ -25,9 +25,9 @@ export function ProjectsPanel({ currentProjectId, onSelectProject }: ProjectsPan
 
   return (
     <div className="w-full bg-white rounded-lg shadow">
-      <div className="bg-primary text-white p-4">
+      <div className="bg-background border-b p-4">
         <h2 className="font-semibold text-lg">My Projects</h2>
-        <p className="text-sm text-neutral-100 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Create and manage your AI solutions
         </p>
       </div>
@@ -51,9 +51,9 @@ export function ProjectsPanel({ currentProjectId, onSelectProject }: ProjectsPan
                 <Card 
                   key={project.id} 
                   className={`cursor-pointer hover:border-primary/50 transition-colors ${
-                    currentProjectId === project.id ? 'border-primary' : ''
+                    currentProjectId === String(project.id) ? 'border-primary' : ''
                   }`}
-                  onClick={() => onSelectProject && onSelectProject(project.id)}
+                  onClick={() => onSelectProject && onSelectProject(String(project.id))}
                 >
                   <CardHeader className="py-3">
                     <CardTitle className="text-md">{project.name}</CardTitle>

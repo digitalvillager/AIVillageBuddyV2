@@ -58,7 +58,7 @@ export function Header() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/account">
+                  <Link to="/account">
                     <User className="mr-2 h-4 w-4" />
                     <span>Account</span>
                   </Link>

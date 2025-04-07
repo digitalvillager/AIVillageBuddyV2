@@ -49,6 +49,12 @@ export function OutputPanel({
     sessionState?.availableData
   );
   
+  // Safe way to handle content rendering with line breaks
+  const formatContent = (content?: string) => {
+    if (!content) return [];
+    return content.split('\n\n').filter(Boolean);
+  };
+  
   return (
     <Card className="w-full h-[calc(100vh-10rem)] flex flex-col">
       <CardHeader className="py-3 px-4 border-b">
@@ -177,7 +183,7 @@ function OutputContent({ title, isLoading, content, isEmpty, emptyMessage }: Out
         <h2 className="text-lg font-bold mb-4">{title}</h2>
         <div className="prose max-w-none">
           {/* Convert content string with line breaks to paragraphs */}
-          {content.split("\n\n").map((para, idx) => (
+          {formatContent(content).map((para, idx) => (
             <p key={idx}>{para}</p>
           ))}
         </div>

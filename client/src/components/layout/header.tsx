@@ -9,6 +9,16 @@ import { LogOut, User } from 'lucide-react';
 export function Header() {
   const { user, logoutMutation } = useAuth();
   
+  // Get the first letter of the username for the avatar fallback
+  const getUserInitial = () => {
+    if (!user || !user.username) return '';
+    return user.username.charAt(0).toUpperCase();
+  };
+  
+  const handleLogout = () => {
+    logoutMutation.mutate();
+  };
+  
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b">
       <div className="flex h-14 items-center justify-between px-4">
@@ -27,9 +37,38 @@ export function Header() {
         
         <div className="flex items-center justify-end">
           {user ? (
-            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
-              <span className="text-sm font-medium">J</span>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">
+                  <Avatar className="h-8 w-8 cursor-pointer bg-blue-100">
+                    <AvatarFallback className="text-blue-500">
+                      {getUserInitial()}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 mt-1">
+                <div className="px-2 py-1.5">
+                  <p className="text-sm font-medium">
+                    {user.name || user.username}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {user.email}
+                  </p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/account" className="w-full cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    Account
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Link to="/auth">
               <Button variant="default" size="sm">

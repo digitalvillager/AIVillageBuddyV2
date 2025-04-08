@@ -36,6 +36,8 @@ function Router() {
       <ProtectedRoute path="/" component={Home} />
       <ProtectedRoute path="/projects" component={ProjectsPage} />
       <ProtectedRoute path="/projects/new" component={NewProject} />
+      <ProtectedRoute path="/admin" component={() => <Navigate to="/admin/ai-config" />} />
+      <ProtectedRoute path="/admin/ai-config" component={AIConfig} />
       <Route path="/auth" component={AuthPage} />
       {/* Fallback to 404 */}
       <Route component={NotFound} />

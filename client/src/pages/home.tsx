@@ -445,11 +445,11 @@ export default function Home() {
       <div className="min-h-screen flex flex-col bg-gray-50">
         <Header />
         
-        <main className="flex-1 p-4 flex flex-col relative">
+        <main className="flex-1 flex flex-col relative">
           {/* Projects panel (collapsible sidebar) */}
           <div className={`
-            fixed z-20 top-16 bottom-0 left-0 bg-white shadow-md transition-all duration-200
-            ${isProjectsPanelOpen ? 'w-72 translate-x-0' : 'w-0 -translate-x-full'}
+            fixed z-20 top-16 bottom-0 left-0 bg-white shadow-md transition-all duration-300
+            ${isProjectsPanelOpen ? 'w-72' : 'w-0'}
           `}>
             <div className="h-full overflow-hidden">
               <ErrorBoundary>
@@ -461,52 +461,59 @@ export default function Home() {
             </div>
           </div>
           
-          {/* Projects toggle button */}
-          <Button 
-            variant="outline" 
-            size="icon" 
+          {/* Main content area - shifts right when sidebar is open */}
+          <div 
             className={`
-              fixed z-20 h-8 w-8 bg-white shadow-sm rounded-full
-              transition-all duration-200
-              ${isProjectsPanelOpen ? 'left-72' : 'left-4'}
-              top-24
+              transition-all duration-300 w-full h-full p-4
+              ${isProjectsPanelOpen ? 'ml-72' : 'ml-0'}
             `}
-            onClick={() => setIsProjectsPanelOpen(!isProjectsPanelOpen)}
           >
-            {isProjectsPanelOpen ? (
-              <ChevronLeft className="h-4 w-4" />
-            ) : (
-              <ChevronRight className="h-4 w-4" />
-            )}
-          </Button>
-          
-          {/* Main 2-panel layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 w-full h-[calc(100vh-8rem)] gap-4">
-            {/* Chat Panel */}
-            <div className="bg-white rounded-md border shadow-sm overflow-hidden h-full">
-              <ErrorBoundary>
-                <ChatPanel 
-                  messages={messages}
-                  isLoading={loading || isLoadingMessages}
-                  onSendMessage={handleSendMessage}
-                  onClearChat={clearConversation}
-                  showSuggestions={showSolutionSuggestions}
-                />
-              </ErrorBoundary>
-            </div>
+            {/* Projects toggle button */}
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className={`
+                absolute h-8 w-8 bg-white shadow-sm rounded-full z-20
+                transition-all duration-300
+                left-4 top-4
+              `}
+              onClick={() => setIsProjectsPanelOpen(!isProjectsPanelOpen)}
+            >
+              {isProjectsPanelOpen ? (
+                <ChevronLeft className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </Button>
             
-            {/* Output Panel */}
-            <div className="bg-white rounded-md border shadow-sm overflow-hidden h-full">
-              <ErrorBoundary>
-                <OutputPanel 
-                  sessionId={sessionId}
-                  activeTab={activeTab}
-                  onTabChange={setActiveTab}
-                  onRegenerateOutputs={handleRegenerateOutputs}
-                  isGenerating={generateOutputsMutation.isPending}
-                  sessionState={sessionState}
-                />
-              </ErrorBoundary>
+            {/* Main 2-panel layout */}
+            <div className="grid grid-cols-1 md:grid-cols-2 w-full h-[calc(100vh-8rem)] gap-4 pt-12">
+              {/* Chat Panel */}
+              <div className="bg-white rounded-md border shadow-sm overflow-hidden h-full">
+                <ErrorBoundary>
+                  <ChatPanel 
+                    messages={messages}
+                    isLoading={loading || isLoadingMessages}
+                    onSendMessage={handleSendMessage}
+                    onClearChat={clearConversation}
+                    showSuggestions={showSolutionSuggestions}
+                  />
+                </ErrorBoundary>
+              </div>
+              
+              {/* Output Panel */}
+              <div className="bg-white rounded-md border shadow-sm overflow-hidden h-full">
+                <ErrorBoundary>
+                  <OutputPanel 
+                    sessionId={sessionId}
+                    activeTab={activeTab}
+                    onTabChange={setActiveTab}
+                    onRegenerateOutputs={handleRegenerateOutputs}
+                    isGenerating={generateOutputsMutation.isPending}
+                    sessionState={sessionState}
+                  />
+                </ErrorBoundary>
+              </div>
             </div>
           </div>
         </main>

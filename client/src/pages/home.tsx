@@ -430,7 +430,7 @@ export default function Home() {
   // Add a loading state while resources are being initialized
   if (!sessionId || isLoadingMessages || isLoadingSession) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="min-h-screen flex flex-col bg-bg-light-blue">
         <Header />
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
@@ -442,7 +442,7 @@ export default function Home() {
 
   try {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="min-h-screen flex flex-col bg-bg-light-blue">
         <Header />
         
         <main className="flex-1 flex flex-col relative">
@@ -528,7 +528,7 @@ export default function Home() {
   } catch (error) {
     console.error("Error rendering Home component:", error);
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="min-h-screen flex flex-col bg-bg-light-blue">
         <Header />
         <div className="flex-1 flex items-center justify-center p-6">
           <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">

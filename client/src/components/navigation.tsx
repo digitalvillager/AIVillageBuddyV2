@@ -11,51 +11,41 @@ export function Navigation() {
   if (!user) return null;
 
   return (
-    <nav className="bg-background border-b">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          <div className="flex items-center">
-            <Link href="/">
-              <a className="flex items-center text-xl font-bold text-primary">
-                <span>Digital Village AI Buddy</span>
-              </a>
-            </Link>
-          </div>
-
-          <div className="hidden md:block">
-            <div className="flex items-center space-x-4">
-              <NavLink href="/" icon={<Home className="h-4 w-4 mr-2" />} active={location === "/"}>
-                Home
-              </NavLink>
-              <NavLink
-                href="/projects"
-                icon={<FolderOpen className="h-4 w-4 mr-2" />}
-                active={location.startsWith("/projects")}
-              >
-                Projects
-              </NavLink>
-              <NavLink
-                href="/admin/ai-config"
-                icon={<Settings className="h-4 w-4 mr-2" />}
-                active={location.startsWith("/admin")}
-              >
-                Admin
-              </NavLink>
-              <button
-                onClick={() => logoutMutation.mutate()}
-                className={cn(
-                  "flex items-center px-3 py-2 rounded-md text-sm font-medium",
-                  "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                )}
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
+    <div className="flex flex-col h-screen w-64 bg-background border-r">
+      <div className="p-6">
+        <Link href="/">
+          <a className="flex items-center text-xl font-bold text-primary">
+            <span>Digital Village AI Buddy</span>
+          </a>
+        </Link>
       </div>
-    </nav>
+
+      <div className="flex flex-col space-y-2 px-4 py-2">
+        <NavLink href="/" icon={<Home className="h-4 w-4 mr-2" />} active={location === "/"}>
+          Home
+        </NavLink>
+        <NavLink
+          href="/projects"
+          icon={<FolderOpen className="h-4 w-4 mr-2" />}
+          active={location.startsWith("/projects")}
+        >
+          Projects
+        </NavLink>
+      </div>
+
+      <div className="mt-auto p-4">
+        <button
+          onClick={() => logoutMutation.mutate()}
+          className={cn(
+            "flex items-center px-3 py-2 rounded-md text-sm font-medium w-full",
+            "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+          )}
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Logout
+        </button>
+      </div>
+    </div>
   );
 }
 

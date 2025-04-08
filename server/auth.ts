@@ -104,12 +104,14 @@ export function setupAuth(app: Express) {
         });
       }
 
-      // Create user
+      // Create user with admin flag for specific email domains
+      const isAdmin = email.endsWith('@digitalvillage.io');
       const user = await storage.createUser({
         username,
         email,
         password: await hashPassword(password),
         name: name || null,
+        isAdmin,
       });
 
       // Log user in

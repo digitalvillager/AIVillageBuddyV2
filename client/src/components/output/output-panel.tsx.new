@@ -1,17 +1,18 @@
-import React, { useEffect } from 'react';
-import { Card, CardHeader } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Progress } from "@/components/ui/progress";
 import { OutputType, SessionState } from "@/types";
-import { useQuery } from '@tanstack/react-query';
-import { Loader2, RefreshCw } from 'lucide-react';
-import ErrorBoundary from '@/components/error-boundary';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { ImplementationPlan } from './implementation-plan';
-import { CostEstimate } from './cost-estimate';
-import { DesignConcept } from './design-concept';
-import { BusinessCase } from './business-case';
-import { AIConsiderations } from './ai-considerations';
+import { useQuery } from "@tanstack/react-query";
+import { Loader2, RefreshCw } from "lucide-react";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { ImplementationPlan } from "./implementation-plan";
+import { CostEstimate } from "./cost-estimate";
+import { DesignConcept } from "./design-concept";
+import { BusinessCase } from "./business-case";
+import { AIConsiderations } from "./ai-considerations";
 
 interface OutputPanelProps {
   sessionId: string;
@@ -30,24 +31,24 @@ export function OutputPanel({
   isGenerating,
   sessionState
 }: OutputPanelProps) {
-  
-  // Fetch output documents
+  // Fetch output documents for this session
   const { data: outputs, isLoading } = useQuery({
-    queryKey: ['/api/outputs', sessionId],
-    queryFn: async () => {
-      const response = await fetch(`/api/outputs?sessionId=${sessionId}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch outputs');
-      }
-      return response.json();
+    queryKey: ['/api/outputs'],
+    meta: {
+      endpoint: '/api/outputs',
+      args: { sessionId: sessionId }
     },
     enabled: !!sessionId,
   });
+  
+  // Find the active output document
+  const activeOutput = outputs?.find((output: any) => output.type === activeTab);
   
   // Enhanced logging for debugging
   useEffect(() => {
     console.log("Current activeTab value:", activeTab);
     console.log("Available outputs:", outputs);
+    console.log("Selected output for tab:", activeTab, "=", activeOutput);
     
     // Log individual outputs by type to check what's available
     if (outputs) {
@@ -70,7 +71,7 @@ export function OutputPanel({
         }
       });
     }
-  }, [activeTab, outputs]);
+  }, [activeTab, outputs, activeOutput]);
   
   // Check if we have enough data to generate outputs
   const canGenerateOutputs = sessionState?.businessProblem && (
@@ -78,6 +79,38 @@ export function OutputPanel({
     sessionState?.currentProcess || 
     sessionState?.availableData
   );
+  
+  // Prepare cost tab output with debugging
+  const costOutput = outputs?.find((o: any) => o.type === "cost");
+  useEffect(() => {
+    if (activeTab === "cost") {
+      console.log("Cost tab active, output:", costOutput);
+    }
+  }, [activeTab, costOutput]);
+  
+  // Prepare design tab output with debugging
+  const designOutput = outputs?.find((o: any) => o.type === "design");
+  useEffect(() => {
+    if (activeTab === "design") {
+      console.log("Design tab active, output:", designOutput);
+    }
+  }, [activeTab, designOutput]);
+  
+  // Prepare business tab output with debugging
+  const businessOutput = outputs?.find((o: any) => o.type === "business");
+  useEffect(() => {
+    if (activeTab === "business") {
+      console.log("Business tab active, output:", businessOutput);
+    }
+  }, [activeTab, businessOutput]);
+  
+  // Prepare AI tab output with debugging
+  const aiOutput = outputs?.find((o: any) => o.type === "ai");
+  useEffect(() => {
+    if (activeTab === "ai") {
+      console.log("AI tab active, output:", aiOutput);
+    }
+  }, [activeTab, aiOutput]);
   
   return (
     <Card className="w-full h-[calc(100vh-10rem)] flex flex-col overflow-hidden">
@@ -135,7 +168,7 @@ export function OutputPanel({
               <ScrollArea className="h-full flex-1">
                 <div className="p-4">
                   <CostEstimate
-                    output={outputs?.find((o: any) => o.type === "cost")}
+                    output={costOutput}
                     sessionState={sessionState}
                     isLoading={isLoading || isGenerating}
                   />
@@ -147,7 +180,7 @@ export function OutputPanel({
               <ScrollArea className="h-full flex-1">
                 <div className="p-4">
                   <DesignConcept
-                    output={outputs?.find((o: any) => o.type === "design")}
+                    output={designOutput}
                     sessionState={sessionState}
                     isLoading={isLoading || isGenerating}
                   />
@@ -159,7 +192,7 @@ export function OutputPanel({
               <ScrollArea className="h-full flex-1">
                 <div className="p-4">
                   <BusinessCase
-                    output={outputs?.find((o: any) => o.type === "business")}
+                    output={businessOutput}
                     sessionState={sessionState}
                     isLoading={isLoading || isGenerating}
                   />
@@ -171,7 +204,7 @@ export function OutputPanel({
               <ScrollArea className="h-full flex-1">
                 <div className="p-4">
                   <AIConsiderations
-                    output={outputs?.find((o: any) => o.type === "ai")}
+                    output={aiOutput}
                     sessionState={sessionState}
                     isLoading={isLoading || isGenerating}
                   />
@@ -193,7 +226,7 @@ interface OutputContentProps {
   emptyMessage: string;
 }
 
-export function OutputContent({ title, isLoading, content, isEmpty, emptyMessage }: OutputContentProps) {
+function OutputContent({ title, isLoading, content, isEmpty, emptyMessage }: OutputContentProps) {
   // Helper function to format content
   const formatContent = (text?: any): string[] => {
     if (!text) return [];

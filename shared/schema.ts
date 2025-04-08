@@ -44,7 +44,7 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   name: text("name"),
   created: timestamp("created").defaultNow().notNull(),
-  isAdmin: boolean("isAdmin").default(false), // Added isAdmin field
+  isAdmin: boolean("isadmin").default(false), // Using lowercase 'isadmin' to match DB schema
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({

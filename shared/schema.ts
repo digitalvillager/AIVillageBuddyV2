@@ -5,6 +5,26 @@ export interface AIConfiguration {
   rules: string[];
   industries: string[];
   recommendationGuidelines: string[];
+  teamRoles: Array<{
+    title: string;
+    rate: number;
+    description: string;
+  }>;
+  companyContext: {
+    pricing: {
+      hourlyRates: Record<string, number>;
+      standardPackages: Array<{
+        name: string;
+        description: string;
+        price: number;
+      }>;
+    };
+    recommendations: Array<{
+      category: string;
+      guidelines: string[];
+    }>;
+    bestPractices: string[];
+  };
 }
 
 export interface AIConfigurationDocument extends AIConfiguration {

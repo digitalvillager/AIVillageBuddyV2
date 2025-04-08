@@ -464,8 +464,8 @@ export default function Home() {
           {/* Main content area - shifts right when sidebar is open */}
           <div 
             className={`
-              transition-all duration-300 w-full h-full p-4
-              ${isProjectsPanelOpen ? 'ml-72' : 'ml-0'}
+              transition-all duration-300 h-full p-4
+              ${isProjectsPanelOpen ? 'ml-72 w-[calc(100%-18rem)]' : 'ml-0 w-full'}
             `}
           >
             {/* Projects toggle button */}
@@ -487,7 +487,13 @@ export default function Home() {
             </Button>
             
             {/* Main 2-panel layout */}
-            <div className="grid grid-cols-1 md:grid-cols-2 w-full h-[calc(100vh-8rem)] gap-4 pt-12">
+            <div className={`
+              grid w-full h-[calc(100vh-8rem)] gap-4 pt-12
+              ${isProjectsPanelOpen 
+                ? 'grid-cols-1 lg:grid-cols-2' 
+                : 'grid-cols-1 md:grid-cols-2'
+              }
+            `}>
               {/* Chat Panel */}
               <div className="bg-white rounded-md border shadow-sm overflow-hidden h-full">
                 <ErrorBoundary>

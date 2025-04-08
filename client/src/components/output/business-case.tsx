@@ -62,17 +62,32 @@ export function BusinessCase({ output, sessionState, isLoading }: BusinessCasePr
   };
   
   if (output && output.content) {
+    console.log("Business component received content type:", typeof output.content);
+    console.log("Business content sample:", output.content);
+    
     if (typeof output.content === 'string') {
       try {
         // Try to parse if it's a JSON string
-        businessData = JSON.parse(output.content);
+        const parsedContent = JSON.parse(output.content);
+        console.log("Successfully parsed business JSON string:", typeof parsedContent);
+        businessData = parsedContent;
       } catch (e) {
         console.error("Failed to parse business case output content:", e);
+        // If parsing fails, use the string directly for display
+        businessData = {
+          ...businessData,
+          executiveSummary: output.content,
+          title: "Business Case"
+        };
       }
     } else if (typeof output.content === 'object') {
       // Use the object directly
+      console.log("Using object directly for business data");
       businessData = output.content;
     }
+    
+    // Debug the structure we ended up with
+    console.log("Final businessData structure has keys:", Object.keys(businessData));
   }
   
   return (

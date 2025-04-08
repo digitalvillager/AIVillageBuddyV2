@@ -56,6 +56,21 @@ export function OutputPanel({
   if (outputs) {
     outputs.forEach((out: any) => {
       console.log(`Output type: ${out.type}, ID: ${out.id}, Has content:`, !!out.content);
+      // More detailed output content inspection
+      if (out.content) {
+        try {
+          console.log(`Content type for ${out.type}:`, typeof out.content);
+          if (typeof out.content === 'string' && out.content.trim().startsWith('{')) {
+            console.log(`${out.type} content seems to be a JSON string. Trying to parse...`);
+            const parsed = JSON.parse(out.content);
+            console.log(`${out.type} parsed structure:`, Object.keys(parsed));
+          } else if (typeof out.content === 'object') {
+            console.log(`${out.type} structure:`, Object.keys(out.content));
+          }
+        } catch (e) {
+          console.error(`Error inspecting ${out.type} content:`, e);
+        }
+      }
     });
   }
   

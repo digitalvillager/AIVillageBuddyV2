@@ -46,17 +46,32 @@ export function ImplementationPlan({ output, sessionState, isLoading }: Implemen
   };
   
   if (output && output.content) {
+    console.log("Implementation component received content type:", typeof output.content);
+    console.log("Implementation content sample:", output.content);
+    
     if (typeof output.content === 'string') {
       try {
         // Try to parse if it's a JSON string
-        implementationData = JSON.parse(output.content);
+        const parsedContent = JSON.parse(output.content);
+        console.log("Successfully parsed implementation JSON string:", typeof parsedContent);
+        implementationData = parsedContent;
       } catch (e) {
         console.error("Failed to parse implementation output content:", e);
+        // If parsing fails, use the string directly for display
+        implementationData = {
+          ...implementationData,
+          overview: output.content,
+          title: "Implementation Plan"
+        };
       }
     } else if (typeof output.content === 'object') {
       // Use the object directly
+      console.log("Using object directly for implementation data");
       implementationData = output.content;
     }
+    
+    // Debug the structure we ended up with
+    console.log("Final implementationData structure has keys:", Object.keys(implementationData));
   }
   
   return (

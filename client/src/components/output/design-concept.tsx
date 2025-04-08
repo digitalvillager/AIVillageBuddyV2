@@ -43,17 +43,32 @@ export function DesignConcept({ output, sessionState, isLoading }: DesignConcept
   };
   
   if (output && output.content) {
+    console.log("Design component received content type:", typeof output.content);
+    console.log("Design content sample:", output.content);
+    
     if (typeof output.content === 'string') {
       try {
         // Try to parse if it's a JSON string
-        designData = JSON.parse(output.content);
+        const parsedContent = JSON.parse(output.content);
+        console.log("Successfully parsed design JSON string:", typeof parsedContent);
+        designData = parsedContent;
       } catch (e) {
         console.error("Failed to parse design output content:", e);
+        // If parsing fails, use the string directly for display
+        designData = {
+          ...designData,
+          overview: output.content,
+          title: "Design Concept"
+        };
       }
     } else if (typeof output.content === 'object') {
       // Use the object directly
+      console.log("Using object directly for design data");
       designData = output.content;
     }
+    
+    // Debug the structure we ended up with
+    console.log("Final designData structure has keys:", Object.keys(designData));
   }
   
   return (

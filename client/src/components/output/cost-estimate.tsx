@@ -46,17 +46,32 @@ export function CostEstimate({ output, sessionState, isLoading }: CostEstimatePr
   };
   
   if (output && output.content) {
+    console.log("Cost component received content type:", typeof output.content);
+    console.log("Cost content sample:", output.content);
+    
     if (typeof output.content === 'string') {
       try {
         // Try to parse if it's a JSON string
-        costData = JSON.parse(output.content);
+        const parsedContent = JSON.parse(output.content);
+        console.log("Successfully parsed cost JSON string:", typeof parsedContent);
+        costData = parsedContent;
       } catch (e) {
         console.error("Failed to parse cost output content:", e);
+        // If parsing fails, use the string directly for display
+        costData = {
+          ...costData,
+          overview: output.content,
+          title: "Cost Estimate"
+        };
       }
     } else if (typeof output.content === 'object') {
       // Use the object directly
+      console.log("Using object directly for cost data");
       costData = output.content;
     }
+    
+    // Debug the structure we ended up with
+    console.log("Final costData structure has keys:", Object.keys(costData));
   }
   
   return (

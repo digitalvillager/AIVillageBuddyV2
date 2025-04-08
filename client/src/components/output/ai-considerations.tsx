@@ -46,17 +46,32 @@ export function AIConsiderations({ output, sessionState, isLoading }: AIConsider
   };
   
   if (output && output.content) {
+    console.log("AI component received content type:", typeof output.content);
+    console.log("AI content sample:", output.content);
+    
     if (typeof output.content === 'string') {
       try {
         // Try to parse if it's a JSON string
-        aiData = JSON.parse(output.content);
+        const parsedContent = JSON.parse(output.content);
+        console.log("Successfully parsed AI JSON string:", typeof parsedContent);
+        aiData = parsedContent;
       } catch (e) {
         console.error("Failed to parse AI considerations output content:", e);
+        // If parsing fails, use the string directly for display
+        aiData = {
+          ...aiData,
+          overview: output.content,
+          title: "AI Considerations"
+        };
       }
     } else if (typeof output.content === 'object') {
       // Use the object directly
+      console.log("Using object directly for AI data");
       aiData = output.content;
     }
+    
+    // Debug the structure we ended up with
+    console.log("Final aiData structure has keys:", Object.keys(aiData));
   }
   
   return (

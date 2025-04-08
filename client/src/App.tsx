@@ -9,9 +9,9 @@ import ProjectsPage from "@/pages/projects-page";
 import NewProject from "@/pages/new-project";
 import AIConfigPage from "@/pages/admin/ai-config";
 import { AuthProvider } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import ErrorBoundary from "@/components/error-boundary";
-import { Navigation } from "@/components/navigation";
 import { useEffect } from "react";
 
 // Add global error handler for uncaught runtime errors
@@ -34,10 +34,41 @@ function ErrorHandler() {
 
 
 function MainLayout({ children }: { children: React.ReactNode }) {
+  const { logoutMutation } = useAuth();
+
   return (
-    <div className="flex h-screen">
-      <Navigation />
-      <main className="flex-1 overflow-y-auto p-6">
+    <div className="min-h-screen flex flex-col">
+      <div className="flex items-center px-4 py-2 border-b bg-background">
+        <div className="flex items-center space-x-2">
+          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
+            <span className="text-sm font-medium">DV</span>
+          </div>
+          <span className="font-medium text-lg">Digital Village AI Buddy</span>
+        </div>
+        <div className="ml-auto flex items-center space-x-4">
+          {/* Links */}
+          <Link href="/">
+            <a className="text-sm text-muted-foreground hover:text-foreground">Home</a>
+          </Link>
+          <Link href="/projects">
+            <a className="text-sm text-muted-foreground hover:text-foreground">Projects</a>
+          </Link>
+          
+          {/* Logout button */}
+          <button 
+            onClick={() => logoutMutation.mutate()}
+            className="text-sm text-muted-foreground hover:text-foreground"
+          >
+            Logout
+          </button>
+          
+          {/* User icon */}
+          <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
+            <span className="text-sm font-medium">J</span>
+          </div>
+        </div>
+      </div>
+      <main className="flex-1 container mx-auto">
         {children}
       </main>
     </div>

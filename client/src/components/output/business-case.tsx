@@ -31,13 +31,29 @@ export function BusinessCase({ output, sessionState, isLoading }: BusinessCasePr
   // Debug the content we've received
   console.log("Business Case tab received output:", output);
   
-  // Safe default structure to prevent errors
+  // Safe default structure to prevent errors with all possible properties
   let businessData = {
     title: "",
     overview: "",
     problemStatement: "",
+    executiveSummary: "",
+    problemDetails: [],
+    proposedSolution: "",
+    solutionComponents: [],
     objectives: [],
     benefits: [],
+    financials: {
+      initialInvestment: 0,
+      annualBenefit: 0,
+      paybackPeriod: "N/A",
+      roi: "N/A",
+      npv: 0,
+      benefitsBreakdown: []
+    },
+    nonFinancialBenefits: [],
+    risks: [],
+    recommendation: "",
+    nextSteps: [],
     roi: {
       description: "",
       metrics: []

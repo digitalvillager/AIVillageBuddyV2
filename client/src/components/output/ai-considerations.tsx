@@ -31,10 +31,14 @@ export function AIConsiderations({ output, sessionState, isLoading }: AIConsider
   // Debug the content we've received
   console.log("AI Considerations tab received output:", output);
   
-  // Safe default structure to prevent errors
+  // Safe default structure to prevent errors with all possible properties
   let aiData = {
     title: "",
     overview: "",
+    technical: [],
+    ethical: [],
+    organizational: [],
+    recommendations: [],
     ethicalConsiderations: [],
     dataPrivacy: [],
     implementation: [],

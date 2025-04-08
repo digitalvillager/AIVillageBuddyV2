@@ -464,7 +464,7 @@ export default function Home() {
           {/* Main content area - shifts right when sidebar is open */}
           <div 
             className={`
-              transition-all duration-300 h-full p-4
+              transition-all duration-300 h-full p-6 md:p-8 max-w-[1440px] mx-auto
               ${isProjectsPanelOpen ? 'ml-72 w-[calc(100%-18rem)]' : 'ml-0 w-full'}
             `}
           >
@@ -475,7 +475,7 @@ export default function Home() {
               className={`
                 absolute h-8 w-8 bg-white shadow-sm rounded-full z-20
                 transition-all duration-300
-                left-4 top-4
+                left-6 md:left-8 top-6 md:top-8
               `}
               onClick={() => setIsProjectsPanelOpen(!isProjectsPanelOpen)}
             >
@@ -488,7 +488,7 @@ export default function Home() {
             
             {/* Main 2-panel layout */}
             <div className={`
-              grid w-full h-[calc(100vh-8rem)] gap-4 pt-12
+              grid w-full h-[calc(100vh-8rem)] gap-6 md:gap-8 pt-14 md:pt-16
               ${isProjectsPanelOpen 
                 ? 'grid-cols-1 lg:grid-cols-2' 
                 : 'grid-cols-1 md:grid-cols-2'

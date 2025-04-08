@@ -430,39 +430,22 @@ export default function Home() {
   // Add a loading state while resources are being initialized
   if (!sessionId || isLoadingMessages || isLoadingSession) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-gray-50">
         <Header />
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
           <span className="ml-3 text-lg">Loading your AI Buddy...</span>
         </div>
-        <Footer />
       </div>
     );
   }
 
   try {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-gray-50">
         <Header />
         
-        <main className="flex-1 container mx-auto p-4 md:py-6 flex flex-col lg:flex-row gap-4 md:gap-6 relative">
-          
-          {/* Projects Panel - Hidden by default, toggleable */}
-          <div className={`transition-all duration-300 ease-in-out ${isProjectsPanelOpen ? 'lg:w-1/4' : 'lg:w-0 overflow-hidden'}`}>
-            <ErrorBoundary>
-              {isProjectsPanelOpen && (
-                <ProjectsPanel 
-                  currentProjectId={sessionId}
-                  onSelectProject={(projectId) => {
-                    // Load the selected project's session and associated data
-                    loadProjectSession(projectId);
-                  }}
-                />
-              )}
-            </ErrorBoundary>
-          </div>
-          
+        <main className="flex-1 p-0 flex flex-col lg:flex-row gap-4 relative">
           {/* Toggle button for Projects Panel */}
           <Button 
             variant="outline" 
@@ -473,10 +456,25 @@ export default function Home() {
             {isProjectsPanelOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           </Button>
           
-          {/* Main content area - Chat and Output panels side by side */}
-          <div className={`transition-all duration-300 flex flex-col lg:flex-row gap-4 ${isProjectsPanelOpen ? 'lg:w-3/4' : 'lg:w-full'}`}>
-            <ErrorBoundary>
-              <div className="w-full lg:w-1/2">
+          {/* Main content area - Projects, Chat and Output panels */}
+          <div className="flex flex-col lg:flex-row w-full gap-0">
+            {/* Projects Panel - Hidden by default, toggleable */}
+            {isProjectsPanelOpen && (
+              <div className="w-full lg:w-1/4 border-r bg-white p-4">
+                <ErrorBoundary>
+                  <ProjectsPanel 
+                    currentProjectId={sessionId}
+                    onSelectProject={(projectId) => {
+                      loadProjectSession(projectId);
+                    }}
+                  />
+                </ErrorBoundary>
+              </div>
+            )}
+            
+            {/* Chat Panel */}
+            <div className={`${isProjectsPanelOpen ? 'lg:w-1/3' : 'lg:w-1/2'} bg-white border-r h-full`}>
+              <ErrorBoundary>
                 <ChatPanel 
                   messages={messages}
                   isLoading={loading || isLoadingMessages}
@@ -484,11 +482,12 @@ export default function Home() {
                   onClearChat={clearConversation}
                   showSuggestions={showSolutionSuggestions}
                 />
-              </div>
-            </ErrorBoundary>
+              </ErrorBoundary>
+            </div>
             
-            <ErrorBoundary>
-              <div className="w-full lg:w-1/2">
+            {/* Output Panel */}
+            <div className={`${isProjectsPanelOpen ? 'lg:w-5/12' : 'lg:w-1/2'} bg-white h-full`}>
+              <ErrorBoundary>
                 <OutputPanel 
                   sessionId={sessionId}
                   activeTab={activeTab}
@@ -497,18 +496,16 @@ export default function Home() {
                   isGenerating={generateOutputsMutation.isPending}
                   sessionState={sessionState}
                 />
-              </div>
-            </ErrorBoundary>
+              </ErrorBoundary>
+            </div>
           </div>
         </main>
-        
-        <Footer />
       </div>
     );
   } catch (error) {
     console.error("Error rendering Home component:", error);
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-gray-50">
         <Header />
         <div className="flex-1 flex items-center justify-center p-6">
           <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
@@ -522,7 +519,6 @@ export default function Home() {
             </button>
           </div>
         </div>
-        <Footer />
       </div>
     );
   }

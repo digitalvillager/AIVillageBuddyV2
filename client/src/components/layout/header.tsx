@@ -16,60 +16,36 @@ export function Header() {
   
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b">
-      <div className="container flex h-16 items-center justify-between px-4 mx-auto">
+      <div className="flex h-12 items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <Link to="/">
             <div className="flex items-center gap-2">
               <div className="bg-primary rounded-full w-8 h-8 flex items-center justify-center">
-                <img
-                  src="/assets/logo.png"
-                  alt="Digital Village Logo"
-                  className="h-6 w-6 object-contain"
-                />
+                <span className="text-white text-xs font-medium">DV</span>
               </div>
-              <span className="text-lg font-semibold text-gray-800">
+              <span className="text-base font-medium">
                 Digital Village AI Buddy
               </span>
             </div>
           </Link>
-          <Separator orientation="vertical" className="h-6 mx-2 hidden sm:block" />
         </div>
         
         <div className="flex items-center justify-end gap-4">
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary text-primary-foreground">
-                      {user.name ? user.name.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.name || user.username}</p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {user.email}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/account">
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Account</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <>
+              <Link to="/">
+                <span className="text-sm text-gray-600">Home</span>
+              </Link>
+              <Link to="/projects">
+                <span className="text-sm text-gray-600">Projects</span>
+              </Link>
+              <span className="text-sm text-gray-600 cursor-pointer" onClick={handleLogout}>
+                Logout
+              </span>
+              <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
+                <span className="text-sm font-medium">J</span>
+              </div>
+            </>
           ) : (
             <Link to="/auth">
               <Button variant="default" size="sm">

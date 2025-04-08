@@ -34,37 +34,8 @@ function ErrorHandler() {
 
 
 function MainLayout({ children }: { children: React.ReactNode }) {
-  const { logoutMutation } = useAuth();
-
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Top Navigation Bar */}
-      <div className="bg-white border-b px-4 py-2 flex items-center">
-        <div className="flex items-center">
-          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white mr-2">
-            <span className="text-sm font-medium">DV</span>
-          </div>
-          <span className="font-medium">Digital Village AI Buddy</span>
-        </div>
-        <div className="ml-auto flex items-center space-x-4">
-          <Link href="/">
-            <a className="text-sm text-slate-600 hover:text-slate-900">Home</a>
-          </Link>
-          <Link href="/projects">
-            <a className="text-sm text-slate-600 hover:text-slate-900">Projects</a>
-          </Link>
-          <button 
-            onClick={() => logoutMutation.mutate()}
-            className="text-sm text-slate-600 hover:text-slate-900"
-          >
-            Logout
-          </button>
-          <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
-            <span className="text-sm font-medium">J</span>
-          </div>
-        </div>
-      </div>
-      
       <main className="flex-1">
         {children}
       </main>

@@ -38,37 +38,34 @@ function MainLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="flex items-center px-4 py-2 border-b bg-background">
-        <div className="flex items-center space-x-2">
-          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
+      {/* Top Navigation Bar */}
+      <div className="bg-white border-b px-4 py-2 flex items-center">
+        <div className="flex items-center">
+          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white mr-2">
             <span className="text-sm font-medium">DV</span>
           </div>
-          <span className="font-medium text-lg">Digital Village AI Buddy</span>
+          <span className="font-medium">Digital Village AI Buddy</span>
         </div>
         <div className="ml-auto flex items-center space-x-4">
-          {/* Links */}
           <Link href="/">
-            <a className="text-sm text-muted-foreground hover:text-foreground">Home</a>
+            <a className="text-sm text-slate-600 hover:text-slate-900">Home</a>
           </Link>
           <Link href="/projects">
-            <a className="text-sm text-muted-foreground hover:text-foreground">Projects</a>
+            <a className="text-sm text-slate-600 hover:text-slate-900">Projects</a>
           </Link>
-          
-          {/* Logout button */}
           <button 
             onClick={() => logoutMutation.mutate()}
-            className="text-sm text-muted-foreground hover:text-foreground"
+            className="text-sm text-slate-600 hover:text-slate-900"
           >
             Logout
           </button>
-          
-          {/* User icon */}
           <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
             <span className="text-sm font-medium">J</span>
           </div>
         </div>
       </div>
-      <main className="flex-1 container mx-auto">
+      
+      <main className="flex-1">
         {children}
       </main>
     </div>

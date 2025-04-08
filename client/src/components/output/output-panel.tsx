@@ -176,51 +176,67 @@ export function OutputPanel({
   };
   
   return (
-    <Card className="w-full h-[calc(100vh-10rem)] flex flex-col overflow-hidden">
-      <CardHeader className="py-3 px-4 border-b flex-shrink-0">
-        <div className="flex justify-between items-center">
-          <h3 className="font-semibold">Solution Explorer</h3>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onRegenerateOutputs}
-            disabled={isGenerating || !canGenerateOutputs}
-          >
-            {isGenerating ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4 mr-2" />
-            )}
-            {isGenerating ? 'Generating...' : 'Regenerate All'}
-          </Button>
-        </div>
-      </CardHeader>
+    <div className="w-full h-full flex flex-col overflow-hidden">
+      <div className="py-3 px-4 border-b flex items-center justify-between">
+        <h3 className="text-base font-medium">Solution Explorer</h3>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onRegenerateOutputs}
+          disabled={isGenerating || !canGenerateOutputs}
+          className="text-xs h-7 flex items-center"
+        >
+          {isGenerating ? (
+            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4 mr-1" />
+          )}
+          {isGenerating ? 'Generating...' : 'Regenerate All'}
+        </Button>
+      </div>
       
-      <Tabs
-        defaultValue="implementation"
-        value={activeTab}
-        className="flex-1 flex flex-col overflow-hidden"
-        onValueChange={(value) => {
-          console.log("Tab changed to:", value);
-          onTabChange(value as OutputType);
-        }}
-      >
-        <TabsList className="px-4 py-2 bg-card border-b flex-shrink-0">
-          <TabsTrigger value="implementation">Implementation</TabsTrigger>
-          <TabsTrigger value="cost">Cost</TabsTrigger>
-          <TabsTrigger value="design">Design</TabsTrigger>
-          <TabsTrigger value="business">Business Case</TabsTrigger>
-          <TabsTrigger value="ai">AI Considerations</TabsTrigger>
-        </TabsList>
-        
-        <div className="flex-1 overflow-hidden">
-          <ErrorBoundary>
-            <ScrollArea className="h-full flex-1">
-              {renderActiveTabContent()}
-            </ScrollArea>
-          </ErrorBoundary>
+      <div className="border-b">
+        <div className="flex overflow-x-auto">
+          <div 
+            className={`py-2 px-4 cursor-pointer font-medium text-sm ${activeTab === 'implementation' ? 'border-b-2 border-primary' : ''}`}
+            onClick={() => onTabChange('implementation')}
+          >
+            Implementation
+          </div>
+          <div 
+            className={`py-2 px-4 cursor-pointer font-medium text-sm ${activeTab === 'cost' ? 'border-b-2 border-primary' : ''}`}
+            onClick={() => onTabChange('cost')}
+          >
+            Cost
+          </div>
+          <div 
+            className={`py-2 px-4 cursor-pointer font-medium text-sm ${activeTab === 'design' ? 'border-b-2 border-primary' : ''}`}
+            onClick={() => onTabChange('design')}
+          >
+            Design
+          </div>
+          <div 
+            className={`py-2 px-4 cursor-pointer font-medium text-sm ${activeTab === 'business' ? 'border-b-2 border-primary' : ''}`}
+            onClick={() => onTabChange('business')}
+          >
+            Business Case
+          </div>
+          <div 
+            className={`py-2 px-4 cursor-pointer font-medium text-sm ${activeTab === 'ai' ? 'border-b-2 border-primary' : ''}`}
+            onClick={() => onTabChange('ai')}
+          >
+            AI Considerations
+          </div>
         </div>
-      </Tabs>
-    </Card>
+      </div>
+      
+      <div className="flex-1 overflow-hidden">
+        <ErrorBoundary>
+          <ScrollArea className="h-full flex-1">
+            {renderActiveTabContent()}
+          </ScrollArea>
+        </ErrorBoundary>
+      </div>
+    </div>
   );
 }

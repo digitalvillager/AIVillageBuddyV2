@@ -62,17 +62,17 @@ export function ProjectsPanel({ currentProjectId, onSelectProject }: ProjectsPan
   };
 
   return (
-    <div className="w-full bg-white rounded-lg shadow">
-      <div className="bg-background border-b p-4">
-        <h2 className="font-semibold text-lg">My Projects</h2>
-        <p className="text-sm text-muted-foreground mt-1">
+    <div className="w-full h-full flex flex-col">
+      <div className="p-4 pb-3">
+        <h2 className="text-base font-medium">My Projects</h2>
+        <p className="text-sm text-gray-600 mt-1">
           Create and manage your AI solutions
         </p>
       </div>
 
-      <div className="p-4">
+      <div className="px-4 pb-4 flex-1 overflow-auto flex flex-col">
         <Link to="/projects/new">
-          <Button className="w-full mb-4">
+          <Button className="w-full mb-4 bg-primary text-white flex items-center justify-center">
             <Plus className="h-4 w-4 mr-2" />
             New Project
           </Button>
@@ -83,43 +83,23 @@ export function ProjectsPanel({ currentProjectId, onSelectProject }: ProjectsPan
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 flex-1">
             {projects && projects.length > 0 ? (
               projects.map((project: any) => (
                 <Card 
                   key={project.id} 
-                  className={`cursor-pointer hover:border-primary/50 transition-colors relative ${
-                    currentProjectId === String(project.id) ? 'border-primary' : ''
+                  className={`cursor-pointer shadow-sm hover:shadow transition-shadow border-t-0 border-l-0 border-r-0 border-b relative ${
+                    currentProjectId === String(project.id) ? 'border-primary-2 bg-gray-50' : 'border-gray-200'
                   }`}
                   onClick={() => onSelectProject && onSelectProject(String(project.id))}
                 >
-                  {/* Delete Button - Top Right */}
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="absolute top-2 right-2 h-7 w-7 opacity-70 hover:opacity-100 hover:bg-red-50 hover:text-red-500 z-10"
-                    onClick={(e) => handleDeleteProject(e, project.id)}
-                    title="Delete project"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-
-                  <CardHeader className="py-3">
-                    <CardTitle className="text-md pr-8">{project.name}</CardTitle>
-                    <CardDescription className="text-xs">
-                      Created on {new Date(project.created).toLocaleDateString()}
-                    </CardDescription>
+                  <CardHeader className="py-2 px-0">
+                    <CardTitle className="text-sm font-medium">{project.name}</CardTitle>
                   </CardHeader>
-                  <CardContent className="py-2">
-                    <p className="text-sm line-clamp-2">{project.description || 'No description'}</p>
-                  </CardContent>
-                  <CardFooter className="py-2 text-xs text-muted-foreground">
-                    {project.sessions ? `${project.sessions.length} sessions` : 'No sessions'}
-                  </CardFooter>
                 </Card>
               ))
             ) : (
-              <div className="text-center p-6 text-muted-foreground">
+              <div className="text-center p-6 text-gray-500 flex-1 flex items-center justify-center">
                 <p>No projects yet. Create one to get started!</p>
               </div>
             )}

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,6 @@ export function OutputPanel({
   isGenerating,
   sessionState
 }: OutputPanelProps) {
-  
   // Fetch output documents
   const { data: outputs, isLoading } = useQuery({
     queryKey: ['/api/outputs', sessionId],
@@ -43,6 +42,38 @@ export function OutputPanel({
     },
     enabled: !!sessionId,
   });
+  
+  // Save local copies of all outputs
+  const [implementationOutput, setImplementationOutput] = useState<any>(null);
+  const [costOutput, setCostOutput] = useState<any>(null);
+  const [designOutput, setDesignOutput] = useState<any>(null);
+  const [businessOutput, setBusinessOutput] = useState<any>(null);
+  const [aiOutput, setAIOutput] = useState<any>(null);
+  
+  // Update local state when outputs change
+  useEffect(() => {
+    if (outputs) {
+      console.log("Updating local output states with:", outputs);
+      
+      const implOut = outputs.find((o: any) => o.type === "implementation");
+      const costOut = outputs.find((o: any) => o.type === "cost");
+      const designOut = outputs.find((o: any) => o.type === "design");
+      const businessOut = outputs.find((o: any) => o.type === "business");
+      const aiOut = outputs.find((o: any) => o.type === "ai");
+      
+      setImplementationOutput(implOut);
+      setCostOutput(costOut);
+      setDesignOutput(designOut);
+      setBusinessOutput(businessOut);
+      setAIOutput(aiOut);
+      
+      console.log("Set implementation output to:", implOut);
+      console.log("Set cost output to:", costOut);
+      console.log("Set design output to:", designOut);
+      console.log("Set business output to:", businessOut);
+      console.log("Set AI output to:", aiOut);
+    }
+  }, [outputs]);
   
   // Enhanced logging for debugging
   useEffect(() => {
@@ -78,6 +109,71 @@ export function OutputPanel({
     sessionState?.currentProcess || 
     sessionState?.availableData
   );
+  
+  // Helper to render the current active tab
+  const renderActiveTabContent = () => {
+    console.log("Rendering active tab:", activeTab);
+    
+    switch (activeTab) {
+      case 'implementation':
+        return (
+          <div className="p-4">
+            <ImplementationPlan
+              output={implementationOutput}
+              sessionState={sessionState}
+              isLoading={isLoading || isGenerating}
+            />
+          </div>
+        );
+        
+      case 'cost':
+        return (
+          <div className="p-4">
+            <CostEstimate
+              output={costOutput}
+              sessionState={sessionState}
+              isLoading={isLoading || isGenerating}
+            />
+          </div>
+        );
+        
+      case 'design':
+        return (
+          <div className="p-4">
+            <DesignConcept
+              output={designOutput}
+              sessionState={sessionState}
+              isLoading={isLoading || isGenerating}
+            />
+          </div>
+        );
+        
+      case 'business':
+        return (
+          <div className="p-4">
+            <BusinessCase
+              output={businessOutput}
+              sessionState={sessionState}
+              isLoading={isLoading || isGenerating}
+            />
+          </div>
+        );
+        
+      case 'ai':
+        return (
+          <div className="p-4">
+            <AIConsiderations
+              output={aiOutput}
+              sessionState={sessionState}
+              isLoading={isLoading || isGenerating}
+            />
+          </div>
+        );
+        
+      default:
+        return <div>Select a tab to view content</div>;
+    }
+  };
   
   return (
     <Card className="w-full h-[calc(100vh-10rem)] flex flex-col overflow-hidden">
@@ -119,153 +215,12 @@ export function OutputPanel({
         
         <div className="flex-1 overflow-hidden">
           <ErrorBoundary>
-            <TabsContent value="implementation" className="h-full m-0 overflow-hidden flex flex-col">
-              <ScrollArea className="h-full flex-1">
-                <div className="p-4">
-                  <ImplementationPlan
-                    output={outputs?.find((o: any) => o.type === "implementation")}
-                    sessionState={sessionState}
-                    isLoading={isLoading || isGenerating}
-                  />
-                </div>
-              </ScrollArea>
-            </TabsContent>
-            
-            <TabsContent value="cost" className="h-full m-0 overflow-hidden flex flex-col">
-              <ScrollArea className="h-full flex-1">
-                <div className="p-4">
-                  <CostEstimate
-                    output={outputs?.find((o: any) => o.type === "cost")}
-                    sessionState={sessionState}
-                    isLoading={isLoading || isGenerating}
-                  />
-                </div>
-              </ScrollArea>
-            </TabsContent>
-            
-            <TabsContent value="design" className="h-full m-0 overflow-hidden flex flex-col">
-              <ScrollArea className="h-full flex-1">
-                <div className="p-4">
-                  <DesignConcept
-                    output={outputs?.find((o: any) => o.type === "design")}
-                    sessionState={sessionState}
-                    isLoading={isLoading || isGenerating}
-                  />
-                </div>
-              </ScrollArea>
-            </TabsContent>
-            
-            <TabsContent value="business" className="h-full m-0 overflow-hidden flex flex-col">
-              <ScrollArea className="h-full flex-1">
-                <div className="p-4">
-                  <BusinessCase
-                    output={outputs?.find((o: any) => o.type === "business")}
-                    sessionState={sessionState}
-                    isLoading={isLoading || isGenerating}
-                  />
-                </div>
-              </ScrollArea>
-            </TabsContent>
-            
-            <TabsContent value="ai" className="h-full m-0 overflow-hidden flex flex-col">
-              <ScrollArea className="h-full flex-1">
-                <div className="p-4">
-                  <AIConsiderations
-                    output={outputs?.find((o: any) => o.type === "ai")}
-                    sessionState={sessionState}
-                    isLoading={isLoading || isGenerating}
-                  />
-                </div>
-              </ScrollArea>
-            </TabsContent>
+            <ScrollArea className="h-full flex-1">
+              {renderActiveTabContent()}
+            </ScrollArea>
           </ErrorBoundary>
         </div>
       </Tabs>
     </Card>
-  );
-}
-
-interface OutputContentProps {
-  title: string;
-  isLoading: boolean;
-  content?: string;
-  isEmpty: boolean;
-  emptyMessage: string;
-}
-
-export function OutputContent({ title, isLoading, content, isEmpty, emptyMessage }: OutputContentProps) {
-  // Helper function to format content
-  const formatContent = (text?: any): string[] => {
-    if (!text) return [];
-    
-    console.log(`OutputContent - Raw content type: ${typeof content}`, content);
-    
-    if (typeof text !== 'string') {
-      // If text is not a string (could be an object or something else), 
-      // try to convert it to a string or return empty array
-      try {
-        if (typeof text === 'object') {
-          text = JSON.stringify(text, null, 2);
-        } else {
-          text = String(text);
-        }
-      } catch (e) {
-        console.error("Error converting content to string:", e);
-        return [];
-      }
-    }
-    return text.split('\n\n').filter(Boolean);
-  };
-  
-  if (isLoading) {
-    return (
-      <div className="h-full flex flex-col items-center justify-center p-6">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-        <p className="text-muted-foreground">Generating {title}...</p>
-      </div>
-    );
-  }
-  
-  if (isEmpty || !content) {
-    return (
-      <div className="h-full flex flex-col items-center justify-center p-6 text-center">
-        <p className="text-muted-foreground max-w-md">{emptyMessage}</p>
-        <p className="text-muted-foreground text-sm mt-2">
-          Continue the conversation to gather more information.
-        </p>
-      </div>
-    );
-  }
-  
-  // Render JSON content more appropriately
-  const renderJsonContent = () => {
-    // If it's already a structured JSON object
-    if (typeof content === 'object' && content !== null) {
-      return (
-        <pre className="bg-gray-100 p-4 rounded overflow-auto">
-          {JSON.stringify(content, null, 2)}
-        </pre>
-      );
-    }
-    
-    // Otherwise render paragraphs as normal
-    return (
-      <div className="prose max-w-none">
-        {formatContent(content).map((para: string, idx: number) => (
-          <p key={idx}>{para}</p>
-        ))}
-      </div>
-    );
-  };
-  
-  return (
-    <div className="h-full flex flex-col overflow-hidden">
-      <ScrollArea className="flex-1">
-        <div className="p-4">
-          <h2 className="text-lg font-bold mb-4">{title}</h2>
-          {renderJsonContent()}
-        </div>
-      </ScrollArea>
-    </div>
   );
 }

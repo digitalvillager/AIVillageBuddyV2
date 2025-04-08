@@ -13,6 +13,29 @@ export interface AIConfigurationDocument extends AIConfiguration {
   updatedAt: Date;
 }
 
+// AI configuration table
+export const aiConfigurations = pgTable("ai_configurations", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  systemPrompt: text("system_prompt").notNull(),
+  temperature: text("temperature").notNull(), // storing as text for easy conversion
+  rules: jsonb("rules").notNull().$type<string[]>(),
+  industries: jsonb("industries").notNull().$type<string[]>(),
+  recommendationGuidelines: jsonb("recommendation_guidelines").notNull().$type<string[]>(),
+  isActive: boolean("is_active").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertAIConfigurationSchema = createInsertSchema(aiConfigurations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertAIConfiguration = z.infer<typeof insertAIConfigurationSchema>;
+export type AIConfig = typeof aiConfigurations.$inferSelect;
+
 import { pgTable, text, serial, integer, jsonb, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";

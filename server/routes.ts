@@ -26,6 +26,152 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // API routes
   
+  // Admin routes (authenticated)
+  app.get('/api/admin/ai-config', isAuthenticated, async (req, res) => {
+    try {
+      const configs = await storage.getAllAIConfigurations();
+      res.json(configs);
+    } catch (error) {
+      console.error('Error fetching AI configurations:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to fetch AI configurations',
+        error: errorMessage 
+      });
+    }
+  });
+  
+  app.get('/api/admin/ai-config/active', async (req, res) => {
+    try {
+      const config = await storage.getActiveAIConfiguration();
+      if (!config) {
+        return res.status(404).json({ message: 'No active AI configuration found' });
+      }
+      res.json(config);
+    } catch (error) {
+      console.error('Error fetching active AI configuration:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to fetch active AI configuration',
+        error: errorMessage 
+      });
+    }
+  });
+  
+  app.get('/api/admin/ai-config/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: 'Invalid ID format' });
+      }
+      
+      const config = await storage.getAIConfiguration(id);
+      if (!config) {
+        return res.status(404).json({ message: 'AI configuration not found' });
+      }
+      
+      res.json(config);
+    } catch (error) {
+      console.error('Error fetching AI configuration:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to fetch AI configuration',
+        error: errorMessage 
+      });
+    }
+  });
+  
+  app.post('/api/admin/ai-config', isAuthenticated, async (req, res) => {
+    try {
+      const newConfig = await storage.createAIConfiguration(req.body);
+      res.status(201).json(newConfig);
+    } catch (error) {
+      console.error('Error creating AI configuration:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to create AI configuration',
+        error: errorMessage 
+      });
+    }
+  });
+  
+  app.patch('/api/admin/ai-config/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: 'Invalid ID format' });
+      }
+      
+      const config = await storage.getAIConfiguration(id);
+      if (!config) {
+        return res.status(404).json({ message: 'AI configuration not found' });
+      }
+      
+      const updatedConfig = await storage.updateAIConfiguration(id, req.body);
+      res.json(updatedConfig);
+    } catch (error) {
+      console.error('Error updating AI configuration:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to update AI configuration',
+        error: errorMessage 
+      });
+    }
+  });
+  
+  app.delete('/api/admin/ai-config/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: 'Invalid ID format' });
+      }
+      
+      const config = await storage.getAIConfiguration(id);
+      if (!config) {
+        return res.status(404).json({ message: 'AI configuration not found' });
+      }
+      
+      await storage.deleteAIConfiguration(id);
+      res.status(204).end();
+    } catch (error) {
+      console.error('Error deleting AI configuration:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to delete AI configuration',
+        error: errorMessage 
+      });
+    }
+  });
+  
+  app.post('/api/admin/ai-config/:id/activate', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: 'Invalid ID format' });
+      }
+      
+      const config = await storage.getAIConfiguration(id);
+      if (!config) {
+        return res.status(404).json({ message: 'AI configuration not found' });
+      }
+      
+      const success = await storage.setActiveAIConfiguration(id);
+      if (!success) {
+        return res.status(500).json({ message: 'Failed to set active configuration' });
+      }
+      
+      const updatedConfig = await storage.getAIConfiguration(id);
+      res.json(updatedConfig);
+    } catch (error) {
+      console.error('Error activating AI configuration:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to activate AI configuration',
+        error: errorMessage 
+      });
+    }
+  });
+  
   // Projects (authenticated)
   app.post('/api/projects', isAuthenticated, async (req, res) => {
     try {

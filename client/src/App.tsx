@@ -7,9 +7,11 @@ import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
 import ProjectsPage from "@/pages/projects-page";
 import NewProject from "@/pages/new-project";
+import AIConfigPage from "@/pages/admin/ai-config";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import ErrorBoundary from "@/components/error-boundary";
+import { Navigation } from "@/components/navigation";
 import { useEffect } from "react";
 
 // Add global error handler for uncaught runtime errors
@@ -30,12 +32,14 @@ function ErrorHandler() {
   return null;
 }
 
+
 function Router() {
   return (
     <Switch>
       <ProtectedRoute path="/" component={Home} />
       <ProtectedRoute path="/projects" component={ProjectsPage} />
       <ProtectedRoute path="/projects/new" component={NewProject} />
+      <ProtectedRoute path="/admin/ai-config" component={AIConfigPage} />
       <Route path="/auth" component={AuthPage} />
       {/* Fallback to 404 */}
       <Route component={NotFound} />
@@ -49,7 +53,10 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <ErrorHandler />
-          <Router />
+          <Navigation />
+          <main className="py-6">
+            <Router />
+          </main>
           <Toaster />
         </AuthProvider>
       </QueryClientProvider>

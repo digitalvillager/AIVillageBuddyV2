@@ -9,11 +9,14 @@ import {
   type InsertOutputDocument,
   type Project,
   type InsertProject,
+  type AIConfig,
+  type InsertAIConfiguration,
   users,
   messages,
   sessions,
   outputDocuments,
-  projects
+  projects,
+  aiConfigurations
 } from "@shared/schema";
 import { db } from "./db";
 import * as schema from "@shared/schema";
@@ -55,6 +58,15 @@ export interface IStorage {
   getOutputBySessionIdAndType(sessionId: string, type: string): Promise<OutputDocument | undefined>;
   updateOutputDocument(id: number, updates: Partial<OutputDocument>): Promise<OutputDocument | undefined>;
   createOrUpdateOutput(document: InsertOutputDocument): Promise<OutputDocument>;
+  
+  // AI Configuration methods
+  getAIConfiguration(id: number): Promise<AIConfig | undefined>;
+  getAllAIConfigurations(): Promise<AIConfig[]>;
+  getActiveAIConfiguration(): Promise<AIConfig | undefined>;
+  createAIConfiguration(config: InsertAIConfiguration): Promise<AIConfig>;
+  updateAIConfiguration(id: number, updates: Partial<AIConfig>): Promise<AIConfig | undefined>;
+  deleteAIConfiguration(id: number): Promise<boolean>;
+  setActiveAIConfiguration(id: number): Promise<boolean>;
 }
 
 // In-memory storage implementation
@@ -64,10 +76,12 @@ export class MemStorage implements IStorage {
   private sessions: Session[] = [];
   private outputDocuments: OutputDocument[] = [];
   private projects: Project[] = [];
+  private aiConfigs: AIConfig[] = [];
   private nextUserId = 1;
   private nextMessageId = 1;
   private nextOutputDocumentId = 1;
   private nextProjectId = 1;
+  private nextAIConfigId = 1;
 
   // User methods
   async getUser(id: number): Promise<User | undefined> {
@@ -282,6 +296,84 @@ export class MemStorage implements IStorage {
     } else {
       return this.createOutputDocument(document);
     }
+  }
+
+  // AI Configuration methods
+  async getAIConfiguration(id: number): Promise<AIConfig | undefined> {
+    return this.aiConfigs.find(config => config.id === id);
+  }
+
+  async getAllAIConfigurations(): Promise<AIConfig[]> {
+    return [...this.aiConfigs];
+  }
+
+  async getActiveAIConfiguration(): Promise<AIConfig | undefined> {
+    return this.aiConfigs.find(config => config.isActive);
+  }
+
+  async createAIConfiguration(config: InsertAIConfiguration): Promise<AIConfig> {
+    const now = new Date();
+    const aiConfig = {
+      id: this.nextAIConfigId++,
+      ...config,
+      isActive: config.isActive || false,
+      createdAt: now,
+      updatedAt: now
+    } as AIConfig;
+    
+    // If this is set as active, deactivate all others
+    if (aiConfig.isActive) {
+      this.aiConfigs.forEach(c => {
+        c.isActive = false;
+      });
+    }
+    
+    this.aiConfigs.push(aiConfig);
+    return aiConfig;
+  }
+
+  async updateAIConfiguration(id: number, updates: Partial<AIConfig>): Promise<AIConfig | undefined> {
+    const config = this.aiConfigs.find(config => config.id === id);
+    if (!config) return undefined;
+    
+    const updatedConfig = {
+      ...config,
+      ...updates,
+      updatedAt: new Date()
+    };
+    
+    // If this is set as active, deactivate all others
+    if (updates.isActive) {
+      this.aiConfigs.forEach(c => {
+        if (c.id !== id) c.isActive = false;
+      });
+    }
+    
+    const index = this.aiConfigs.findIndex(c => c.id === id);
+    this.aiConfigs[index] = updatedConfig;
+    
+    return updatedConfig;
+  }
+
+  async deleteAIConfiguration(id: number): Promise<boolean> {
+    const initialLength = this.aiConfigs.length;
+    this.aiConfigs = this.aiConfigs.filter(config => config.id !== id);
+    return this.aiConfigs.length < initialLength;
+  }
+
+  async setActiveAIConfiguration(id: number): Promise<boolean> {
+    const config = this.aiConfigs.find(config => config.id === id);
+    if (!config) return false;
+    
+    // Deactivate all configurations
+    this.aiConfigs.forEach(c => {
+      c.isActive = false;
+    });
+    
+    // Activate the selected configuration
+    config.isActive = true;
+    
+    return true;
   }
 }
 
@@ -553,6 +645,78 @@ export class DatabaseStorage implements IStorage {
     } else {
       return this.createOutputDocument(document);
     }
+  }
+  
+  // AI Configuration methods
+  async getAIConfiguration(id: number): Promise<AIConfig | undefined> {
+    if (!db) throw new Error("Database is not initialized");
+    const [config] = await db.select().from(aiConfigurations).where(eq(aiConfigurations.id, id));
+    return config;
+  }
+
+  async getAllAIConfigurations(): Promise<AIConfig[]> {
+    if (!db) throw new Error("Database is not initialized");
+    return await db.select().from(aiConfigurations);
+  }
+
+  async getActiveAIConfiguration(): Promise<AIConfig | undefined> {
+    if (!db) throw new Error("Database is not initialized");
+    const [config] = await db.select().from(aiConfigurations).where(eq(aiConfigurations.isActive, true));
+    return config;
+  }
+
+  async createAIConfiguration(config: InsertAIConfiguration): Promise<AIConfig> {
+    if (!db) throw new Error("Database is not initialized");
+    
+    // If this config is set to active, deactivate all others first
+    if (config.isActive) {
+      await db.update(aiConfigurations).set({ isActive: false });
+    }
+    
+    const [newConfig] = await db.insert(aiConfigurations).values(config).returning();
+    return newConfig;
+  }
+
+  async updateAIConfiguration(id: number, updates: Partial<AIConfig>): Promise<AIConfig | undefined> {
+    if (!db) throw new Error("Database is not initialized");
+    
+    // If setting this config to active, deactivate all others first
+    if (updates.isActive) {
+      await db.update(aiConfigurations).set({ isActive: false });
+    }
+    
+    const now = new Date();
+    const [updatedConfig] = await db
+      .update(aiConfigurations)
+      .set({
+        ...updates,
+        updatedAt: now
+      })
+      .where(eq(aiConfigurations.id, id))
+      .returning();
+    
+    return updatedConfig;
+  }
+
+  async deleteAIConfiguration(id: number): Promise<boolean> {
+    if (!db) throw new Error("Database is not initialized");
+    const result = await db.delete(aiConfigurations).where(eq(aiConfigurations.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async setActiveAIConfiguration(id: number): Promise<boolean> {
+    if (!db) throw new Error("Database is not initialized");
+    
+    // First deactivate all configurations
+    await db.update(aiConfigurations).set({ isActive: false });
+    
+    // Then activate the selected one
+    const result = await db
+      .update(aiConfigurations)
+      .set({ isActive: true })
+      .where(eq(aiConfigurations.id, id));
+    
+    return result.rowCount !== null && result.rowCount > 0;
   }
 }
 

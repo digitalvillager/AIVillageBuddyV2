@@ -1,29 +1,10 @@
+
 export interface AIConfiguration {
   systemPrompt: string;
   temperature: number;
   rules: string[];
   industries: string[];
   recommendationGuidelines: string[];
-  teamRoles: Array<{
-    title: string;
-    rate: number;
-    description: string;
-  }>;
-  companyContext: {
-    pricing: {
-      hourlyRates: Record<string, number>;
-      standardPackages: Array<{
-        name: string;
-        description: string;
-        price: number;
-      }>;
-    };
-    recommendations: Array<{
-      category: string;
-      guidelines: string[];
-    }>;
-    bestPractices: string[];
-  };
 }
 
 export interface AIConfigurationDocument extends AIConfiguration {
@@ -44,7 +25,6 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   name: text("name"),
   created: timestamp("created").defaultNow().notNull(),
-  isAdmin: boolean("isadmin").default(false), // Using lowercase 'isadmin' to match DB schema
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -52,7 +32,6 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
   email: true,
   name: true,
-  isAdmin: true, //Added isAdmin to the insert schema
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -146,7 +125,6 @@ export const userResponseSchema = z.object({
   username: z.string(),
   email: z.string(),
   name: z.string().optional(),
-  isAdmin: z.boolean(), // Added isAdmin field to the response schema
 });
 
 export type UserResponse = z.infer<typeof userResponseSchema>;

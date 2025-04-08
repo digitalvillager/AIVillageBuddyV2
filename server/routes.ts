@@ -24,22 +24,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
   setupAuth(app);
   
-  // Admin middleware
-const isAdmin = (req: Request, res: Response, next: NextFunction) => {
-  if (!req.isAuthenticated()) {
-    return res.status(401).json({ message: "Not authenticated" });
-  }
-  
-  // Add your admin check logic here
-  const user = req.user as Express.User;
-  if (!user || !user.isAdmin) {
-    return res.status(403).json({ message: "Not authorized" });
-  }
-  
-  next();
-};
-
-// API routes
+  // API routes
   
   // Projects (authenticated)
   app.post('/api/projects', isAuthenticated, async (req, res) => {

@@ -93,20 +93,10 @@ export async function generateImplementationPlan(session: Session): Promise<any>
  * Generate a cost estimate based on session data
  * @param session The session containing user inputs about their AI solution
  */
-export async function generateCostEstimate(session: Session, config: AIConfiguration): Promise<any> {
+export async function generateCostEstimate(session: Session): Promise<any> {
   const prompt = `
-    You are an AI solution cost estimation specialist for Digital Village. Use the following company-specific 
-    context for your estimates:
-
-    Team Roles and Rates:
-    ${config.teamRoles.map(role => `- ${role.title}: $${role.rate}/hour - ${role.description}`).join('\n')}
-
-    Standard Packages:
-    ${config.companyContext.pricing.standardPackages.map(pkg => 
-      `- ${pkg.name}: $${pkg.price} - ${pkg.description}`
-    ).join('\n')}
-
-    Based on the following information about an AI solution, create a detailed cost estimate in JSON format.
+    You are an AI solution cost estimation specialist. Based on the following information about an AI solution, 
+    create a detailed cost estimate in JSON format.
     
     Industry: ${session.industry || "Not specified"}
     Business Problem: ${session.businessProblem || "Not specified"}

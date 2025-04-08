@@ -7,7 +7,6 @@ import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
 import ProjectsPage from "@/pages/projects-page";
 import NewProject from "@/pages/new-project";
-import AIConfig from "@/pages/admin/ai-config";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import ErrorBoundary from "@/components/error-boundary";
@@ -37,8 +36,6 @@ function Router() {
       <ProtectedRoute path="/" component={Home} />
       <ProtectedRoute path="/projects" component={ProjectsPage} />
       <ProtectedRoute path="/projects/new" component={NewProject} />
-      <ProtectedRoute path="/admin" component={() => <Navigate to="/admin/ai-config" />} />
-      <ProtectedRoute path="/admin/ai-config" component={AIConfig} />
       <Route path="/auth" component={AuthPage} />
       {/* Fallback to 404 */}
       <Route component={NotFound} />

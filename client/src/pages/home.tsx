@@ -445,23 +445,13 @@ export default function Home() {
       <div className="min-h-screen flex flex-col bg-gray-50">
         <Header />
         
-        <main className="flex-1 p-4 flex flex-col lg:flex-row gap-4 relative">
-          {/* Back button (as shown in screenshot) */}
-          <div className="fixed left-4 top-24 z-10">
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="h-8 w-8 bg-white shadow-sm rounded-full"
-              onClick={() => setIsProjectsPanelOpen(!isProjectsPanelOpen)}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          {/* Main content area - 3 panels side by side */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 w-full gap-4">
-            {/* Projects Panel */}
-            <div className="bg-white rounded-md border shadow-sm overflow-hidden">
+        <main className="flex-1 p-4 flex flex-col relative">
+          {/* Projects panel (collapsible sidebar) */}
+          <div className={`
+            fixed z-20 top-16 bottom-0 left-0 bg-white shadow-md transition-all duration-200
+            ${isProjectsPanelOpen ? 'w-72 translate-x-0' : 'w-0 -translate-x-full'}
+          `}>
+            <div className="h-full overflow-hidden">
               <ErrorBoundary>
                 <ProjectsPanel 
                   currentProjectId={sessionId}
@@ -469,9 +459,31 @@ export default function Home() {
                 />
               </ErrorBoundary>
             </div>
-            
+          </div>
+          
+          {/* Projects toggle button */}
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className={`
+              fixed z-20 h-8 w-8 bg-white shadow-sm rounded-full
+              transition-all duration-200
+              ${isProjectsPanelOpen ? 'left-72' : 'left-4'}
+              top-24
+            `}
+            onClick={() => setIsProjectsPanelOpen(!isProjectsPanelOpen)}
+          >
+            {isProjectsPanelOpen ? (
+              <ChevronLeft className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+          </Button>
+          
+          {/* Main 2-panel layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 w-full h-[calc(100vh-8rem)] gap-4">
             {/* Chat Panel */}
-            <div className="bg-white rounded-md border shadow-sm overflow-hidden">
+            <div className="bg-white rounded-md border shadow-sm overflow-hidden h-full">
               <ErrorBoundary>
                 <ChatPanel 
                   messages={messages}
@@ -483,8 +495,8 @@ export default function Home() {
               </ErrorBoundary>
             </div>
             
-            {/* Solution Explorer Panel */}
-            <div className="bg-white rounded-md border shadow-sm overflow-hidden">
+            {/* Output Panel */}
+            <div className="bg-white rounded-md border shadow-sm overflow-hidden h-full">
               <ErrorBoundary>
                 <OutputPanel 
                   sessionId={sessionId}

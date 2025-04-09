@@ -5,6 +5,12 @@ export interface AIConfiguration {
   rules: string[];
   industries: string[];
   recommendationGuidelines: string[];
+  // Configuration templates for each output type
+  implementation?: string;
+  cost?: string;
+  design?: string;
+  business?: string;
+  ai?: string;
 }
 
 export interface AIConfigurationDocument extends AIConfiguration {
@@ -22,6 +28,12 @@ export const aiConfigurations = pgTable("ai_configurations", {
   rules: jsonb("rules").notNull().$type<string[]>(),
   industries: jsonb("industries").notNull().$type<string[]>(),
   recommendationGuidelines: jsonb("recommendation_guidelines").notNull().$type<string[]>(),
+  // Output area configuration templates
+  implementation: text("implementation"),
+  cost: text("cost"),
+  design: text("design"),
+  business: text("business"),
+  ai: text("ai"),
   isActive: boolean("is_active").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

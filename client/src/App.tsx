@@ -7,7 +7,8 @@ import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
 import ProjectsPage from "@/pages/projects-page";
 import NewProject from "@/pages/new-project";
-import AIConfigPage from "@/pages/admin/ai-config";
+import AdminLoginPage from "@/pages/admin/admin-login";
+import AdminDashboard from "@/pages/admin/dashboard";
 import { AuthProvider } from "@/hooks/use-auth";
 import { useAuth } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
@@ -71,29 +72,20 @@ function Router() {
 }
 
 function AdminRouter() {
+  const { user } = useAuth();
+  
   return (
-    <div className="admin-layout">
-      <h1 className="text-3xl font-bold text-center mb-8 mt-4">Digital Village AI Admin Portal</h1>
-      <div className="container mx-auto">
-        <Switch>
-          <Route path="/admin/ai-config" component={AIConfigPage} />
-          <Route>
-            <div className="flex justify-center items-center p-10">
-              <div className="text-center">
-                <h2 className="text-xl font-semibold mb-4">Admin Dashboard</h2>
-                <div className="flex flex-col gap-4">
-                  <Link href="/admin/ai-config">
-                    <div className="px-6 py-3 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity">
-                      AI Configurations
-                    </div>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </Route>
-        </Switch>
-      </div>
-    </div>
+    <Switch>
+      <Route path="/admin">
+        <AdminLoginPage />
+      </Route>
+      <Route path="/admin/dashboard">
+        {user ? <AdminDashboard /> : <AdminLoginPage />}
+      </Route>
+      <Route>
+        <AdminLoginPage />
+      </Route>
+    </Switch>
   );
 }
 

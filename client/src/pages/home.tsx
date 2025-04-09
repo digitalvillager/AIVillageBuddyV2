@@ -464,7 +464,7 @@ export default function Home() {
           {/* Main content area - shifts right when sidebar is open */}
           <div 
             className={`
-              transition-all duration-300 h-full p-6 md:p-8 max-w-[1440px] mx-auto
+              transition-all duration-300 h-full p-6 md:p-8 max-w-[1280px] mx-auto
               ${isProjectsPanelOpen ? 'ml-72 w-[calc(100%-18rem)]' : 'ml-0 w-full'}
               flex justify-center
             `}

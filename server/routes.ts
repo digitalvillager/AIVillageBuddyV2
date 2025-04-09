@@ -41,51 +41,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post('/api/admin/update-ai-config', isAuthenticated, async (req, res) => {
-    try {
-      const { implementation, cost, design, business, ai } = req.body;
-      
-      // Get the active configuration or create a new one if none exists
-      let activeConfig = await storage.getActiveAIConfiguration();
-      
-      if (!activeConfig) {
-        // Create a default configuration
-        activeConfig = await storage.createAIConfiguration({
-          name: "Default Configuration",
-          systemPrompt: "You are an AI assistant that helps users build AI solutions.",
-          temperature: "0.7",
-          rules: ["Be concise", "Be helpful", "Provide accurate information"],
-          industries: ["All industries"],
-          recommendationGuidelines: ["Focus on business value"],
-          implementation: implementation || "",
-          cost: cost || "",
-          design: design || "",
-          business: business || "",
-          ai: ai || "",
-          isActive: true
-        });
-      } else {
-        // Update the existing configuration
-        await storage.updateAIConfiguration(activeConfig.id, {
-          implementation: implementation || activeConfig.implementation,
-          cost: cost || activeConfig.cost,
-          design: design || activeConfig.design,
-          business: business || activeConfig.business,
-          ai: ai || activeConfig.ai
-        });
-      }
-      
-      res.json({ success: true, message: "AI configuration updated successfully" });
-    } catch (error) {
-      console.error('Error updating AI configuration:', error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      res.status(500).json({ 
-        message: 'Failed to update AI configuration',
-        error: errorMessage 
-      });
-    }
-  });
-  
   app.get('/api/admin/ai-config/active', async (req, res) => {
     try {
       const config = await storage.getActiveAIConfiguration();

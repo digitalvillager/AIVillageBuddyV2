@@ -466,6 +466,7 @@ export default function Home() {
             className={`
               transition-all duration-300 h-full p-6 md:p-8 max-w-[1440px] mx-auto
               ${isProjectsPanelOpen ? 'ml-72 w-[calc(100%-18rem)]' : 'ml-0 w-full'}
+              flex justify-center
             `}
           >
             {/* Projects toggle button */}
@@ -488,7 +489,7 @@ export default function Home() {
             
             {/* Main 2-panel layout */}
             <div className={`
-              grid w-full h-[calc(100vh-8rem)] gap-6 md:gap-8 pt-14 md:pt-16
+              grid w-full max-w-[1280px] h-[calc(100vh-8rem)] gap-6 md:gap-8 pt-14 md:pt-16
               ${isProjectsPanelOpen 
                 ? 'grid-cols-1 lg:grid-cols-2' 
                 : 'grid-cols-1 md:grid-cols-2'

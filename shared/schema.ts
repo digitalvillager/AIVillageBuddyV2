@@ -21,7 +21,7 @@ export const aiConfigurations = pgTable("ai_configurations", {
   rules: jsonb("rules").notNull().$type<string[]>(),
   industries: jsonb("industries").notNull().$type<string[]>(),
   recommendationGuidelines: jsonb("recommendation_guidelines").notNull().$type<string[]>(),
-  isActive: boolean("is_active").default(false),
+  isActive: boolean("isactive").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -47,8 +47,7 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   name: text("name"),
   created: timestamp("created").defaultNow().notNull(),
-  isAdmin: boolean("is_admin").default(false),
-  isSuperAdmin: boolean("is_super_admin").default(false)
+  isAdmin: boolean("isadmin").default(false)
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -56,8 +55,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
   email: true,
   name: true,
-  isAdmin: true,
-  isSuperAdmin: true
+  isAdmin: true
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -115,7 +113,7 @@ export const sessions = pgTable("sessions", {
   budget: text("budget"),
   created: timestamp("created").defaultNow().notNull(),
   updated: timestamp("updated").defaultNow().notNull(),
-  isComplete: boolean("is_complete").default(false),
+  isComplete: boolean("iscomplete").default(false),
 });
 
 export const insertSessionSchema = createInsertSchema(sessions).omit({

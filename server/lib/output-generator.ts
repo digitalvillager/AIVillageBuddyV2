@@ -191,7 +191,7 @@ export async function generateCostEstimate(session: Session): Promise<any> {
 export async function generateDesignConcept(session: Session): Promise<any> {
   const prompt = `
     You are an AI solution design specialist. Based on the following information about an AI solution, 
-    create a detailed design concept in JSON format.
+    create a detailed design concept in JSON format that includes visual mockups, interactive examples, and low-fidelity prototypes.
     
     Industry: ${session.industry || "Not specified"}
     Business Problem: ${session.businessProblem || "Not specified"}
@@ -210,23 +210,33 @@ export async function generateDesignConcept(session: Session): Promise<any> {
         {
           "name": "Component name",
           "description": "Description of the component",
-          "features": ["Feature 1", "Feature 2", "Feature 3"]
+          "features": ["Feature 1", "Feature 2", "Feature 3"],
+          "mockupDescription": "Detailed description of how this component would look in practice"
         }
       ],
       "userFlows": [
         {
           "name": "User flow name",
-          "steps": ["Step 1", "Step 2", "Step 3", "Step 4"]
+          "steps": ["Step 1", "Step 2", "Step 3", "Step 4"],
+          "diagramDescription": "Description of a flowchart that shows this user process"
         }
       ],
       "architecture": {
         "description": "Description of the technical architecture",
-        "components": ["Component 1", "Component 2", "Component 3", "Component 4", "Component 5"]
+        "components": ["Component 1", "Component 2", "Component 3", "Component 4", "Component 5"],
+        "diagramElements": {
+          "nodes": ["Node 1", "Node 2", "Node 3"],
+          "connections": [
+            { "from": "Node 1", "to": "Node 2", "label": "Connection description" },
+            { "from": "Node 2", "to": "Node 3", "label": "Connection description" }
+          ]
+        }
       },
       "integrations": [
         {
           "system": "System name",
-          "description": "Description of integration"
+          "description": "Description of integration",
+          "dataFlow": "Description of how data flows between systems"
         }
       ],
       "personas": [
@@ -236,12 +246,37 @@ export async function generateDesignConcept(session: Session): Promise<any> {
           "description": "Description of persona",
           "interactions": ["Interaction 1", "Interaction 2", "Interaction 3"]
         }
-      ]
+      ],
+      "mockups": [
+        {
+          "name": "Mockup name (e.g., Dashboard Overview)",
+          "description": "Detailed description of the mockup, including layout, key features, and interaction points",
+          "type": "dashboard|form|report|visualization|mobile|integration"
+        }
+      ],
+      "prototypes": [
+        {
+          "name": "Prototype name",
+          "description": "Description of what this prototype demonstrates",
+          "userInteractions": ["Step 1: User action", "Step 2: System response", "Step 3: User reaction"],
+          "keyFeaturesDemonstrated": ["Feature 1", "Feature 2", "Feature 3"]
+        }
+      ],
+      "systemIntegrationDiagram": {
+        "description": "Description of how the AI solution integrates with existing systems",
+        "elements": ["Element 1", "Element 2", "Element 3"],
+        "connections": [
+          { "from": "Element 1", "to": "Element 2", "type": "data|api|event", "description": "Description of connection" }
+        ]
+      }
     }
     
     Make the design concept realistic, practical, and tailored to the specific industry and business problem.
     The design should include at least a comprehensive user interface, system architecture, and integration points.
     Be specific in components, user flows, and personas based on the information provided.
+    
+    For mockups and diagrams, provide detailed textual descriptions that could be used to generate actual visual representations.
+    Focus on how the AI solution would integrate with existing systems and workflows.
   `;
 
   try {
@@ -265,7 +300,14 @@ export async function generateDesignConcept(session: Session): Promise<any> {
         components: []
       },
       integrations: [],
-      personas: []
+      personas: [],
+      mockups: [],
+      prototypes: [],
+      systemIntegrationDiagram: {
+        description: "",
+        elements: [],
+        connections: []
+      }
     };
   }
 }

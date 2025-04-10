@@ -786,10 +786,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/admin/users', isAdmin, async (req, res) => {
     try {
-      const adminUsers = await storage.getAdminUsers();
-      res.json(adminUsers);
+      // Get query parameter to determine if we should return all users or just admins
+      const showAllUsers = req.query.all === 'true';
+      
+      // Fetch users based on the query parameter
+      const users = showAllUsers ? 
+        await storage.getAllUsers() : 
+        await storage.getAdminUsers();
+        
+      res.json(users);
     } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch admin users' });
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        message: 'Failed to fetch users', 
+        error: errorMessage 
+      });
     }
   });
 

@@ -60,12 +60,20 @@ type CreateUserFormData = z.infer<typeof createUserSchema>;
 
 export default function UserManagementPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [showAllUsers, setShowAllUsers] = useState(true);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch all admin users
+  // Fetch users based on filter setting
   const { data: users = [], isLoading } = useQuery({
-    queryKey: ["/api/admin/users"],
+    queryKey: ["/api/admin/users", { all: showAllUsers }],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/users?all=${showAllUsers}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch users');
+      }
+      return response.json();
+    },
     refetchOnWindowFocus: false,
   });
 
@@ -175,11 +183,22 @@ export default function UserManagementPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Admin Users</CardTitle>
-          <CardDescription>
-            View and manage users with admin privileges
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <div>
+            <CardTitle>{showAllUsers ? "All Users" : "Admin Users Only"}</CardTitle>
+            <CardDescription>
+              {showAllUsers 
+                ? "View and manage all registered users in the system" 
+                : "View and manage users with admin privileges only"}
+            </CardDescription>
+          </div>
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-muted-foreground">Show admin users only</span>
+            <Switch 
+              checked={!showAllUsers} 
+              onCheckedChange={checked => setShowAllUsers(!checked)}
+            />
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (

@@ -32,6 +32,7 @@ export interface IStorage {
   updateUser(id: number, updates: Partial<User>): Promise<User | undefined>;
   deleteUser(id: number): Promise<boolean>;
   getAdminUsers(): Promise<User[]>;
+  getAllUsers(): Promise<User[]>;
   
   // Project methods
   createProject(project: InsertProject): Promise<Project>;
@@ -132,6 +133,10 @@ export class MemStorage implements IStorage {
   
   async getAdminUsers(): Promise<User[]> {
     return this.users.filter(user => user.isAdmin === true);
+  }
+  
+  async getAllUsers(): Promise<User[]> {
+    return [...this.users];
   }
   
   // Project methods
@@ -446,6 +451,14 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(users)
       .where(eq(users.isAdmin, true));
+  }
+  
+  async getAllUsers(): Promise<User[]> {
+    if (!db) throw new Error("Database is not initialized");
+    return await db
+      .select()
+      .from(users)
+      .orderBy(users.id);
   }
   
   // Project methods

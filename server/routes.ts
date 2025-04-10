@@ -729,6 +729,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     res.status(401).json({ message: 'Not authenticated' });
   });
+
+  // Super admin routes for managing admins
+  app.post('/api/admin/users', isSuperAdmin, async (req, res) => {
+    try {
+      const { username, email, password, isAdmin } = req.body;
+      
+      const user = await storage.createUser({
+        username,
+        email,
+        password: await hashPassword(password),
+        name: null,
+        isAdmin: true,
+        isSuperAdmin: false
+      });
+      
+      res.status(201).json(user);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to create admin user' });
+    }
+  });
+
+  app.get('/api/admin/users', isSuperAdmin, async (req, res) => {
+    try {
+      const adminUsers = await storage.getAdminUsers();
+      res.json(adminUsers);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch admin users' });
+    }
+  });
+
+  app.delete('/api/admin/users/:id', isSuperAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      await storage.deleteUser(userId);
+      res.status(204).end();
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to delete admin user' });
+    }
+  });
   
   // Create HTTP server
   const httpServer = createServer(app);

@@ -1,4 +1,3 @@
-
 export interface AIConfiguration {
   systemPrompt: string;
   temperature: number;
@@ -48,6 +47,8 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   name: text("name"),
   created: timestamp("created").defaultNow().notNull(),
+  isAdmin: boolean("is_admin").default(false),
+  isSuperAdmin: boolean("is_super_admin").default(false)
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -55,6 +56,8 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
   email: true,
   name: true,
+  isAdmin: true,
+  isSuperAdmin: true
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -148,6 +151,8 @@ export const userResponseSchema = z.object({
   username: z.string(),
   email: z.string(),
   name: z.string().optional(),
+  isAdmin: z.boolean(),
+  isSuperAdmin: z.boolean()
 });
 
 export type UserResponse = z.infer<typeof userResponseSchema>;

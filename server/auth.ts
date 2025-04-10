@@ -1,6 +1,6 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { Express } from "express";
+import { Express, Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
@@ -17,6 +17,7 @@ declare global {
       email: string;
       name: string | null;
       created: Date;
+      isAdmin: boolean; // Added admin role
     }
   }
 }
@@ -77,9 +78,24 @@ export function setupAuth(app: Express) {
     }
   });
 
+  const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
+    if (req.isAuthenticated()) {
+      return next();
+    }
+    res.status(401).json({ message: "Not authenticated" });
+  };
+
+  const isAdmin = (req: Request, res: Response, next: NextFunction) => {
+    if (req.isAuthenticated() && req.user?.isAdmin) {
+      return next();
+    }
+    res.status(403).json({ message: "Requires admin privileges" });
+  };
+
+
   app.post("/api/register", async (req, res, next) => {
     try {
-      const { username, email, password, name } = req.body;
+      const { username, email, password, name, isAdmin = false } = req.body; // Added isAdmin field
 
       // Validate required fields
       if (!username || !email || !password) {
@@ -110,6 +126,7 @@ export function setupAuth(app: Express) {
         email,
         password: await hashPassword(password),
         name: name || null,
+        isAdmin, // Added isAdmin to user creation
       });
 
       // Log user in
@@ -147,12 +164,12 @@ export function setupAuth(app: Express) {
     });
   });
 
-  app.get("/api/user", (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({
-        message: "Not authenticated",
-      });
-    }
+  app.get("/api/user", isAuthenticated, (req, res) => {
     res.status(200).json(req.user);
+  });
+
+  //Example admin route
+  app.get("/api/admin/dashboard", isAuthenticated, isAdmin, (req, res) => {
+    res.status(200).json({ message: "Admin Dashboard" });
   });
 }

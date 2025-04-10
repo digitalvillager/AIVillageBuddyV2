@@ -1,16 +1,18 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { OutputDocument, SessionState } from "@/types";
+import { OutputDocument, OutputType, SessionState } from "@/types";
 import { Download, Monitor, Users, BarChart, Link2, Layout } from "lucide-react";
+import { generatePdfFromElement, getFileNameForOutputType } from "@/utils/pdf-generator";
 
 interface DesignConceptProps {
   output: OutputDocument | null | undefined;
   sessionState: SessionState;
   isLoading: boolean;
+  outputType: OutputType;
 }
 
-export function DesignConcept({ output, sessionState, isLoading }: DesignConceptProps) {
+export function DesignConcept({ output, sessionState, isLoading, outputType }: DesignConceptProps) {
   if (isLoading || !output) {
     return (
       <div className="space-y-4">
@@ -79,8 +81,14 @@ export function DesignConcept({ output, sessionState, isLoading }: DesignConcept
         </h3>
         <Button
           className="bg-primary hover:bg-primary-dark text-white px-3 py-1 rounded text-sm flex items-center gap-1 transition"
+          onClick={() => {
+            // Generate PDF from the current content based on outputType
+            const elementId = `${outputType}-output-content`;
+            const fileName = getFileNameForOutputType(outputType);
+            generatePdfFromElement(elementId, fileName);
+          }}
         >
-          <Download className="h-4 w-4 mr-1" /> Download
+          <Download className="h-4 w-4 mr-1" /> Download PDF
         </Button>
       </div>
       

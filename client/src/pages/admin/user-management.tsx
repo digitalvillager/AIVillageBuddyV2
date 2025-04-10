@@ -160,7 +160,7 @@ export default function UserManagementPage() {
   };
 
   return (
-    <div className="container py-6 space-y-6">
+    <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6 space-y-6">
       <div className="flex justify-between items-center">
         <div className="space-y-0.5">
           <h2 className="text-2xl font-bold tracking-tight">User Management</h2>

@@ -1,3 +1,21 @@
+// Super admin creation route
+app.post('/api/superadmin', isAdmin, async (req, res) => {
+  try {
+    const user = await storage.createUser({
+      username: 'dv-jason',
+      email: 'jason@digitalvillage.com.au',
+      password: await hashPassword('iforget'),
+      name: null,
+      isAdmin: true,
+      isSuperAdmin: true
+    });
+    
+    res.status(201).json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to create super admin user' });
+  }
+});
+
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";

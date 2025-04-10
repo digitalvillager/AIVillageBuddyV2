@@ -71,10 +71,31 @@ function Router() {
 }
 
 function AdminRouter() {
+  const { user, isLoading } = useAuth();
+  
+  // If still loading, show loading spinner
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  
+  // If not authenticated, redirect to auth page
+  if (!user) {
+    return <Redirect to="/auth" />;
+  }
+  
   return (
     <div className="admin-layout">
       <h1 className="text-3xl font-bold text-center mb-8 mt-4">Digital Village AI Admin Portal</h1>
       <div className="container mx-auto">
+        <div className="mb-4">
+          <Link href="/" className="text-primary hover:underline">
+            &larr; Back to Main Application
+          </Link>
+        </div>
         <Switch>
           <Route path="/admin/ai-config" component={AIConfigPage} />
           <Route>

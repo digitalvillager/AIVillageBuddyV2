@@ -1,21 +1,3 @@
-// Super admin creation route
-app.post('/api/superadmin', isAdmin, async (req, res) => {
-  try {
-    const user = await storage.createUser({
-      username: 'dv-jason',
-      email: 'jason@digitalvillage.com.au',
-      password: await hashPassword('iforget'),
-      name: null,
-      isAdmin: true,
-      isSuperAdmin: true
-    });
-    
-    res.status(201).json(user);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to create super admin user' });
-  }
-});
-
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
@@ -31,6 +13,14 @@ import { nanoid } from "nanoid";
 import { setupAuth } from "./auth";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
+
+const scryptAsync = promisify(scrypt);
+
+async function hashPassword(password: string) {
+  const salt = randomBytes(16).toString("hex");
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${buf.toString("hex")}.${salt}`;
+}
 
 // Middleware to check if user is authenticated
 const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
@@ -55,6 +45,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
   
   // API routes
+  
+  // Super admin creation route
+  app.post('/api/superadmin', isAdmin, async (req, res) => {
+    try {
+      const user = await storage.createUser({
+        username: 'dv-jason',
+        email: 'jason@digitalvillage.com.au',
+        password: await hashPassword('iforget'),
+        name: null,
+        isAdmin: true
+      });
+      
+      res.status(201).json(user);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to create super admin user' });
+    }
+  });
   
   // Admin routes (authenticated)
   app.get('/api/admin/ai-config', isAuthenticated, async (req, res) => {

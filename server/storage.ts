@@ -30,6 +30,8 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<User>): Promise<User | undefined>;
+  deleteUser(id: number): Promise<boolean>;
+  getAdminUsers(): Promise<User[]>;
   
   // Project methods
   createProject(project: InsertProject): Promise<Project>;

@@ -149,8 +149,7 @@ export const userResponseSchema = z.object({
   username: z.string(),
   email: z.string(),
   name: z.string().optional(),
-  isAdmin: z.boolean(),
-  isSuperAdmin: z.boolean()
+  isAdmin: z.boolean()
 });
 
 export type UserResponse = z.infer<typeof userResponseSchema>;

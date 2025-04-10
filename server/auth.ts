@@ -17,7 +17,7 @@ declare global {
       email: string;
       name: string | null;
       created: Date;
-      isAdmin: boolean; // Added admin role
+      isAdmin: boolean;
     }
   }
 }

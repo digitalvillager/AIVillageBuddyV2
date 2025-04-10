@@ -307,16 +307,16 @@ export default function AuthPage() {
         </div>
       </div>
       
-      {/* Footer with admin link */}
+      {/* Footer with admin login link */}
       <div className="bg-gray-100 py-4 px-6 text-center border-t">
         <div className="container mx-auto text-sm text-gray-500">
           <p>
             © {new Date().getFullYear()} Digital Village AI Buddy | 
             <a 
-              href="/admin" 
+              href="/admin/login" 
               className="text-primary hover:underline ml-2"
             >
-              Admin Portal
+              Admin Login
             </a>
           </p>
         </div>

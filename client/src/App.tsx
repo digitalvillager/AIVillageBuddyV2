@@ -8,6 +8,7 @@ import AuthPage from "@/pages/auth-page";
 import ProjectsPage from "@/pages/projects-page";
 import NewProject from "@/pages/new-project";
 import AIConfigPage from "@/pages/admin/ai-config";
+import AdminLoginPage from "@/pages/admin/admin-login";
 import { AuthProvider } from "@/hooks/use-auth";
 import { useAuth } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
@@ -76,7 +77,7 @@ function ProtectedAdminRoute({
         <Component />
       ) : (
         <div>
-          <Redirect to="/auth" />
+          <Redirect to="/admin/login" />
           <div className="flex items-center justify-center min-h-screen">
             <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
           </div>
@@ -93,6 +94,7 @@ function Router() {
       <ProtectedRouteWithNav path="/projects" component={ProjectsPage} />
       <ProtectedRouteWithNav path="/projects/new" component={NewProject} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/admin/login" component={AdminLoginPage} />
       <ProtectedAdminRoute path="/admin" component={AdminRouter} />
       <ProtectedAdminRoute path="/admin/ai-config" component={AIConfigPage} />
       {/* Fallback to 404 */}

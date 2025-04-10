@@ -30,11 +30,9 @@ const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
   res.status(401).json({ message: "Not authenticated" });
 };
 
-// Middleware to check if user is an admin (use this in place of isSuperAdmin for now)
+// Middleware to check if user is an admin
 const isAdmin = (req: Request, res: Response, next: NextFunction) => {
-  if (req.isAuthenticated()) {
-    // In a real app, you would check if the user has admin privileges
-    // For now, we'll just allow any authenticated user to access admin routes
+  if (req.isAuthenticated() && req.user && req.user.isAdmin) {
     return next();
   }
   res.status(403).json({ message: "Admin access required" });
@@ -770,15 +768,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Super admin routes for managing admins
   app.post('/api/admin/users', isAdmin, async (req, res) => {
     try {
-      const { username, email, password, isAdmin } = req.body;
+      const { username, email, password } = req.body;
       
       const user = await storage.createUser({
         username,
         email,
         password: await hashPassword(password),
         name: null,
-        isAdmin: true,
-        isSuperAdmin: false
+        isAdmin: true
       });
       
       res.status(201).json(user);

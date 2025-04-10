@@ -124,6 +124,16 @@ export class MemStorage implements IStorage {
     return updatedUser;
   }
   
+  async deleteUser(id: number): Promise<boolean> {
+    const initialLength = this.users.length;
+    this.users = this.users.filter(user => user.id !== id);
+    return this.users.length < initialLength;
+  }
+  
+  async getAdminUsers(): Promise<User[]> {
+    return this.users.filter(user => user.isAdmin === true);
+  }
+  
   // Project methods
   async createProject(insertProject: InsertProject): Promise<Project> {
     const now = new Date();
@@ -422,6 +432,20 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return updatedUser;
+  }
+  
+  async deleteUser(id: number): Promise<boolean> {
+    if (!db) throw new Error("Database is not initialized");
+    const result = await db.delete(users).where(eq(users.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+  
+  async getAdminUsers(): Promise<User[]> {
+    if (!db) throw new Error("Database is not initialized");
+    return await db
+      .select()
+      .from(users)
+      .where(eq(users.isAdmin, true));
   }
   
   // Project methods

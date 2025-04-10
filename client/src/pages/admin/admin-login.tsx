@@ -34,14 +34,23 @@ export default function AdminLoginPage() {
 
   // Handle navigation after authentication
   if (user) {
-    navigate("/admin");
+    if (user.isAdmin === true) {
+      navigate("/admin");
+    } else {
+      // User is logged in but not an admin
+      setErrorMessage("You do not have administrator privileges to access this area.");
+    }
   }
   
   const onAdminLoginSubmit = (data: AdminLoginData) => {
     setErrorMessage(null);
     loginMutation.mutate(data, {
-      onSuccess: () => {
-        navigate("/admin");
+      onSuccess: (user) => {
+        if (user.isAdmin === true) {
+          navigate("/admin");
+        } else {
+          setErrorMessage("You do not have administrator privileges to access this area.");
+        }
       },
       onError: (error) => {
         setErrorMessage("Invalid admin credentials. Please try again.");

@@ -21,7 +21,7 @@ export const aiConfigurations = pgTable("ai_configurations", {
   rules: jsonb("rules").notNull().$type<string[]>(),
   industries: jsonb("industries").notNull().$type<string[]>(),
   recommendationGuidelines: jsonb("recommendation_guidelines").notNull().$type<string[]>(),
-  isActive: boolean("isactive").default(false),
+  isActive: boolean("is_active").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -113,7 +113,7 @@ export const sessions = pgTable("sessions", {
   budget: text("budget"),
   created: timestamp("created").defaultNow().notNull(),
   updated: timestamp("updated").defaultNow().notNull(),
-  isComplete: boolean("iscomplete").default(false),
+  isComplete: boolean("is_complete").default(false),
 });
 
 export const insertSessionSchema = createInsertSchema(sessions).omit({

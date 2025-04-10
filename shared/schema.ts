@@ -47,7 +47,7 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   name: text("name"),
   created: timestamp("created").defaultNow().notNull(),
-  isAdmin: boolean("isadmin").default(false)
+  isAdmin: boolean("isadmin").default(false).notNull()
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({

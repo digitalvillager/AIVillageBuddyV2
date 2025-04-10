@@ -17,7 +17,7 @@ declare global {
       email: string;
       name: string | null;
       created: Date;
-      isAdmin: boolean;
+      isAdmin: boolean | null;
     }
   }
 }
@@ -56,13 +56,25 @@ export function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       try {
+        console.log(`Login attempt for username: ${username}`);
         const user = await storage.getUserByUsername(username);
-        if (!user || !(await comparePasswords(password, user.password))) {
+        
+        if (!user) {
+          console.log('User not found');
+          return done(null, false);
+        }
+        
+        const passwordMatches = await comparePasswords(password, user.password);
+        console.log(`Password match result: ${passwordMatches}`);
+        
+        if (!passwordMatches) {
           return done(null, false);
         } else {
+          console.log(`Login successful for user: ${username}, isAdmin: ${user.isAdmin}`);
           return done(null, user);
         }
       } catch (error) {
+        console.error('Authentication error:', error);
         return done(error);
       }
     }),
@@ -86,7 +98,7 @@ export function setupAuth(app: Express) {
   };
 
   const isAdmin = (req: Request, res: Response, next: NextFunction) => {
-    if (req.isAuthenticated() && req.user?.isAdmin) {
+    if (req.isAuthenticated() && req.user?.isAdmin === true) {
       return next();
     }
     res.status(403).json({ message: "Requires admin privileges" });

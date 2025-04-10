@@ -117,55 +117,60 @@ export function OutputPanel({
     switch (activeTab) {
       case 'implementation':
         return (
-          <div className="p-4">
+          <div className="p-4" id="implementation-output-content">
             <ImplementationPlan
               output={implementationOutput}
               sessionState={sessionState}
               isLoading={isLoading || isGenerating}
+              outputType={activeTab}
             />
           </div>
         );
         
       case 'cost':
         return (
-          <div className="p-4">
+          <div className="p-4" id="cost-output-content">
             <CostEstimate
               output={costOutput}
               sessionState={sessionState}
               isLoading={isLoading || isGenerating}
+              outputType={activeTab}
             />
           </div>
         );
         
       case 'design':
         return (
-          <div className="p-4">
+          <div className="p-4" id="design-output-content">
             <DesignConcept
               output={designOutput}
               sessionState={sessionState}
               isLoading={isLoading || isGenerating}
+              outputType={activeTab}
             />
           </div>
         );
         
       case 'business':
         return (
-          <div className="p-4">
+          <div className="p-4" id="business-output-content">
             <BusinessCase
               output={businessOutput}
               sessionState={sessionState}
               isLoading={isLoading || isGenerating}
+              outputType={activeTab}
             />
           </div>
         );
         
       case 'ai':
         return (
-          <div className="p-4">
+          <div className="p-4" id="ai-output-content">
             <AIConsiderations
               output={aiOutput}
               sessionState={sessionState}
               isLoading={isLoading || isGenerating}
+              outputType={activeTab}
             />
           </div>
         );

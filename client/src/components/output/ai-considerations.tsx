@@ -1,16 +1,18 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { OutputDocument, SessionState } from "@/types";
+import { OutputDocument, OutputType, SessionState } from "@/types";
 import { Download, Database, Shield, Building, Check } from "lucide-react";
+import { generatePdfFromElement, getFileNameForOutputType } from "@/utils/pdf-generator";
 
 interface AIConsiderationsProps {
   output: OutputDocument | null | undefined;
   sessionState: SessionState;
   isLoading: boolean;
+  outputType: OutputType;
 }
 
-export function AIConsiderations({ output, sessionState, isLoading }: AIConsiderationsProps) {
+export function AIConsiderations({ output, sessionState, isLoading, outputType }: AIConsiderationsProps) {
   if (isLoading || !output) {
     return (
       <div className="space-y-4">
@@ -82,8 +84,14 @@ export function AIConsiderations({ output, sessionState, isLoading }: AIConsider
         </h3>
         <Button
           className="bg-primary hover:bg-primary-dark text-white px-3 py-1 rounded text-sm flex items-center gap-1 transition"
+          onClick={() => {
+            // Generate PDF from the current content based on outputType
+            const elementId = `${outputType}-output-content`;
+            const fileName = getFileNameForOutputType(outputType);
+            generatePdfFromElement(elementId, fileName);
+          }}
         >
-          <Download className="h-4 w-4 mr-1" /> Download
+          <Download className="h-4 w-4 mr-1" /> Download PDF
         </Button>
       </div>
       

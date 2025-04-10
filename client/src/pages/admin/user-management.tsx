@@ -58,14 +58,13 @@ const createUserSchema = z.object({
 
 type CreateUserFormData = z.infer<typeof createUserSchema>;
 
-export default function UserManagement() {
+export default function UserManagementPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // Fetch all admin users
-  const { data: users, isLoading } = useQuery({
+  const { data: users = [], isLoading } = useQuery({
     queryKey: ["/api/admin/users"],
     refetchOnWindowFocus: false,
   });
@@ -85,11 +84,14 @@ export default function UserManagement() {
 
   // Mutation for creating a new admin user
   const createUserMutation = useMutation({
-    mutationFn: (userData: Omit<CreateUserFormData, "confirmPassword">) => {
+    mutationFn: async (userData: Omit<CreateUserFormData, "confirmPassword">) => {
       const { confirmPassword, ...data } = userData as any;
       return apiRequest("/api/admin/users", {
         method: "POST",
-        body: data,
+        body: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
     },
     onSuccess: () => {
@@ -112,9 +114,12 @@ export default function UserManagement() {
 
   // Mutation for deleting a user
   const deleteUserMutation = useMutation({
-    mutationFn: (userId: number) => {
+    mutationFn: async (userId: number) => {
       return apiRequest(`/api/admin/users/${userId}`, {
         method: "DELETE",
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
     },
     onSuccess: () => {

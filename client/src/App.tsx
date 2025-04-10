@@ -1,4 +1,4 @@
-import { Switch, Route, Link } from "wouter";
+import { Switch, Route, Link, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -56,6 +56,36 @@ function ProtectedRouteWithNav(props: any) {
   );
 }
 
+// Protected admin route component
+function ProtectedAdminRoute({
+  path,
+  component: Component,
+}: {
+  path: string;
+  component: () => React.JSX.Element | null;
+}) {
+  const { user, isLoading } = useAuth();
+  
+  return (
+    <Route path={path}>
+      {isLoading ? (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      ) : user ? (
+        <Component />
+      ) : (
+        <div>
+          <Redirect to="/auth" />
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        </div>
+      )}
+    </Route>
+  );
+}
+
 function Router() {
   return (
     <Switch>
@@ -63,7 +93,8 @@ function Router() {
       <ProtectedRouteWithNav path="/projects" component={ProjectsPage} />
       <ProtectedRouteWithNav path="/projects/new" component={NewProject} />
       <Route path="/auth" component={AuthPage} />
-      <Route path="/admin" component={AdminRouter} />
+      <ProtectedAdminRoute path="/admin" component={AdminRouter} />
+      <ProtectedAdminRoute path="/admin/ai-config" component={AIConfigPage} />
       {/* Fallback to 404 */}
       <Route component={NotFound} />
     </Switch>
@@ -71,22 +102,6 @@ function Router() {
 }
 
 function AdminRouter() {
-  const { user, isLoading } = useAuth();
-  
-  // If still loading, show loading spinner
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-  
-  // If not authenticated, redirect to auth page
-  if (!user) {
-    return <Redirect to="/auth" />;
-  }
-  
   return (
     <div className="admin-layout">
       <h1 className="text-3xl font-bold text-center mb-8 mt-4">Digital Village AI Admin Portal</h1>
@@ -96,23 +111,18 @@ function AdminRouter() {
             &larr; Back to Main Application
           </Link>
         </div>
-        <Switch>
-          <Route path="/admin/ai-config" component={AIConfigPage} />
-          <Route>
-            <div className="flex justify-center items-center p-10">
-              <div className="text-center">
-                <h2 className="text-xl font-semibold mb-4">Admin Dashboard</h2>
-                <div className="flex flex-col gap-4">
-                  <Link href="/admin/ai-config">
-                    <div className="px-6 py-3 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity">
-                      AI Configurations
-                    </div>
-                  </Link>
+        <div className="flex justify-center items-center p-10">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold mb-4">Admin Dashboard</h2>
+            <div className="flex flex-col gap-4">
+              <Link href="/admin/ai-config">
+                <div className="px-6 py-3 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity">
+                  AI Configurations
                 </div>
-              </div>
+              </Link>
             </div>
-          </Route>
-        </Switch>
+          </div>
+        </div>
       </div>
     </div>
   );

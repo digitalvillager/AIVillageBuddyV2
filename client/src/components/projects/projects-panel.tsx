@@ -1,8 +1,8 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2 } from "lucide-react";
-import { Link } from "wouter";
+import { Plus, Trash2, Pencil } from "lucide-react";
+import { Link, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -15,6 +15,7 @@ interface ProjectsPanelProps {
 export function ProjectsPanel({ currentProjectId, onSelectProject }: ProjectsPanelProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
 
   // Fetch projects for the current user
   const { data: projects, isLoading } = useQuery({
@@ -61,6 +62,16 @@ export function ProjectsPanel({ currentProjectId, onSelectProject }: ProjectsPan
     }
   };
 
+  // Handle edit project
+  const handleEditProject = (e: React.MouseEvent, projectId: number) => {
+    e.stopPropagation(); // Prevent card click event
+    setLocation(`/projects/${projectId}/edit`);
+  };
+
+  const handleCreateProject = () => {
+    setLocation("/projects/scoping");
+  };
+
   return (
     <div className="w-full h-full flex flex-col">
       <div className="p-4 pb-3">
@@ -71,12 +82,13 @@ export function ProjectsPanel({ currentProjectId, onSelectProject }: ProjectsPan
       </div>
 
       <div className="px-4 pb-4 flex-1 overflow-auto flex flex-col">
-        <Link to="/projects/new">
-          <Button className="w-full mb-4 bg-primary text-white flex items-center justify-center">
-            <Plus className="h-4 w-4 mr-2" />
-            New Project
-          </Button>
-        </Link>
+        <Button 
+          className="w-full mb-4 bg-primary text-white flex items-center justify-center"
+          onClick={handleCreateProject}
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          New Project
+        </Button>
 
         {isLoading ? (
           <div className="flex justify-center p-6">
@@ -93,8 +105,30 @@ export function ProjectsPanel({ currentProjectId, onSelectProject }: ProjectsPan
                   }`}
                   onClick={() => onSelectProject && onSelectProject(String(project.id))}
                 >
-                  <CardHeader className="py-2 px-0">
-                    <CardTitle className="text-sm font-medium">{project.name}</CardTitle>
+                  <CardHeader className="py-2 px-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm font-medium">{project.name}</CardTitle>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 opacity-70 hover:opacity-100 hover:bg-blue-50 hover:text-blue-500"
+                          onClick={(e) => handleEditProject(e, project.id)}
+                          title="Edit project"
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 opacity-70 hover:opacity-100 hover:bg-red-50 hover:text-red-500"
+                          onClick={(e) => handleDeleteProject(e, project.id)}
+                          title="Delete project"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
                   </CardHeader>
                 </Card>
               ))

@@ -4,10 +4,13 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/use-auth';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, Settings } from 'lucide-react';
+import { useState } from 'react';
+import { UserPreferencesDialog } from '@/components/user-preferences-dialog';
 
 export function Header() {
   const { user, logoutMutation } = useAuth();
+  const [showPreferences, setShowPreferences] = useState(false);
   
   // Get the first letter of the username for the avatar fallback
   const getUserInitial = () => {
@@ -35,49 +38,54 @@ export function Header() {
           </Link>
         </div>
         
-        <div className="flex items-center justify-end">
-          {user ? (
+        <div className="flex items-center justify-end gap-2">
+          {user && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setShowPreferences(true)}
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">
                   <Avatar className="h-8 w-8 cursor-pointer bg-blue-100">
+                      {user.profilePhoto ? (
+                        <AvatarImage src={user.profilePhoto} alt={user.name || user.username} />
+                      ) : null}
                     <AvatarFallback className="text-blue-500">
                       {getUserInitial()}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 mt-1">
-                <div className="px-2 py-1.5">
-                  <p className="text-sm font-medium">
-                    {user.name || user.username}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {user.email}
-                  </p>
-                </div>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link to="/account" className="w-full cursor-pointer">
-                    <User className="mr-2 h-4 w-4" />
-                    Account
-                  </Link>
+                    <Link to="/account">Profile</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowPreferences(true)}>
+                    Preferences
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  Log out
+                    Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          ) : (
-            <Link to="/auth">
-              <Button variant="default" size="sm">
-                Sign In
-              </Button>
-            </Link>
+            </>
           )}
         </div>
       </div>
+      <UserPreferencesDialog
+        open={showPreferences}
+        onOpenChange={setShowPreferences}
+      />
     </header>
   );
 }

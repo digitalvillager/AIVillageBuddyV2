@@ -11,6 +11,7 @@ import {
   type InsertProject,
   type AIConfig,
   type InsertAIConfiguration,
+  type UserPreferences,
   users,
   messages,
   sessions,
@@ -22,6 +23,7 @@ import { db } from "./db";
 import * as schema from "@shared/schema";
 import { NeonDatabase } from "drizzle-orm/neon-serverless";
 import { eq, and, desc } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -33,6 +35,8 @@ export interface IStorage {
   deleteUser(id: number): Promise<boolean>;
   getAdminUsers(): Promise<User[]>;
   getAllUsers(): Promise<User[]>;
+  getUserPreferences(userId: number): Promise<UserPreferences>;
+  updateUserPreferences(userId: number, preferences: UserPreferences): Promise<UserPreferences>;
   
   // Project methods
   createProject(project: InsertProject): Promise<Project>;
@@ -392,45 +396,143 @@ export class MemStorage implements IStorage {
     
     return true;
   }
+
+  async getUserPreferences(userId: number): Promise<UserPreferences> {
+    const user = this.users.find(user => user.id === userId);
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    return {
+      businessSystems: user.businessSystems ?? {
+        technologyStack: [],
+        customTools: "",
+        primaryDataType: "",
+        dataStorageFormats: [],
+        implementationApproach: "",
+        securityRequirements: [],
+        customSecurityRequirements: "",
+      },
+      businessContext: user.businessContext ?? {
+        organizationProfile: {
+          companySize: "",
+          annualRevenue: "",
+          growthStage: "",
+        },
+        businessOperations: {
+          decisionComplexity: 5,
+          businessChallenges: [],
+          kpis: [],
+          customKpis: "",
+        },
+      },
+      aiReadiness: user.aiReadiness ?? {
+        businessImpact: {
+          priorityAreas: [],
+          budgetRange: "",
+          roiTimeframe: "",
+        },
+        readinessAssessment: {
+          teamAiLiteracy: 5,
+          previousAiExperience: "",
+          dataGovernanceMaturity: 5,
+          changeManagementCapability: 5,
+        },
+      },
+      aiTraining: user.aiTraining ?? false,
+      performanceMetrics: user.performanceMetrics ?? true,
+      impactAnalysis: user.impactAnalysis ?? true,
+    };
+  }
+  
+  async updateUserPreferences(userId: number, preferences: UserPreferences): Promise<UserPreferences> {
+    const userIndex = this.users.findIndex(user => user.id === userId);
+    if (userIndex === -1) {
+      throw new Error('User not found');
+    }
+
+    console.log("Starting updateUserPreferences for userId:", userId);
+    console.log("Raw preferences input:", JSON.stringify(preferences, null, 2));
+
+    // Only include non-empty fields in the update object
+    const updateObj: any = {};
+    if (preferences.businessSystems && Object.keys(preferences.businessSystems).length > 0) {
+      updateObj.businessSystems = JSON.parse(JSON.stringify(preferences.businessSystems));
+    }
+    if (preferences.businessContext && Object.keys(preferences.businessContext).length > 0) {
+      updateObj.businessContext = JSON.parse(JSON.stringify(preferences.businessContext));
+    }
+    if (preferences.aiReadiness && Object.keys(preferences.aiReadiness).length > 0) {
+      updateObj.aiReadiness = JSON.parse(JSON.stringify(preferences.aiReadiness));
+    }
+    if (typeof preferences.aiTraining !== 'undefined') updateObj.aiTraining = preferences.aiTraining;
+    if (typeof preferences.performanceMetrics !== 'undefined') updateObj.performanceMetrics = preferences.performanceMetrics;
+    if (typeof preferences.impactAnalysis !== 'undefined') updateObj.impactAnalysis = preferences.impactAnalysis;
+
+    console.log("Processed updateObj:", JSON.stringify(updateObj, null, 2));
+
+    if (Object.keys(updateObj).length === 0) {
+      throw new Error('No preferences to update');
+    }
+
+    try {
+      // Update the user in the array
+      this.users[userIndex] = {
+        ...this.users[userIndex],
+        ...updateObj
+      };
+
+      return preferences;
+    } catch (error: unknown) {
+      console.error('Detailed error in updateUserPreferences:', {
+        error,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+        userId,
+        updateObj
+      });
+      throw new Error('Failed to update user preferences: ' + (error instanceof Error ? error.message : String(error)));
+    }
+  }
 }
 
 // Database storage implementation
 export class DatabaseStorage implements IStorage {
+  private db: any;
   constructor() {
-    // Ensure db is available
-    if (!db) {
-      throw new Error("Database is not initialized");
-    }
+    if (!db) throw new Error("Database is not initialized");
+    this.db = db;
   }
   
   // User methods
   async getUser(id: number): Promise<User | undefined> {
-    if (!db) throw new Error("Database is not initialized");
-    const [user] = await db.select().from(users).where(eq(users.id, id));
+    if (!this.db) throw new Error("Database is not initialized");
+    const [user] = await this.db.select().from(users).where(eq(users.id, id));
     return user;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    if (!db) throw new Error("Database is not initialized");
-    const [user] = await db.select().from(users).where(eq(users.username, username));
+    if (!this.db) throw new Error("Database is not initialized");
+    const [user] = await this.db.select().from(users).where(eq(users.username, username));
     return user;
   }
   
   async getUserByEmail(email: string): Promise<User | undefined> {
-    if (!db) throw new Error("Database is not initialized");
-    const [user] = await db.select().from(users).where(eq(users.email, email));
+    if (!this.db) throw new Error("Database is not initialized");
+    const [user] = await this.db.select().from(users).where(eq(users.email, email));
     return user;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    if (!db) throw new Error("Database is not initialized");
-    const [user] = await db.insert(users).values(insertUser).returning();
+    if (!this.db) throw new Error("Database is not initialized");
+    const [user] = await this.db.insert(users).values(insertUser).returning();
     return user;
   }
   
   async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {
-    if (!db) throw new Error("Database is not initialized");
-    const [updatedUser] = await db
+    if (!this.db) throw new Error("Database is not initialized");
+    const [updatedUser] = await this.db
       .update(users)
       .set(updates)
       .where(eq(users.id, id))
@@ -440,22 +542,22 @@ export class DatabaseStorage implements IStorage {
   }
   
   async deleteUser(id: number): Promise<boolean> {
-    if (!db) throw new Error("Database is not initialized");
-    const result = await db.delete(users).where(eq(users.id, id));
+    if (!this.db) throw new Error("Database is not initialized");
+    const result = await this.db.delete(users).where(eq(users.id, id));
     return result.rowCount !== null && result.rowCount > 0;
   }
   
   async getAdminUsers(): Promise<User[]> {
-    if (!db) throw new Error("Database is not initialized");
-    return await db
+    if (!this.db) throw new Error("Database is not initialized");
+    return await this.db
       .select()
       .from(users)
       .where(eq(users.isAdmin, true));
   }
   
   async getAllUsers(): Promise<User[]> {
-    if (!db) throw new Error("Database is not initialized");
-    return await db
+    if (!this.db) throw new Error("Database is not initialized");
+    return await this.db
       .select()
       .from(users)
       .orderBy(users.id);
@@ -463,20 +565,20 @@ export class DatabaseStorage implements IStorage {
   
   // Project methods
   async createProject(project: InsertProject): Promise<Project> {
-    if (!db) throw new Error("Database is not initialized");
-    const [newProject] = await db.insert(projects).values(project).returning();
+    if (!this.db) throw new Error("Database is not initialized");
+    const [newProject] = await this.db.insert(projects).values(project).returning();
     return newProject;
   }
   
   async getProject(id: number): Promise<Project | undefined> {
-    if (!db) throw new Error("Database is not initialized");
-    const [project] = await db.select().from(projects).where(eq(projects.id, id));
+    if (!this.db) throw new Error("Database is not initialized");
+    const [project] = await this.db.select().from(projects).where(eq(projects.id, id));
     return project;
   }
   
   async getProjectsByUserId(userId: number): Promise<Project[]> {
-    if (!db) throw new Error("Database is not initialized");
-    return await db
+    if (!this.db) throw new Error("Database is not initialized");
+    return await this.db
       .select()
       .from(projects)
       .where(eq(projects.userId, userId))
@@ -484,9 +586,9 @@ export class DatabaseStorage implements IStorage {
   }
   
   async updateProject(id: number, updates: Partial<Project>): Promise<Project | undefined> {
-    if (!db) throw new Error("Database is not initialized");
+    if (!this.db) throw new Error("Database is not initialized");
     const now = new Date();
-    const [updatedProject] = await db
+    const [updatedProject] = await this.db
       .update(projects)
       .set({
         ...updates,
@@ -499,11 +601,11 @@ export class DatabaseStorage implements IStorage {
   }
   
   async deleteProject(id: number): Promise<boolean> {
-    if (!db) throw new Error("Database is not initialized");
+    if (!this.db) throw new Error("Database is not initialized");
     
     try {
       // Start a transaction
-      return await db.transaction(async (tx) => {
+      return await this.db.transaction(async (tx: NeonDatabase) => {
         // 1. Get all sessions associated with this project
         const projectSessions = await tx
           .select()
@@ -535,7 +637,7 @@ export class DatabaseStorage implements IStorage {
         
         return result.rowCount !== null && result.rowCount > 0;
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error deleting project:", error);
       throw error;
     }
@@ -543,20 +645,20 @@ export class DatabaseStorage implements IStorage {
   
   // Message methods
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
-    if (!db) throw new Error("Database is not initialized");
-    const [message] = await db.insert(messages).values(insertMessage).returning();
+    if (!this.db) throw new Error("Database is not initialized");
+    const [message] = await this.db.insert(messages).values(insertMessage).returning();
     return message;
   }
   
   async getMessage(id: number): Promise<Message | undefined> {
-    if (!db) throw new Error("Database is not initialized");
-    const [message] = await db.select().from(messages).where(eq(messages.id, id));
+    if (!this.db) throw new Error("Database is not initialized");
+    const [message] = await this.db.select().from(messages).where(eq(messages.id, id));
     return message;
   }
   
   async getMessagesBySessionId(sessionId: string): Promise<Message[]> {
-    if (!db) throw new Error("Database is not initialized");
-    return await db
+    if (!this.db) throw new Error("Database is not initialized");
+    return await this.db
       .select()
       .from(messages)
       .where(eq(messages.sessionId, sessionId))
@@ -565,8 +667,8 @@ export class DatabaseStorage implements IStorage {
   
   // Session methods
   async createSession(insertSession: InsertSession): Promise<Session> {
-    if (!db) throw new Error("Database is not initialized");
-    const [session] = await db.insert(sessions).values({
+    if (!this.db) throw new Error("Database is not initialized");
+    const [session] = await this.db.insert(sessions).values({
       ...insertSession,
       isComplete: insertSession.isComplete || false
     }).returning();
@@ -574,14 +676,14 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getSession(id: string): Promise<Session | undefined> {
-    if (!db) throw new Error("Database is not initialized");
-    const [session] = await db.select().from(sessions).where(eq(sessions.id, id));
+    if (!this.db) throw new Error("Database is not initialized");
+    const [session] = await this.db.select().from(sessions).where(eq(sessions.id, id));
     return session;
   }
   
   async getSessionsByUserId(userId: number): Promise<Session[]> {
-    if (!db) throw new Error("Database is not initialized");
-    return await db
+    if (!this.db) throw new Error("Database is not initialized");
+    return await this.db
       .select()
       .from(sessions)
       .where(eq(sessions.userId, userId))
@@ -589,8 +691,8 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getSessionsByProjectId(projectId: number): Promise<Session[]> {
-    if (!db) throw new Error("Database is not initialized");
-    return await db
+    if (!this.db) throw new Error("Database is not initialized");
+    return await this.db
       .select()
       .from(sessions)
       .where(eq(sessions.projectId, projectId))
@@ -598,9 +700,9 @@ export class DatabaseStorage implements IStorage {
   }
   
   async updateSession(id: string, updates: Partial<Session>): Promise<Session | undefined> {
-    if (!db) throw new Error("Database is not initialized");
+    if (!this.db) throw new Error("Database is not initialized");
     const now = new Date();
-    const [updatedSession] = await db
+    const [updatedSession] = await this.db
       .update(sessions)
       .set({
         ...updates,
@@ -613,35 +715,35 @@ export class DatabaseStorage implements IStorage {
   }
   
   async deleteSession(id: string): Promise<boolean> {
-    if (!db) throw new Error("Database is not initialized");
-    const result = await db.delete(sessions).where(eq(sessions.id, id));
+    if (!this.db) throw new Error("Database is not initialized");
+    const result = await this.db.delete(sessions).where(eq(sessions.id, id));
     return result.rowCount !== null && result.rowCount > 0;
   }
   
   // Output document methods
   async createOutputDocument(insertDocument: InsertOutputDocument): Promise<OutputDocument> {
-    if (!db) throw new Error("Database is not initialized");
-    const [document] = await db.insert(outputDocuments).values(insertDocument).returning();
+    if (!this.db) throw new Error("Database is not initialized");
+    const [document] = await this.db.insert(outputDocuments).values(insertDocument).returning();
     return document;
   }
   
   async getOutputDocument(id: number): Promise<OutputDocument | undefined> {
-    if (!db) throw new Error("Database is not initialized");
-    const [document] = await db.select().from(outputDocuments).where(eq(outputDocuments.id, id));
+    if (!this.db) throw new Error("Database is not initialized");
+    const [document] = await this.db.select().from(outputDocuments).where(eq(outputDocuments.id, id));
     return document;
   }
   
   async getOutputsBySessionId(sessionId: string): Promise<OutputDocument[]> {
-    if (!db) throw new Error("Database is not initialized");
-    return await db
+    if (!this.db) throw new Error("Database is not initialized");
+    return await this.db
       .select()
       .from(outputDocuments)
       .where(eq(outputDocuments.sessionId, sessionId));
   }
   
   async getOutputBySessionIdAndType(sessionId: string, type: string): Promise<OutputDocument | undefined> {
-    if (!db) throw new Error("Database is not initialized");
-    const [document] = await db
+    if (!this.db) throw new Error("Database is not initialized");
+    const [document] = await this.db
       .select()
       .from(outputDocuments)
       .where(
@@ -655,9 +757,9 @@ export class DatabaseStorage implements IStorage {
   }
   
   async updateOutputDocument(id: number, updates: Partial<OutputDocument>): Promise<OutputDocument | undefined> {
-    if (!db) throw new Error("Database is not initialized");
+    if (!this.db) throw new Error("Database is not initialized");
     const now = new Date();
-    const [updatedDocument] = await db
+    const [updatedDocument] = await this.db
       .update(outputDocuments)
       .set({
         ...updates,
@@ -670,7 +772,7 @@ export class DatabaseStorage implements IStorage {
   }
   
   async createOrUpdateOutput(document: InsertOutputDocument): Promise<OutputDocument> {
-    if (!db) throw new Error("Database is not initialized");
+    if (!this.db) throw new Error("Database is not initialized");
     const existingDocument = await this.getOutputBySessionIdAndType(
       document.sessionId,
       document.type
@@ -688,44 +790,44 @@ export class DatabaseStorage implements IStorage {
   
   // AI Configuration methods
   async getAIConfiguration(id: number): Promise<AIConfig | undefined> {
-    if (!db) throw new Error("Database is not initialized");
-    const [config] = await db.select().from(aiConfigurations).where(eq(aiConfigurations.id, id));
+    if (!this.db) throw new Error("Database is not initialized");
+    const [config] = await this.db.select().from(aiConfigurations).where(eq(aiConfigurations.id, id));
     return config;
   }
 
   async getAllAIConfigurations(): Promise<AIConfig[]> {
-    if (!db) throw new Error("Database is not initialized");
-    return await db.select().from(aiConfigurations);
+    if (!this.db) throw new Error("Database is not initialized");
+    return await this.db.select().from(aiConfigurations);
   }
 
   async getActiveAIConfiguration(): Promise<AIConfig | undefined> {
-    if (!db) throw new Error("Database is not initialized");
-    const [config] = await db.select().from(aiConfigurations).where(eq(aiConfigurations.isActive, true));
+    if (!this.db) throw new Error("Database is not initialized");
+    const [config] = await this.db.select().from(aiConfigurations).where(eq(aiConfigurations.isActive, true));
     return config;
   }
 
   async createAIConfiguration(config: InsertAIConfiguration): Promise<AIConfig> {
-    if (!db) throw new Error("Database is not initialized");
+    if (!this.db) throw new Error("Database is not initialized");
     
     // If this config is set to active, deactivate all others first
     if (config.isActive) {
-      await db.update(aiConfigurations).set({ isActive: false });
+      await this.db.update(aiConfigurations).set({ isActive: false });
     }
     
-    const [newConfig] = await db.insert(aiConfigurations).values(config).returning();
+    const [newConfig] = await this.db.insert(aiConfigurations).values(config).returning();
     return newConfig;
   }
 
   async updateAIConfiguration(id: number, updates: Partial<AIConfig>): Promise<AIConfig | undefined> {
-    if (!db) throw new Error("Database is not initialized");
+    if (!this.db) throw new Error("Database is not initialized");
     
     // If setting this config to active, deactivate all others first
     if (updates.isActive) {
-      await db.update(aiConfigurations).set({ isActive: false });
+      await this.db.update(aiConfigurations).set({ isActive: false });
     }
     
     const now = new Date();
-    const [updatedConfig] = await db
+    const [updatedConfig] = await this.db
       .update(aiConfigurations)
       .set({
         ...updates,
@@ -738,24 +840,145 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteAIConfiguration(id: number): Promise<boolean> {
-    if (!db) throw new Error("Database is not initialized");
-    const result = await db.delete(aiConfigurations).where(eq(aiConfigurations.id, id));
+    if (!this.db) throw new Error("Database is not initialized");
+    const result = await this.db.delete(aiConfigurations).where(eq(aiConfigurations.id, id));
     return result.rowCount !== null && result.rowCount > 0;
   }
 
   async setActiveAIConfiguration(id: number): Promise<boolean> {
-    if (!db) throw new Error("Database is not initialized");
+    if (!this.db) throw new Error("Database is not initialized");
     
     // First deactivate all configurations
-    await db.update(aiConfigurations).set({ isActive: false });
+    await this.db.update(aiConfigurations).set({ isActive: false });
     
     // Then activate the selected one
-    const result = await db
+    const result = await this.db
       .update(aiConfigurations)
       .set({ isActive: true })
       .where(eq(aiConfigurations.id, id));
     
     return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async getUserPreferences(userId: number): Promise<UserPreferences> {
+    const [result] = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId));
+
+    if (!result) {
+      throw new Error('User not found');
+    }
+
+    return {
+      businessSystems: result.businessSystems ?? {
+        technologyStack: [],
+        customTools: "",
+        primaryDataType: "",
+        dataStorageFormats: [],
+        implementationApproach: "",
+        securityRequirements: [],
+        customSecurityRequirements: "",
+      },
+      businessContext: result.businessContext ?? {
+        organizationProfile: {
+          companySize: "",
+          annualRevenue: "",
+          growthStage: "",
+        },
+        businessOperations: {
+          decisionComplexity: 5,
+          businessChallenges: [],
+          kpis: [],
+          customKpis: "",
+        },
+      },
+      aiReadiness: result.aiReadiness ?? {
+        businessImpact: {
+          priorityAreas: [],
+          budgetRange: "",
+          roiTimeframe: "",
+        },
+        readinessAssessment: {
+          teamAiLiteracy: 5,
+          previousAiExperience: "",
+          dataGovernanceMaturity: 5,
+          changeManagementCapability: 5,
+        },
+      },
+      aiTraining: result.aiTraining ?? false,
+      performanceMetrics: result.performanceMetrics ?? true,
+      impactAnalysis: result.impactAnalysis ?? true,
+    };
+  }
+  
+  async updateUserPreferences(userId: number, preferences: UserPreferences): Promise<UserPreferences> {
+    if (!this.db) throw new Error("Database is not initialized");
+
+    console.log("Starting updateUserPreferences for userId:", userId);
+    console.log("Raw preferences input:", JSON.stringify(preferences, null, 2));
+
+    // Only include non-empty fields in the update object
+    const updateObj: any = {};
+    if (preferences.businessSystems && Object.keys(preferences.businessSystems).length > 0) {
+      updateObj.business_systems = JSON.parse(JSON.stringify(preferences.businessSystems));
+    }
+    if (preferences.businessContext && Object.keys(preferences.businessContext).length > 0) {
+      updateObj.business_context = JSON.parse(JSON.stringify(preferences.businessContext));
+    }
+    if (preferences.aiReadiness && Object.keys(preferences.aiReadiness).length > 0) {
+      updateObj.ai_readiness = JSON.parse(JSON.stringify(preferences.aiReadiness));
+    }
+    if (typeof preferences.aiTraining !== 'undefined') updateObj.ai_training = preferences.aiTraining;
+    if (typeof preferences.performanceMetrics !== 'undefined') updateObj.performance_metrics = preferences.performanceMetrics;
+    if (typeof preferences.impactAnalysis !== 'undefined') updateObj.impact_analysis = preferences.impactAnalysis;
+
+    console.log("Processed updateObj:", JSON.stringify(updateObj, null, 2));
+
+    if (Object.keys(updateObj).length === 0) {
+      throw new Error('No preferences to update');
+    }
+
+    try {
+      console.log("Checking if user exists...");
+      // First, get the current user to ensure they exist
+      const [user] = await this.db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId));
+
+      console.log("User check result:", user ? "User found" : "User not found");
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      console.log("Attempting update with query...");
+      // Then perform the update using SQL template literals
+      const result = await this.db.execute(sql`
+        UPDATE users 
+        SET ${sql.join(
+          Object.entries(updateObj).map(([key, value]) => 
+            sql`${sql.identifier(key)} = ${value}`
+          ),
+          sql`, `
+        )}
+        WHERE id = ${userId}
+      `);
+
+      console.log("Update result:", result);
+
+      return preferences;
+    } catch (error: unknown) {
+      console.error('Detailed error in updateUserPreferences:', {
+        error,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+        userId,
+        updateObj
+      });
+      throw new Error('Failed to update user preferences: ' + (error instanceof Error ? error.message : String(error)));
+    }
   }
 }
 

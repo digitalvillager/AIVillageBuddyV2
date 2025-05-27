@@ -37,10 +37,39 @@ After gathering sufficient information about all the key areas above, inform the
 Do not make up information or assume details that the user hasn't provided.`;
 
 // Function to convert messages from database format to OpenAI format
-function convertMessagesToOpenAIFormat(messages: Message[]): ChatCompletionMessageParam[] {
+function convertMessagesToOpenAIFormat(messages: Message[], project?: any, userPreferences?: any): ChatCompletionMessageParam[] {
   const openAIMessages: ChatCompletionMessageParam[] = [
     { role: "system", content: SYSTEM_PROMPT },
   ];
+
+  // Add project context if available
+  if (project) {
+    openAIMessages.push({
+      role: "system",
+      content: `Project Context:
+- Name: ${project.name}
+- Timeline: ${project.timeline || 'Not specified'}
+- Budget Range: ${project.budget || 'Not specified'}
+- Primary Goal: ${project.primaryGoal || 'Not specified'}
+- Technical Complexity: ${project.technicalComplexity || 'Not specified'}
+- Project Confidence: ${project.projectConfidence ? 'High' : 'Low'}
+- Additional Context: ${project.additionalContext || 'None provided'}`
+    });
+  }
+
+  // Add user preferences context if available
+  if (userPreferences) {
+    openAIMessages.push({
+      role: "system",
+      content: `User Context:
+- Business Systems: ${JSON.stringify(userPreferences.businessSystems)}
+- Business Context: ${JSON.stringify(userPreferences.businessContext)}
+- AI Readiness: ${JSON.stringify(userPreferences.aiReadiness)}
+- AI Training Enabled: ${userPreferences.aiTraining}
+- Performance Metrics Enabled: ${userPreferences.performanceMetrics}
+- Impact Analysis Enabled: ${userPreferences.impactAnalysis}`
+    });
+  }
   
   for (const message of messages) {
     if (message.role === 'user') {
@@ -220,10 +249,10 @@ function shouldGenerateOutputs(messages: Message[], session: Session) {
 }
 
 // Generate AI response
-export async function generateAIResponse(messages: Message[], session: Session) {
+export async function generateAIResponse(messages: Message[], session: Session, project?: any, userPreferences?: any) {
   try {
-    // Convert messages to OpenAI format
-    const openAIMessages = convertMessagesToOpenAIFormat(messages);
+    // Convert messages to OpenAI format with project and user context
+    const openAIMessages = convertMessagesToOpenAIFormat(messages, project, userPreferences);
     
     // Call OpenAI API
     const response = await openai.chat.completions.create({

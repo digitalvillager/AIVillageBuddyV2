@@ -10,8 +10,10 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { nanoid } from 'nanoid';
 import ErrorBoundary from '@/components/error-boundary';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'wouter';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Home() {
   const { toast } = useToast();
@@ -32,6 +34,18 @@ export default function Home() {
     timeline: "",
     budget: "",
     isComplete: false
+  });
+
+  // Fetch projects
+  const { data: projects, isLoading: isLoadingProjects } = useQuery({
+    queryKey: ['/api/projects'],
+    queryFn: async () => {
+      const response = await fetch('/api/projects');
+      if (!response.ok) {
+        throw new Error('Failed to fetch projects');
+      }
+      return response.json();
+    },
   });
 
   // Initialize session or load existing session
@@ -427,7 +441,7 @@ export default function Home() {
   };
 
   // Add a loading state while resources are being initialized
-  if (!sessionId || isLoadingMessages || isLoadingSession) {
+  if (isLoadingProjects || (!sessionId && (isLoadingMessages || isLoadingSession))) {
     return (
       <div className="min-h-screen flex flex-col bg-bg-light-blue">
         <Header />
@@ -435,6 +449,43 @@ export default function Home() {
           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
           <span className="ml-3 text-lg">Loading your AI Buddy...</span>
         </div>
+      </div>
+    );
+  }
+
+  // Show create project view if no projects exist
+  if (!projects || projects.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col bg-bg-light-blue">
+        <Header />
+        <main className="flex-1 flex items-center justify-center p-6">
+          <Card className="max-w-2xl w-full">
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold">Welcome to AI Village Buddy</CardTitle>
+              <CardDescription>
+                Create your first project to start exploring AI solutions for your business
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex flex-col items-center justify-center py-8">
+                <div className="bg-primary/10 rounded-full p-6 mb-6">
+                  <Plus className="h-12 w-12 text-primary" />
+                </div>
+                <h2 className="text-xl font-semibold mb-2">No projects yet</h2>
+                <p className="text-muted-foreground mb-6 text-center max-w-md">
+                  Create your first AI solution project to start exploring possibilities for your business.
+                </p>
+                <Link to="/projects/new">
+                  <Button size="lg" className="gap-2">
+                    <Plus className="h-5 w-5" />
+                    Create your first project
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </main>
+        <Footer />
       </div>
     );
   }

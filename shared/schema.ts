@@ -46,8 +46,15 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   email: text("email").notNull().unique(),
   name: text("name"),
+  profilePhoto: text("profile_photo"),
   created: timestamp("created").defaultNow().notNull(),
-  isAdmin: boolean("isadmin").default(false).notNull()
+  isAdmin: boolean("isadmin").default(false).notNull(),
+  businessSystems: jsonb("business_systems").$type<UserPreferences['businessSystems']>(),
+  businessContext: jsonb("business_context").$type<UserPreferences['businessContext']>(),
+  aiReadiness: jsonb("ai_readiness").$type<UserPreferences['aiReadiness']>(),
+  aiTraining: boolean("ai_training").default(false),
+  performanceMetrics: boolean("performance_metrics").default(true),
+  impactAnalysis: boolean("impact_analysis").default(true)
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -149,7 +156,8 @@ export const userResponseSchema = z.object({
   username: z.string(),
   email: z.string(),
   name: z.string().optional(),
-  isAdmin: z.boolean()
+  isAdmin: z.boolean(),
+  profilePhoto: z.string().nullable()
 });
 
 export type UserResponse = z.infer<typeof userResponseSchema>;
@@ -207,3 +215,47 @@ export const sessionResponseSchema = z.object({
 });
 
 export type SessionResponse = z.infer<typeof sessionResponseSchema>;
+
+// User preferences schema
+export const userPreferencesSchema = z.object({
+  businessSystems: z.object({
+    technologyStack: z.array(z.string()).optional().default([]),
+    customTools: z.string().optional().default(""),
+    primaryDataType: z.string().optional().default(""),
+    dataStorageFormats: z.array(z.string()).optional().default([]),
+    implementationApproach: z.string().optional().default(""),
+    securityRequirements: z.array(z.string()).optional().default([]),
+    customSecurityRequirements: z.string().optional().default(""),
+  }).optional().default({}),
+  businessContext: z.object({
+    organizationProfile: z.object({
+      companySize: z.string().optional().default(""),
+      annualRevenue: z.string().optional().default(""),
+      growthStage: z.string().optional().default(""),
+    }).optional().default({}),
+    businessOperations: z.object({
+      decisionComplexity: z.number().optional().default(5),
+      businessChallenges: z.array(z.string()).optional().default([]),
+      kpis: z.array(z.string()).optional().default([]),
+      customKpis: z.string().optional().default(""),
+    }).optional().default({}),
+  }).optional().default({}),
+  aiReadiness: z.object({
+    businessImpact: z.object({
+      priorityAreas: z.array(z.string()).optional().default([]),
+      budgetRange: z.string().optional().default(""),
+      roiTimeframe: z.string().optional().default(""),
+    }).optional().default({}),
+    readinessAssessment: z.object({
+      teamAiLiteracy: z.number().optional().default(5),
+      previousAiExperience: z.string().optional().default(""),
+      dataGovernanceMaturity: z.number().optional().default(5),
+      changeManagementCapability: z.number().optional().default(5),
+    }).optional().default({}),
+  }).optional().default({}),
+  aiTraining: z.boolean().optional().default(false),
+  performanceMetrics: z.boolean().optional().default(true),
+  impactAnalysis: z.boolean().optional().default(true),
+});
+
+export type UserPreferences = z.infer<typeof userPreferencesSchema>;

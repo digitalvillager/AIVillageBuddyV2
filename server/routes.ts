@@ -594,18 +594,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
           title: 'New Session'
         });
       }
+
+      // Get project details if available
+      let project = null;
+      if (session.projectId) {
+        project = await storage.getProject(session.projectId);
+      }
+
+      // Get user preferences if available
+      let userPreferences = null;
+      if (session.userId) {
+        userPreferences = await storage.getUserPreferences(session.userId);
+      }
       
       // Get the messages for this session
       const messages = await storage.getMessagesBySessionId(sessionId);
       
       console.log(`Found ${messages.length} messages for session: ${sessionId}`);
       
-      // Generate AI response
+      // Generate AI response with project and user context
       const { 
         aiResponse, 
         extractedInfo,
         generateOutputs 
-      } = await generateAIResponse(messages, session);
+      } = await generateAIResponse(messages, session, project, userPreferences);
       
       // Create the AI message
       const aiMessage = await storage.createMessage({
@@ -816,6 +828,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Create HTTP server
   const httpServer = createServer(app);
+  
+  app.post('/api/user/profile-photo', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const { profilePhoto } = req.body;
+      if (!profilePhoto) {
+        return res.status(400).json({ message: "No profile photo provided" });
+      }
+      const updatedUser = await storage.updateUser(req.user.id, { profilePhoto });
+      res.status(200).json({ message: "Profile photo updated", user: updatedUser });
+    } catch (error) {
+      console.error("Profile photo update error:", error);
+      res.status(500).json({ message: "Failed to update profile photo" });
+    }
+  });
+  
+  // User preferences endpoints
+  app.get('/api/user/preferences', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const preferences = await storage.getUserPreferences(req.user.id);
+      res.status(200).json(preferences);
+    } catch (error) {
+      console.error("Failed to fetch user preferences:", error);
+      res.status(500).json({ message: "Failed to fetch user preferences" });
+    }
+  });
+
+  app.post('/api/user/preferences', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const preferences = req.body;
+      const updatedPreferences = await storage.updateUserPreferences(req.user.id, preferences);
+      res.status(200).json(updatedPreferences);
+    } catch (error) {
+      console.error("Failed to update user preferences:", error);
+      res.status(500).json({ message: "Failed to update user preferences" });
+    }
+  });
   
   return httpServer;
 }

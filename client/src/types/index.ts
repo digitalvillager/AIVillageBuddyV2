@@ -53,6 +53,7 @@ export interface User {
   email: string;
   name: string | null;
   created: Date;
+  profilePhoto: string | null;
 }
 
 // API Response Types

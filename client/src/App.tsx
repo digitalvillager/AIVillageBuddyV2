@@ -15,6 +15,9 @@ import { useAuth } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import ErrorBoundary from "@/components/error-boundary";
 import { useEffect } from "react";
+import AccountPage from "@/pages/account-page";
+import ProjectScoping from "@/pages/project-scoping";
+import EditProject from "@/pages/edit-project";
 
 // Add global error handler for uncaught runtime errors
 function ErrorHandler() {
@@ -94,6 +97,9 @@ function Router() {
       <ProtectedRouteWithNav path="/" component={Home} />
       <ProtectedRouteWithNav path="/projects" component={ProjectsPage} />
       <ProtectedRouteWithNav path="/projects/new" component={NewProject} />
+      <ProtectedRouteWithNav path="/projects/scoping" component={ProjectScoping} />
+      <ProtectedRouteWithNav path="/projects/:id/edit" component={EditProject} />
+      <ProtectedRouteWithNav path="/account" component={AccountPage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/admin/login" component={AdminLoginPage} />
       <ProtectedAdminRoute path="/admin" component={AdminRouter} />

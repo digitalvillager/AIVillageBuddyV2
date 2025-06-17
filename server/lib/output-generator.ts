@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { Session } from "@shared/schema";
+import { Session, Project } from "@shared/schema";
 
 // Initialize OpenAI with API key from environment variables
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || "default_key" });
@@ -11,7 +11,20 @@ const OPENAI_MODEL = "gpt-4o";
  * Generate an implementation plan based on session data
  * @param session The session containing user inputs about their AI solution
  */
-export async function generateImplementationPlan(session: Session): Promise<any> {
+const timeline_values = {
+  "quick": "1-4 weeks",
+  "medium": "1-3 months",
+  "strategic": "3-6+ months",
+}
+const budget_values = {
+  "under_5k": "$5,000",
+  "5k_to_15k": "$15,000",
+  "15k_to_50k": "$50,000",
+  "over_50k": "$100,000",
+}
+export async function generateImplementationPlan(session: Session, project: Project): Promise<any> {
+  const timeline = timeline_values[project.timeline as keyof typeof timeline_values];
+  const budget = budget_values[project.budget as keyof typeof budget_values];
   const prompt = `
     You are an AI implementation specialist. Based on the following information about an AI solution, 
     create a detailed implementation plan in JSON format.
@@ -22,8 +35,8 @@ export async function generateImplementationPlan(session: Session): Promise<any>
     Available Data: ${session.availableData || "Not specified"}
     Success Metrics: ${session.successMetrics || "Not specified"}
     Stakeholders: ${session.stakeholders || "Not specified"}
-    Timeline: ${session.timeline || "Not specified"}
-    Budget: ${session.budget || "Not specified"}
+    Timeline: ${timeline || "Not specified"}
+    Budget: ${budget || "Not specified"}
     
     Generate a comprehensive implementation plan with the following structure:
     {
@@ -60,9 +73,13 @@ export async function generateImplementationPlan(session: Session): Promise<any>
     }
     
     Make the implementation plan realistic, practical, and tailored to the specific industry and business problem.
-    The plan should include at least 5 phases, 5 roles, 6 deliverables, and 3 dependencies.
+    The timeline should not exceed the timeline provided (${timeline})
+    The budget should not exceed the budget provided (${budget})
     Be specific in timelines, roles, and deliverables based on the information provided.
   `;
+// The plan should include at least 5 phases, 5 roles, 6 deliverables, and 3 dependencies.
+  console.log("generateImplementationPlan prompt:");
+  console.log(prompt);
 
   try {
     const response = await openai.chat.completions.create({
@@ -71,6 +88,8 @@ export async function generateImplementationPlan(session: Session): Promise<any>
       response_format: { type: "json_object" },
       temperature: 0.7,
     });
+
+    console.log(response.choices[0].message.content || "{}");
 
     return JSON.parse(response.choices[0].message.content || "{}");
   } catch (error) {
@@ -93,7 +112,10 @@ export async function generateImplementationPlan(session: Session): Promise<any>
  * Generate a cost estimate based on session data
  * @param session The session containing user inputs about their AI solution
  */
-export async function generateCostEstimate(session: Session): Promise<any> {
+export async function generateCostEstimate(session: Session, project: Project): Promise<any> {
+  const budget = budget_values[project.budget as keyof typeof budget_values];
+  const timeline = timeline_values[project.timeline as keyof typeof timeline_values];
+
   const prompt = `
     You are an AI solution cost estimation specialist. Based on the following information about an AI solution, 
     create a detailed cost estimate in JSON format.
@@ -104,8 +126,8 @@ export async function generateCostEstimate(session: Session): Promise<any> {
     Available Data: ${session.availableData || "Not specified"}
     Success Metrics: ${session.successMetrics || "Not specified"}
     Stakeholders: ${session.stakeholders || "Not specified"}
-    Timeline: ${session.timeline || "Not specified"}
-    Budget: ${session.budget || "Not specified"}
+    Timeline: ${timeline || "Not specified"}
+    Budget: ${budget || "Not specified"}
     
     Generate a comprehensive cost estimate with the following structure:
     {
@@ -151,8 +173,13 @@ export async function generateCostEstimate(session: Session): Promise<any> {
     
     Make the cost estimate realistic and tailored to the specific industry and business problem.
     Use realistic market rates for personnel and hardware/software.
-    The estimate should include at least 5 personnel roles, 5 hardware/software items, and 4 maintenance items.
+    The timeline should not exceed the timeline provided (${timeline})
+    The budget should not exceed the budget provided (${budget})
   `;
+    //The estimate should include at least 5 personnel roles, 5 hardware/software items, and 4 maintenance items.
+
+  console.log("generateCostEstimate prompt:");
+  console.log(prompt);
 
   try {
     const response = await openai.chat.completions.create({
@@ -161,6 +188,9 @@ export async function generateCostEstimate(session: Session): Promise<any> {
       response_format: { type: "json_object" },
       temperature: 0.7,
     });
+
+    console.log("generateCostEstimate response:");
+    console.log(response.choices[0].message.content || "{}");
 
     return JSON.parse(response.choices[0].message.content || "{}");
   } catch (error) {
@@ -279,6 +309,9 @@ export async function generateDesignConcept(session: Session): Promise<any> {
     Focus on how the AI solution would integrate with existing systems and workflows.
   `;
 
+  //console.log("generateDesignConcept prompt:");
+  //console.log(prompt);
+
   try {
     const response = await openai.chat.completions.create({
       model: OPENAI_MODEL,
@@ -286,6 +319,9 @@ export async function generateDesignConcept(session: Session): Promise<any> {
       response_format: { type: "json_object" },
       temperature: 0.7,
     });
+
+    //console.log("generateDesignConcept response:");
+    //console.log(response.choices[0].message.content || "{}");
 
     return JSON.parse(response.choices[0].message.content || "{}");
   } catch (error) {

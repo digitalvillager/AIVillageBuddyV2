@@ -110,9 +110,18 @@ export default function ProjectScoping() {
   const onSubmit = async (data: ProjectScopingFormValues) => {
     try {
       setIsSubmitting(true);
-      
+
+      const savedSessionId = localStorage.getItem('sessionId');
+      console.log("savedSessionId:");
+      console.log(savedSessionId);
+
+      const postData = {
+        ...data,
+        sessionId: savedSessionId,
+      }
+
       // Make API request to create project with scoping data
-      const response = await apiRequest("POST", "/api/projects", data);
+      const response = await apiRequest("POST", "/api/projects", postData);
       
       if (!response.ok) {
         throw new Error(`Failed to create project: ${response.statusText}`);
@@ -127,7 +136,8 @@ export default function ProjectScoping() {
         title: "Project Created",
         description: "Your new project has been created successfully!",
       });
-      
+      console.log("project created:");
+      console.log(project);
       // Navigate to chat interface
       setLocation("/");
     } catch (error) {

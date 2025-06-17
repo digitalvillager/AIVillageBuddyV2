@@ -74,6 +74,12 @@ export const projects = pgTable("projects", {
   userId: integer("user_id").notNull().references(() => users.id),
   name: text("name").notNull(),
   description: text("description"),
+  timeline: text("timeline"),
+  budget: text("budget"),
+  primaryGoal: text("primary_goal"),
+  technicalComplexity: integer("technical_complexity"),
+  projectConfidence: boolean("project_confidence"),
+  additionalContext: text("additional_context"),
   created: timestamp("created").defaultNow().notNull(),
   updated: timestamp("updated").defaultNow().notNull(),
 });

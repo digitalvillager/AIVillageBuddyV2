@@ -213,10 +213,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.user) {
         return res.status(401).json({ message: 'Unauthorized' });
       }
-      
+
+      console.log("req.body:");
+      console.log(req.body);
+
       const project = await storage.createProject({
         ...req.body,
         userId: req.user.id
+      });
+
+      console.log("project created:");
+      console.log(project);
+
+      // update the session with the project id
+      await storage.updateSession(req.body.sessionId, {
+        projectId: project.id
       });
       
       res.status(201).json(project);
@@ -293,6 +304,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.user) {
         return res.status(401).json({ message: 'Unauthorized' });
       }
+      console.log("patch projects/:id req.body:");
+      console.log(req.body);
       
       const projectId = parseInt(req.params.id);
       if (isNaN(projectId)) {
@@ -670,14 +683,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get the session
       const session = await storage.getSession(sessionId);
       
+      console.log("session:");
+      console.log(session);
+
       if (!session) {
         return res.status(404).json({ message: 'Session not found' });
       }
+
+      const project = await storage.getProject(session?.projectId || 0);
+
+      console.log("project:");
+      console.log(project);
       
       // Generate all outputs
       const [implementation, cost, design, businessCase, aiConsiderations] = await Promise.all([
-        generateImplementationPlan(session),
-        generateCostEstimate(session),
+        generateImplementationPlan(session, project!),
+        generateCostEstimate(session, project!),
         generateDesignConcept(session),
         generateBusinessCase(session),
         generateAIConsiderations(session)

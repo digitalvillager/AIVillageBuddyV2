@@ -66,6 +66,9 @@ export default function NewProject() {
         title: "Project Created",
         description: "Your new project has been created successfully!",
       });
+
+      console.log("project created in new-project.tsx:");
+      console.log(project);
       
       // Navigate back to home page
       setLocation("/");

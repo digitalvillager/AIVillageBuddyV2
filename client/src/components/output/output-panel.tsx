@@ -188,7 +188,6 @@ export function OutputPanel({
           variant="outline"
           size="sm"
           onClick={onRegenerateOutputs}
-          disabled={isGenerating || !canGenerateOutputs}
           className="text-xs h-7 flex items-center"
         >
           {isGenerating ? (

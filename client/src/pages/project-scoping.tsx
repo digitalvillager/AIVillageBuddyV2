@@ -88,6 +88,9 @@ const goalOptions = [
 ];
 
 export default function ProjectScoping() {
+
+  console.log("ProjectScoping");
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -138,6 +141,7 @@ export default function ProjectScoping() {
       });
       console.log("project created:");
       console.log(project);
+      localStorage.setItem('projectId', project.id);
       // Navigate to chat interface
       setLocation("/");
     } catch (error) {

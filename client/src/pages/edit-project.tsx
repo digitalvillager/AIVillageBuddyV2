@@ -82,6 +82,9 @@ const goalOptions = [
 ];
 
 export default function EditProject() {
+
+  console.log("EditProject");
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();

@@ -678,7 +678,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Outputs
   app.post('/api/outputs/generate', async (req, res) => {
     try {
-      const { sessionId } = req.body;
+      const { sessionId, projectId } = req.body;
       
       // Get the session
       const session = await storage.getSession(sessionId);
@@ -690,7 +690,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: 'Session not found' });
       }
 
-      const project = await storage.getProject(session?.projectId || 0);
+      const project = await storage.getProject(projectId);
 
       console.log("project:");
       console.log(project);

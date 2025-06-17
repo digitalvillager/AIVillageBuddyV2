@@ -18,6 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export default function Home() {
   const { toast } = useToast();
   const [sessionId, setSessionId] = useState<string>("");
+  const [projectId, setProjectId] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<OutputType>("implementation");
@@ -51,6 +52,13 @@ export default function Home() {
   // Initialize session or load existing session
   useEffect(() => {
     const initSession = async () => {
+
+      // Check for existing project in localStorage
+      const savedProjectId = localStorage.getItem('projectId');
+      if (savedProjectId) {
+        setProjectId(savedProjectId);
+      }
+
       // Check for existing session in localStorage
       const savedSessionId = localStorage.getItem('sessionId');
       
@@ -269,7 +277,8 @@ export default function Home() {
   const generateOutputsMutation = useMutation({
     mutationFn: async () => {
       const response = await apiRequest('POST', '/api/outputs/generate', {
-        sessionId
+        sessionId,
+        projectId
       });
       return response.json();
     },
@@ -371,6 +380,12 @@ export default function Home() {
   const loadProjectSession = async (projectId: string) => {
     try {
       setLoading(true);
+
+      console.log("loadProjectSession projectId:");
+      console.log(projectId);
+
+      setProjectId(projectId);
+      localStorage.setItem('projectId', projectId);
       
       // Fetch the project details first
       const projectResponse = await fetch(`/api/projects/${projectId}`);

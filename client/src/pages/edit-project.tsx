@@ -19,7 +19,15 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Loader2, Info, DollarSign, Target, Code, Lightbulb, Clock } from "lucide-react";
+import {
+  Loader2,
+  Info,
+  DollarSign,
+  Target,
+  Code,
+  Lightbulb,
+  Clock,
+} from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import {
   Card,
@@ -77,12 +85,19 @@ const goalOptions = [
   { value: "reduce_costs", label: "Reduce Costs", icon: DollarSign },
   { value: "increase_revenue", label: "Increase Revenue", icon: Target },
   { value: "improve_efficiency", label: "Improve Efficiency", icon: Code },
-  { value: "enhance_customer_experience", label: "Enhance Customer Experience", icon: Lightbulb },
-  { value: "solve_specific_problem", label: "Solve Specific Problem", icon: Info },
+  {
+    value: "enhance_customer_experience",
+    label: "Enhance Customer Experience",
+    icon: Lightbulb,
+  },
+  {
+    value: "solve_specific_problem",
+    label: "Solve Specific Problem",
+    icon: Info,
+  },
 ];
 
 export default function EditProject() {
-
   console.log("EditProject");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -94,25 +109,22 @@ export default function EditProject() {
 
   // Get project ID from URL
   useEffect(() => {
-    const pathParts = window.location.pathname.split('/');
+    const pathParts = window.location.pathname.split("/");
     const id = pathParts[pathParts.length - 2];
     setProjectId(id);
   }, []);
 
   // Fetch project data
   const { data: project } = useQuery({
-    queryKey: ['/api/projects', projectId],
+    queryKey: ["/api/projects", projectId],
     queryFn: async () => {
       console.log("Project ID:", projectId);
       if (!projectId) return null;
-      const response = await apiRequest('GET', `/api/projects/${projectId}`);
+      const response = await apiRequest("GET", `/api/projects/${projectId}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch project');
+        throw new Error("Failed to fetch project");
       }
-      else {
-        console.log("Project fetched successfully");
-        console.log(await response.json());
-      }
+      console.log("Project fetched successfully");
       const projectJson = await response.json();
       setIsLoadingProject(false);
       return projectJson;
@@ -132,7 +144,6 @@ export default function EditProject() {
       projectConfidence: false,
       additionalContext: "",
     },
-    values: project,
   });
 
   // Update form when project data is loaded
@@ -156,22 +167,26 @@ export default function EditProject() {
   const onSubmit = async (data: ProjectScopingFormValues) => {
     try {
       setIsSubmitting(true);
-      
+
       // Make API request to update project
-      const response = await apiRequest("PUT", `/api/projects/${projectId}`, data);
-      
+      const response = await apiRequest(
+        "PATCH",
+        `/api/projects/${projectId}`,
+        data,
+      );
+
       if (!response.ok) {
         throw new Error(`Failed to update project: ${response.statusText}`);
       }
-      
+
       // Invalidate the projects cache to refresh the list
-      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-      
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+
       toast({
         title: "Project Updated",
         description: "Your project has been updated successfully!",
       });
-      
+
       // Navigate back to projects page
       setLocation("/projects");
     } catch (error) {
@@ -188,11 +203,11 @@ export default function EditProject() {
 
   // Redirect to login if not authenticated
   if (!user) {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       setLocation("/auth");
       return null;
     }
-    
+
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
@@ -221,7 +236,7 @@ export default function EditProject() {
   return (
     <div className="min-h-screen flex flex-col bg-bg-light-blue">
       <Header />
-      
+
       <main className="flex-1 container max-w-4xl mx-auto p-6">
         <Card className="bg-white">
           <CardHeader>
@@ -230,10 +245,13 @@ export default function EditProject() {
               Update your project parameters to refine the AI assistance
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-8"
+              >
                 {/* Project Name */}
                 <FormField
                   control={form.control}
@@ -263,7 +281,10 @@ export default function EditProject() {
                               <Info className="h-4 w-4 text-muted-foreground" />
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>This helps us tailor the solution to your timeframe</p>
+                              <p>
+                                This helps us tailor the solution to your
+                                timeframe
+                              </p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -271,7 +292,7 @@ export default function EditProject() {
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          value={field.value}
                           className="grid grid-cols-3 gap-4"
                         >
                           {timelineOptions.map((option) => (
@@ -309,7 +330,10 @@ export default function EditProject() {
                               <Info className="h-4 w-4 text-muted-foreground" />
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>This helps us suggest solutions within your budget</p>
+                              <p>
+                                This helps us suggest solutions within your
+                                budget
+                              </p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -317,7 +341,7 @@ export default function EditProject() {
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          value={field.value}
                           className="grid grid-cols-2 gap-4"
                         >
                           {budgetOptions.map((option) => (
@@ -355,7 +379,9 @@ export default function EditProject() {
                               <Info className="h-4 w-4 text-muted-foreground" />
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>What's the main objective you want to achieve?</p>
+                              <p>
+                                What's the main objective you want to achieve?
+                              </p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -363,7 +389,7 @@ export default function EditProject() {
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          value={field.value}
                           className="grid grid-cols-2 gap-4"
                         >
                           {goalOptions.map((option) => (
@@ -401,7 +427,10 @@ export default function EditProject() {
                               <Info className="h-4 w-4 text-muted-foreground" />
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>How comfortable are you with technical solutions?</p>
+                              <p>
+                                How comfortable are you with technical
+                                solutions?
+                              </p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -432,7 +461,9 @@ export default function EditProject() {
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
-                        <FormLabel className="text-base">Project Confidence</FormLabel>
+                        <FormLabel className="text-base">
+                          Project Confidence
+                        </FormLabel>
                         <FormDescription>
                           {field.value
                             ? "You have a specific solution in mind"
@@ -493,8 +524,8 @@ export default function EditProject() {
           </CardContent>
         </Card>
       </main>
-      
+
       <Footer />
     </div>
   );
-} 
+}

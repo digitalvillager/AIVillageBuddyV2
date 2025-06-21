@@ -90,24 +90,32 @@ export default function EditProject() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [projectId, setProjectId] = useState<string | null>(null);
+  const [isLoadingProject, setIsLoadingProject] = useState(true);
 
   // Get project ID from URL
   useEffect(() => {
     const pathParts = window.location.pathname.split('/');
-    const id = pathParts[pathParts.length - 1];
+    const id = pathParts[pathParts.length - 2];
     setProjectId(id);
   }, []);
 
   // Fetch project data
-  const { data: project, isLoading: isLoadingProject } = useQuery({
+  const { data: project } = useQuery({
     queryKey: ['/api/projects', projectId],
     queryFn: async () => {
+      console.log("Project ID:", projectId);
       if (!projectId) return null;
       const response = await apiRequest('GET', `/api/projects/${projectId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch project');
       }
-      return response.json();
+      else {
+        console.log("Project fetched successfully");
+        console.log(await response.json());
+      }
+      const projectJson = await response.json();
+      setIsLoadingProject(false);
+      return projectJson;
     },
     enabled: !!projectId,
   });
@@ -124,11 +132,13 @@ export default function EditProject() {
       projectConfidence: false,
       additionalContext: "",
     },
+    values: project,
   });
 
   // Update form when project data is loaded
   useEffect(() => {
     if (project) {
+      console.log("(useEffect)Project data:", project);
       form.reset({
         name: project.name,
         timeline: project.timeline,
@@ -138,6 +148,8 @@ export default function EditProject() {
         projectConfidence: project.projectConfidence,
         additionalContext: project.additionalContext || "",
       });
+    } else {
+      console.log("(useEffect)No project data found");
     }
   }, [project, form]);
 

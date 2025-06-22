@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Message } from "@/types";
-import { Send, Trash2, Bot, User } from 'lucide-react';
+import { Send, Trash2, Bot, User, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SuggestionTagProps {
@@ -69,6 +69,8 @@ interface ChatPanelProps {
   onSendMessage: (content: string) => void;
   onClearChat: () => void;
   showSuggestions?: boolean;
+  currentProject?: any;
+  onEditProject?: (e: React.MouseEvent, projectId: string) => void;
 }
 
 export function ChatPanel({ 
@@ -76,7 +78,9 @@ export function ChatPanel({
   isLoading, 
   onSendMessage, 
   onClearChat,
-  showSuggestions = false
+  showSuggestions = false,
+  currentProject,
+  onEditProject
 }: ChatPanelProps) {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -105,16 +109,37 @@ export function ChatPanel({
   
   return (
     <div className="w-full h-full flex flex-col">
-      <div className="py-3 px-4 border-b flex justify-between items-center">
-        <h3 className="text-base font-medium">Chat with your AI Buddy</h3>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={onClearChat}
-          className="text-xs h-7"
-        >
-          Clear Chat
-        </Button>
+      <div className="py-3 px-4 border-b">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <h3 className="text-base font-medium">Chat with your AI Buddy</h3>
+            {currentProject && (
+              <div className="flex items-center gap-1 text-sm text-gray-600">
+                <span>•</span>
+                <span className="font-medium">{currentProject.name}</span>
+                {onEditProject && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 opacity-70 hover:opacity-100 hover:bg-blue-50 hover:text-blue-500"
+                    onClick={(e) => onEditProject(e, currentProject.id.toString())}
+                    title="Edit project"
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onClearChat}
+            className="text-xs h-7"
+          >
+            Clear Chat
+          </Button>
+        </div>
       </div>
       
       <div className="flex-1 overflow-hidden">

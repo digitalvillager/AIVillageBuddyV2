@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Pencil } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -62,11 +62,6 @@ export function ProjectsPanel({ currentProjectId, onSelectProject }: ProjectsPan
     }
   };
 
-  // Handle edit project
-  const handleEditProject = (e: React.MouseEvent, projectId: number) => {
-    e.stopPropagation(); // Prevent card click event
-    setLocation(`/projects/${projectId}/edit`);
-  };
 
   const handleCreateProject = () => {
     setLocation("/projects/scoping");
@@ -109,15 +104,6 @@ export function ProjectsPanel({ currentProjectId, onSelectProject }: ProjectsPan
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-sm font-medium">{project.name}</CardTitle>
                       <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 opacity-70 hover:opacity-100 hover:bg-blue-50 hover:text-blue-500"
-                          onClick={(e) => handleEditProject(e, project.id)}
-                          title="Edit project"
-                        >
-                          <Pencil className="h-3 w-3" />
-                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"

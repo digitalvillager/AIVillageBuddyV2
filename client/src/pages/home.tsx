@@ -10,15 +10,17 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { nanoid } from 'nanoid';
 import ErrorBoundary from '@/components/error-boundary';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Home() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [sessionId, setSessionId] = useState<string>("");
   const [projectId, setProjectId] = useState<string>("");
+  const [currentProject, setCurrentProject] = useState<any>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<OutputType>("implementation");
@@ -57,6 +59,17 @@ export default function Home() {
       const savedProjectId = localStorage.getItem('projectId');
       if (savedProjectId) {
         setProjectId(savedProjectId);
+        
+        // Load current project details
+        try {
+          const projectResponse = await fetch(`/api/projects/${savedProjectId}`);
+          if (projectResponse.ok) {
+            const project = await projectResponse.json();
+            setCurrentProject(project);
+          }
+        } catch (error) {
+          console.error('Failed to load current project:', error);
+        }
       }
 
       // Check for existing session in localStorage
@@ -375,8 +388,13 @@ export default function Home() {
     generateOutputsMutation.mutate();
   };
   
-  // Function to load a specific project's session
+  // Handle edit project
+  const handleEditProject = (e: React.MouseEvent, projectId: string) => {
+    e.stopPropagation();
+    setLocation(`/projects/${projectId}/edit`);
+  };
 
+  // Function to load a specific project's session
   const loadProjectSession = async (projectId: string) => {
     try {
       setLoading(true);
@@ -394,6 +412,7 @@ export default function Home() {
       }
       
       const project = await projectResponse.json();
+      setCurrentProject(project);
       
       // Get the latest session ID for this project, or create a new one
       let sessionToLoad = project.sessions && project.sessions.length > 0 
@@ -570,6 +589,8 @@ export default function Home() {
                       onSendMessage={handleSendMessage}
                       onClearChat={clearConversation}
                       showSuggestions={showSolutionSuggestions}
+                      currentProject={currentProject}
+                      onEditProject={handleEditProject}
                     />
                   </ErrorBoundary>
                 </div>

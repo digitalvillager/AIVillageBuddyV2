@@ -105,7 +105,6 @@ export default function EditProject() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [projectId, setProjectId] = useState<string | null>(null);
-  const [isLoadingProject, setIsLoadingProject] = useState(true);
 
   // Get project ID from URL
   useEffect(() => {
@@ -115,7 +114,7 @@ export default function EditProject() {
   }, []);
 
   // Fetch project data
-  const { data: project } = useQuery({
+  const { data: project, isLoading: isLoadingProject } = useQuery({
     queryKey: ["/api/projects", projectId],
     queryFn: async () => {
       console.log("Project ID:", projectId);
@@ -126,7 +125,6 @@ export default function EditProject() {
       }
       console.log("Project fetched successfully");
       const projectJson = await response.json();
-      setIsLoadingProject(false);
       return projectJson;
     },
     enabled: !!projectId,

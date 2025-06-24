@@ -185,8 +185,8 @@ export default function EditProject() {
         description: "Your project has been updated successfully!",
       });
 
-      // Navigate back to projects page
-      setLocation("/projects");
+      // Navigate back to home page
+      setLocation("/");
     } catch (error) {
       console.error("Error updating project:", error);
       toast({
@@ -502,7 +502,7 @@ export default function EditProject() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setLocation("/projects")}
+                    onClick={() => setLocation("/")}
                   >
                     Cancel
                   </Button>

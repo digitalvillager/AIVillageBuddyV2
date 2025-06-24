@@ -4,6 +4,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
+import { nanoid } from 'nanoid';
 import {
   Form,
   FormControl,
@@ -96,6 +97,36 @@ export default function ProjectScoping() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
 
+  // Helper function to clear session and create a new one
+  const clearSessionAndCreateNew = async (projectId: string) => {
+    try {
+      // Create a new session ID
+      const newSessionId = nanoid();
+      
+      // Clear old session data from localStorage
+      localStorage.removeItem('sessionId');
+      localStorage.setItem('sessionId', newSessionId);
+      localStorage.setItem('projectId', projectId);
+      
+      // Create new session in the database with the project ID
+      await apiRequest('POST', '/api/sessions', { 
+        id: newSessionId,
+        projectId: Number(projectId)
+      });
+      
+      // Add initial greeting message for the new project
+      await apiRequest('POST', '/api/messages', {
+        sessionId: newSessionId,
+        role: 'assistant',
+        content: "Welcome to your new project! What would you like to focus on for your AI solution?"
+      });
+      
+    } catch (error) {
+      console.error('Failed to create new session:', error);
+      // Still proceed with navigation even if session creation fails
+    }
+  };
+
   // Initialize the form
   const form = useForm<ProjectScopingFormValues>({
     resolver: zodResolver(projectScopingSchema),
@@ -135,13 +166,16 @@ export default function ProjectScoping() {
       // Invalidate the projects cache to refresh the list
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
       
+      // Clear existing session and create new one for this project
+      await clearSessionAndCreateNew(project.id.toString());
+      
       toast({
         title: "Project Created",
         description: "Your new project has been created successfully!",
       });
       console.log("project created:");
       console.log(project);
-      localStorage.setItem('projectId', project.id);
+      
       // Navigate to chat interface
       setLocation("/");
     } catch (error) {
@@ -178,6 +212,9 @@ export default function ProjectScoping() {
       
       // Invalidate the projects cache to refresh the list
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      
+      // Clear existing session and create new one for this project
+      await clearSessionAndCreateNew(project.id.toString());
       
       toast({
         title: "Project Created",

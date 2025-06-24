@@ -449,8 +449,29 @@ export default function Home() {
       // Update state with the new session ID
       setSessionId(sessionToLoad);
       
-      // Show solution type suggestions for new sessions
-      setShowSolutionSuggestions(isNewSession);
+      // Check messages for this session to determine if we should show suggestions
+      if (isNewSession) {
+        setShowSolutionSuggestions(true);
+      } else {
+        // For existing sessions, check if there are any user messages
+        try {
+          const messagesResponse = await fetch(`/api/messages?sessionId=${sessionToLoad}`);
+          if (messagesResponse.ok) {
+            const messagesData = await messagesResponse.json();
+            // Show suggestions if only assistant welcome message exists (length === 1)
+            // or if no messages exist (length === 0)
+            const hasOnlyWelcomeMessage = messagesData.length <= 1 && 
+              (messagesData.length === 0 || messagesData[0]?.role === 'assistant');
+            setShowSolutionSuggestions(hasOnlyWelcomeMessage);
+          } else {
+            // If we can't fetch messages, default to not showing suggestions
+            setShowSolutionSuggestions(false);
+          }
+        } catch (error) {
+          console.error('Error checking messages for suggestions:', error);
+          setShowSolutionSuggestions(false);
+        }
+      }
       
       // Invalidate queries to reload data
       queryClient.invalidateQueries({ queryKey: ['/api/messages'] });

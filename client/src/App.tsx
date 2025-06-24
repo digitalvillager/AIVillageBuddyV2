@@ -6,7 +6,6 @@ import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
 import ProjectsPage from "@/pages/projects-page";
-import NewProject from "@/pages/new-project";
 import AIConfigPage from "@/pages/admin/ai-config";
 import AdminLoginPage from "@/pages/admin/admin-login";
 import UserManagementPage from "@/pages/admin/user-management";
@@ -96,7 +95,7 @@ function Router() {
     <Switch>
       <ProtectedRouteWithNav path="/" component={Home} />
       <ProtectedRouteWithNav path="/projects" component={ProjectsPage} />
-      <ProtectedRouteWithNav path="/projects/new" component={NewProject} />
+      <ProtectedRouteWithNav path="/projects/new" component={ProjectScoping} />
       <ProtectedRouteWithNav path="/projects/scoping" component={ProjectScoping} />
       <ProtectedRouteWithNav path="/projects/:id/edit" component={EditProject} />
       <ProtectedRouteWithNav path="/account" component={AccountPage} />

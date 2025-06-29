@@ -645,7 +645,6 @@ export default function Home() {
                       isLoading={loading || isLoadingMessages}
                       onSendMessage={handleSendMessage}
                       onClearChat={clearConversation}
-                      showSuggestions={showSolutionSuggestions}
                       currentProject={currentProject}
                       onEditProject={handleEditProject}
                     />

@@ -10,19 +10,6 @@ import { Message } from "@/types";
 import { Send, Trash2, Bot, User, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface SuggestionTagProps {
-  text: string;
-  onClick: (text: string) => void;
-}
-
-const SuggestionTag = ({ text, onClick }: SuggestionTagProps) => (
-  <div 
-    className="p-3 bg-card rounded-md border border-border shadow-sm hover:bg-accent hover:border-primary cursor-pointer transition-all transform hover:scale-105 text-center"
-    onClick={() => onClick(text)}
-  >
-    <p className="text-sm font-medium">{text}</p>
-  </div>
-);
 
 interface ChatMessageProps {
   message: Message;
@@ -68,7 +55,6 @@ interface ChatPanelProps {
   isLoading: boolean;
   onSendMessage: (content: string) => void;
   onClearChat: () => void;
-  showSuggestions?: boolean;
   currentProject?: any;
   onEditProject?: (e: React.MouseEvent, projectId: string) => void;
 }
@@ -78,7 +64,6 @@ export function ChatPanel({
   isLoading, 
   onSendMessage, 
   onClearChat,
-  showSuggestions = false,
   currentProject,
   onEditProject
 }: ChatPanelProps) {
@@ -98,9 +83,6 @@ export function ChatPanel({
     setInput('');
   };
   
-  const handleSuggestionClick = (suggestion: string) => {
-    onSendMessage(suggestion);
-  };
   
   // Scroll to bottom whenever messages change
   useEffect(() => {
@@ -151,26 +133,10 @@ export function ChatPanel({
                   <ChatMessage 
                     key={i} 
                     message={message} 
-                    isLast={i === messages.length - 1 && !showSuggestions} 
+                    isLast={i === messages.length - 1} 
                   />
                 ))}
                 
-                {/* Show suggestion tags after messages when showSuggestions is true */}
-                {showSuggestions && (
-                  <div className="pt-4 mt-4">
-                    <p className="text-sm mb-3">Choose a starting point or type your own question:</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <SuggestionTag 
-                        text="Automate business processes" 
-                        onClick={handleSuggestionClick} 
-                      />
-                      <SuggestionTag 
-                        text="Leverage my business data" 
-                        onClick={handleSuggestionClick} 
-                      />
-                    </div>
-                  </div>
-                )}
               </>
             ) : (
               <div className="flex flex-col py-6">
@@ -183,17 +149,6 @@ export function ChatPanel({
                 <p className="text-sm text-gray-600 text-center mb-6">
                   Chat with your AI Buddy to explore how to create a digital solution for your business needs.
                 </p>
-                
-                <div className="grid grid-cols-2 gap-3 px-2">
-                  <SuggestionTag 
-                    text="Automate business processes" 
-                    onClick={handleSuggestionClick} 
-                  />
-                  <SuggestionTag 
-                    text="Leverage my business data" 
-                    onClick={handleSuggestionClick} 
-                  />
-                </div>
               </div>
             )}
             <div ref={messagesEndRef} />

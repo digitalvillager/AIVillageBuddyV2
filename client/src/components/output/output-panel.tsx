@@ -207,7 +207,8 @@ export function OutputPanel({
           >
             Implementation
           </div>
-          <div 
+          {/* Hidden tabs - commented out for now but preserved for future use */}
+          {/* <div 
             className={`py-2 px-4 cursor-pointer font-medium text-sm ${activeTab === 'cost' ? 'border-b-2 border-primary' : ''}`}
             onClick={() => onTabChange('cost')}
           >
@@ -230,7 +231,7 @@ export function OutputPanel({
             onClick={() => onTabChange('ai')}
           >
             AI Considerations
-          </div>
+          </div> */}
         </div>
       </div>
       

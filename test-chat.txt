@@ -8,9 +8,10 @@ yeah we search for swear words in the messages. also keywords like 'disappointed
 
 The emails go into a centralised inbox. Issues are recorded in a issue tracker. Keyword lists are kept in a shared document. matching keywords are listed on individual tickets
 
+we want to see faster and more accurate identification of urgent emails, and improved satisfaction rates
+
 we have a head of support who will want to be involved. also support team leads. after that it's myself and my business partner
 
 the sooner the better, but 2 months would be a good timeframe
 
 We have 20K to spend on a proof of concept. We'll expand after that
-

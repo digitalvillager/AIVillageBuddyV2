@@ -14,10 +14,24 @@ import { cn } from '@/lib/utils';
 interface ChatMessageProps {
   message: Message;
   isLast: boolean;
+  onActionButtonClick?: (action: string) => void;
 }
 
-const ChatMessage = ({ message, isLast }: ChatMessageProps) => {
+const ChatMessage = ({ message, isLast, onActionButtonClick }: ChatMessageProps) => {
   const isUser = message.role === 'user';
+  
+  // Check if message contains action buttons
+  const hasActionButtons = message.content.includes('**SHOW_BUTTONS:');
+  let displayContent = message.content;
+  let actionButtons: string[] = [];
+  
+  if (hasActionButtons) {
+    const buttonMatch = message.content.match(/\*\*SHOW_BUTTONS:(.*?)\*\*/);
+    if (buttonMatch) {
+      actionButtons = buttonMatch[1].split(',').map(btn => btn.trim());
+      displayContent = message.content.replace(/\*\*SHOW_BUTTONS:.*?\*\*/, '').trim();
+    }
+  }
   
   return (
     <div className={cn(
@@ -43,8 +57,23 @@ const ChatMessage = ({ message, isLast }: ChatMessageProps) => {
       </div>
       <div className="pl-8 pr-2 mt-1">
         <div className="text-sm leading-relaxed whitespace-pre-wrap text-gray-700">
-          {message.content}
+          {displayContent}
         </div>
+        {actionButtons.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {actionButtons.map((buttonText, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                size="sm"
+                onClick={() => onActionButtonClick?.(buttonText)}
+                className="text-xs"
+              >
+                {buttonText}
+              </Button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -57,6 +86,7 @@ interface ChatPanelProps {
   onClearChat: () => void;
   currentProject?: any;
   onEditProject?: (e: React.MouseEvent, projectId: string) => void;
+  onActionButtonClick?: (action: string) => void;
 }
 
 export function ChatPanel({ 
@@ -65,7 +95,8 @@ export function ChatPanel({
   onSendMessage, 
   onClearChat,
   currentProject,
-  onEditProject
+  onEditProject,
+  onActionButtonClick
 }: ChatPanelProps) {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -133,7 +164,8 @@ export function ChatPanel({
                   <ChatMessage 
                     key={i} 
                     message={message} 
-                    isLast={i === messages.length - 1} 
+                    isLast={i === messages.length - 1}
+                    onActionButtonClick={onActionButtonClick}
                   />
                 ))}
                 

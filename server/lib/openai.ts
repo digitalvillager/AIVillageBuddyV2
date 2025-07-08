@@ -254,9 +254,10 @@ function extractBasicInfo(userText: string, keywords: string[]): string {
 
 // Determine if we have gathered enough information to generate outputs
 function shouldGenerateOutputs(messages: Message[], session: Session) {
-  // Only timeline is required for output generation
+  // Both timeline and budget are required for output generation
   const hasValidTimeline =
     session.timeline && session.timeline !== "Not specified";
+  const hasValidBudget = session.budget && session.budget !== "Not specified";
 
   // Count how many other fields we have information for
   let fieldsWithInfo = 0;
@@ -267,16 +268,48 @@ function shouldGenerateOutputs(messages: Message[], session: Session) {
   if (session.availableData) fieldsWithInfo++;
   if (session.successMetrics) fieldsWithInfo++;
   if (session.stakeholders) fieldsWithInfo++;
-  if (session.budget) fieldsWithInfo++;
 
-  // We need business problem, timeline, and at least one other field filled,
+  // We need business problem, timeline, budget, and at least one other field filled,
   // with a minimum of 4 messages (2 exchanges) for basic information
   return (
     session.businessProblem &&
     hasValidTimeline &&
+    hasValidBudget &&
     fieldsWithInfo >= 1 &&
-    messages.length >= 3
+    messages.length >= 4
   );
+}
+
+// Generate summary of information collected
+function generateSummary(session: Session): string {
+  const summary = [];
+
+  if (session.businessProblem) {
+    summary.push(`Business Problem: ${session.businessProblem}`);
+  }
+  if (session.industry) {
+    summary.push(`Industry: ${session.industry}`);
+  }
+  if (session.timeline) {
+    summary.push(`Timeline: ${session.timeline}`);
+  }
+  if (session.budget) {
+    summary.push(`Budget: ${session.budget}`);
+  }
+  if (session.currentProcess) {
+    summary.push(`Current Process: ${session.currentProcess}`);
+  }
+  if (session.availableData) {
+    summary.push(`Available Data: ${session.availableData}`);
+  }
+  if (session.successMetrics) {
+    summary.push(`Success Metrics: ${session.successMetrics}`);
+  }
+  if (session.stakeholders) {
+    summary.push(`Stakeholders: ${session.stakeholders}`);
+  }
+
+  return summary.join("\n");
 }
 
 // Generate AI response
@@ -287,31 +320,50 @@ export async function generateAIResponse(
   userPreferences?: any,
 ) {
   try {
-    // Convert messages to OpenAI format with project and user context
-    const openAIMessages = convertMessagesToOpenAIFormat(
-      messages,
-      project,
-      userPreferences,
-    );
-
-    // Call OpenAI API
-    const response = await openai.chat.completions.create({
-      model: OPENAI_MODEL,
-      messages: openAIMessages,
-      temperature: 0.7,
-      max_tokens: 500,
-    });
-
-    // Get the response text
-    const aiResponse =
-      response.choices[0].message.content ||
-      "I'm sorry, I couldn't generate a response.";
-
-    // Extract information from the conversation
+    // Extract information from the conversation first
     const extractedInfo = await extractInformationFromMessages(messages);
 
+    // Update session with extracted info for summary generation
+    const updatedSession = { ...session, ...extractedInfo };
+
     // Determine if we should generate outputs
-    const generateOutputs = shouldGenerateOutputs(messages, session);
+    const generateOutputs = shouldGenerateOutputs(messages, updatedSession);
+
+    let aiResponse: string;
+
+    if (generateOutputs) {
+      // Generate summary and action prompt
+      const summary = generateSummary(updatedSession);
+      aiResponse = `Great! I have gathered enough information about your AI solution. Here's a summary of what you've shared:
+
+${summary}
+
+Would you like to have any additional discussion or ask more questions before we proceed?
+
+When you're ready, you can choose from the following options to get detailed insights:
+
+**SHOW_BUTTONS:Resources,Detailed Plan,Business Case**`;
+    } else {
+      // Convert messages to OpenAI format with project and user context
+      const openAIMessages = convertMessagesToOpenAIFormat(
+        messages,
+        project,
+        userPreferences,
+      );
+
+      // Call OpenAI API for regular conversation
+      const response = await openai.chat.completions.create({
+        model: OPENAI_MODEL,
+        messages: openAIMessages,
+        temperature: 0.7,
+        max_tokens: 500,
+      });
+
+      // Get the response text
+      aiResponse =
+        response.choices[0].message.content ||
+        "I'm sorry, I couldn't generate a response.";
+    }
 
     // Return the AI response and extracted information
     return {

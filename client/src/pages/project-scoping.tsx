@@ -135,8 +135,8 @@ export default function ProjectScoping() {
         ...data,
         sessionId: savedSessionId,
         // Add default values for fields that backend expects
-        timeline: "medium",
-        budget: "5k_to_15k",
+        timeline: "Not specified",
+        budget: "Not specified",
         primaryGoal: "improve_efficiency",
         technicalComplexity: 3,
         projectConfidence: false,
@@ -185,8 +185,8 @@ export default function ProjectScoping() {
       // Create project with default values
       const response = await apiRequest("POST", "/api/projects", {
         name: "New Project",
-        timeline: "medium",
-        budget: "5k_to_15k",
+        timeline: "Not specified",
+        budget: "Not specified",
         primaryGoal: "improve_efficiency",
         technicalComplexity: 3,
         projectConfidence: false,

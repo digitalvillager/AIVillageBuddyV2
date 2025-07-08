@@ -89,7 +89,7 @@ function convertMessagesToOpenAIFormat(messages: Message[], project?: any, userP
 }
 
 // Extract information from conversation to update session
-function extractInformationFromMessages(messages: Message[]) {
+async function extractInformationFromMessages(messages: Message[]) {
   // Filter only user messages
   const userMessages = messages.filter(msg => msg.role === 'user');
   
@@ -120,113 +120,87 @@ function extractInformationFromMessages(messages: Message[]) {
     // For custom initial message, use it as the business problem
     businessProblem = initialRequest;
   }
-  
-  // Extract industry information
-  let industry = "";
-  if (userText.toLowerCase().includes("manufacturing")) industry = "Manufacturing";
-  else if (userText.toLowerCase().includes("education")) industry = "Education";
-  else if (userText.toLowerCase().includes("sustainability")) industry = "Sustainability";
-  else if (userText.toLowerCase().includes("retail")) industry = "Retail";
-  else if (userText.toLowerCase().includes("healthcare")) industry = "Healthcare";
-  else if (userText.toLowerCase().includes("finance")) industry = "Finance";
-  
-  // Extract current process information
-  let currentProcess = "";
-  if (userText.toLowerCase().includes("current process") || userText.toLowerCase().includes("currently")) {
-    const processLines = userText.split("\n").filter(line => 
-      line.toLowerCase().includes("process") || 
-      line.toLowerCase().includes("currently") || 
-      line.toLowerCase().includes("manually") ||
-      line.toLowerCase().includes("workflow"));
-    
-    if (processLines.length > 0) {
-      currentProcess = processLines[0];
-    }
-  }
-  
-  // Extract data availability information
-  let availableData = "";
-  if (userText.toLowerCase().includes("data") || userText.toLowerCase().includes("collect")) {
-    const dataLines = userText.split("\n").filter(line => 
-      line.toLowerCase().includes("data") || 
-      line.toLowerCase().includes("collect") || 
-      line.toLowerCase().includes("information") ||
-      line.toLowerCase().includes("database"));
-    
-    if (dataLines.length > 0) {
-      availableData = dataLines[0];
-    }
-  }
-  
-  // Extract metrics information
-  let successMetrics = "";
-  if (userText.toLowerCase().includes("metrics") || userText.toLowerCase().includes("success") || userText.toLowerCase().includes("measure")) {
-    const metricsLines = userText.split("\n").filter(line => 
-      line.toLowerCase().includes("metrics") || 
-      line.toLowerCase().includes("success") || 
-      line.toLowerCase().includes("measure") ||
-      line.toLowerCase().includes("kpi"));
-    
-    if (metricsLines.length > 0) {
-      successMetrics = metricsLines[0];
-    }
-  }
 
-  // Extract stakeholders information
-  let stakeholders = "";
-  if (userText.toLowerCase().includes("stakeholder") || userText.toLowerCase().includes("team") || userText.toLowerCase().includes("department")) {
-    const stakeholderLines = userText.split("\n").filter(line => 
-      line.toLowerCase().includes("stakeholder") || 
-      line.toLowerCase().includes("team") || 
-      line.toLowerCase().includes("department") ||
-      line.toLowerCase().includes("management"));
+  // Use AI to extract structured information from the conversation
+  try {
+    const extractionPrompt = `
+      You are an expert at extracting structured information from business conversations. 
+      Analyze the following conversation and extract the requested information. 
+      
+      If information is not explicitly mentioned, return "Not specified" for that field.
+      For timeline and budget, extract specific values when mentioned (e.g., "2 months", "$25,000").
+      
+      Conversation:
+      ${userText}
+      
+      Please provide a JSON response with the following structure:
+      {
+        "industry": "Specific industry mentioned or closest match",
+        "currentProcess": "Description of current business process",
+        "availableData": "Information about available data sources",
+        "successMetrics": "Success metrics or KPIs mentioned",
+        "stakeholders": "Stakeholders, teams, or departments mentioned",
+        "timeline": "Specific timeline mentioned (e.g., '2 months', '6 weeks', '1 year')",
+        "budget": "Specific budget mentioned (e.g., '$25,000', '$100K', 'under $50,000')"
+      }
+    `;
+
+    const response = await openai.chat.completions.create({
+      model: OPENAI_MODEL,
+      messages: [{ role: "user", content: extractionPrompt }],
+      response_format: { type: "json_object" },
+      temperature: 0.3, // Lower temperature for more consistent extraction
+      max_tokens: 800,
+    });
+
+    const extractedInfo = JSON.parse(response.choices[0].message.content || "{}");
     
-    if (stakeholderLines.length > 0) {
-      stakeholders = stakeholderLines[0];
-    }
-  }
-  
-  // Extract timeline information
-  let timeline = "";
-  if (userText.toLowerCase().includes("timeline") || userText.toLowerCase().includes("deadline") || userText.toLowerCase().includes("when")) {
-    const timelineLines = userText.split("\n").filter(line => 
-      line.toLowerCase().includes("timeline") || 
-      line.toLowerCase().includes("deadline") || 
-      line.toLowerCase().includes("months") ||
-      line.toLowerCase().includes("weeks") ||
-      line.toLowerCase().includes("years"));
+    // Return extracted information with businessProblem from our logic
+    return {
+      industry: extractedInfo.industry || "",
+      businessProblem,
+      currentProcess: extractedInfo.currentProcess || "",
+      availableData: extractedInfo.availableData || "",
+      successMetrics: extractedInfo.successMetrics || "",
+      stakeholders: extractedInfo.stakeholders || "",
+      timeline: extractedInfo.timeline || "",
+      budget: extractedInfo.budget || ""
+    };
+  } catch (error) {
+    console.error("Error extracting information with AI:", error);
     
-    if (timelineLines.length > 0) {
-      timeline = timelineLines[0];
-    }
+    // Fallback to basic extraction
+    return {
+      industry: extractIndustryBasic(userText),
+      businessProblem,
+      currentProcess: extractBasicInfo(userText, ["process", "currently", "manually", "workflow"]),
+      availableData: extractBasicInfo(userText, ["data", "collect", "information", "database"]),
+      successMetrics: extractBasicInfo(userText, ["metrics", "success", "measure", "kpi"]),
+      stakeholders: extractBasicInfo(userText, ["stakeholder", "team", "department", "management"]),
+      timeline: extractBasicInfo(userText, ["timeline", "deadline", "months", "weeks", "years"]),
+      budget: extractBasicInfo(userText, ["budget", "cost", "dollar", "$", "spend"])
+    };
   }
-  
-  // Extract budget information
-  let budget = "";
-  if (userText.toLowerCase().includes("budget") || userText.toLowerCase().includes("cost") || userText.toLowerCase().includes("spend")) {
-    const budgetLines = userText.split("\n").filter(line => 
-      line.toLowerCase().includes("budget") || 
-      line.toLowerCase().includes("cost") || 
-      line.toLowerCase().includes("dollar") ||
-      line.toLowerCase().includes("$") ||
-      line.toLowerCase().includes("spend"));
-    
-    if (budgetLines.length > 0) {
-      budget = budgetLines[0];
-    }
-  }
-  
-  // Return extracted information
-  return {
-    industry,
-    businessProblem,
-    currentProcess,
-    availableData,
-    successMetrics,
-    stakeholders,
-    timeline,
-    budget
-  };
+}
+
+// Helper function for basic industry extraction
+function extractIndustryBasic(userText: string): string {
+  const text = userText.toLowerCase();
+  if (text.includes("manufacturing")) return "Manufacturing";
+  if (text.includes("education")) return "Education";
+  if (text.includes("sustainability")) return "Sustainability";
+  if (text.includes("retail")) return "Retail";
+  if (text.includes("healthcare")) return "Healthcare";
+  if (text.includes("finance")) return "Finance";
+  return "";
+}
+
+// Helper function for basic information extraction
+function extractBasicInfo(userText: string, keywords: string[]): string {
+  const lines = userText.split("\n").filter(line => 
+    keywords.some(keyword => line.toLowerCase().includes(keyword))
+  );
+  return lines.length > 0 ? lines[0] : "";
 }
 
 // Determine if we have gathered enough information to generate outputs
@@ -266,7 +240,7 @@ export async function generateAIResponse(messages: Message[], session: Session, 
     const aiResponse = response.choices[0].message.content || "I'm sorry, I couldn't generate a response.";
     
     // Extract information from the conversation
-    const extractedInfo = extractInformationFromMessages(messages);
+    const extractedInfo = await extractInformationFromMessages(messages);
     
     // Determine if we should generate outputs
     const generateOutputs = shouldGenerateOutputs(messages, session);

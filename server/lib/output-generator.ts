@@ -24,8 +24,8 @@ const budget_values = {
 }
 export async function generateImplementationPlan(session: Session, project: Project): Promise<any> {
   // Use extracted timeline and budget from chat, fallback to project values
-  const timeline = session.timeline || timeline_values[project.timeline as keyof typeof timeline_values];
-  const budget = session.budget || budget_values[project.budget as keyof typeof budget_values];
+  const timeline = session.timeline || (project.timeline !== "Not specified" ? timeline_values[project.timeline as keyof typeof timeline_values] : "Not specified");
+  const budget = session.budget || (project.budget !== "Not specified" ? budget_values[project.budget as keyof typeof budget_values] : "Not specified");
   const prompt = `
     You are an AI implementation specialist. Based on the following information about an AI solution, 
     create a detailed implementation plan in JSON format.
@@ -115,8 +115,8 @@ export async function generateImplementationPlan(session: Session, project: Proj
  */
 export async function generateCostEstimate(session: Session, project: Project): Promise<any> {
   // Use extracted timeline and budget from chat, fallback to project values
-  const budget = session.budget || budget_values[project.budget as keyof typeof budget_values];
-  const timeline = session.timeline || timeline_values[project.timeline as keyof typeof timeline_values];
+  const budget = session.budget || (project.budget !== "Not specified" ? budget_values[project.budget as keyof typeof budget_values] : "Not specified");
+  const timeline = session.timeline || (project.timeline !== "Not specified" ? timeline_values[project.timeline as keyof typeof timeline_values] : "Not specified");
 
   const prompt = `
     You are an AI solution cost estimation specialist. Based on the following information about an AI solution, 

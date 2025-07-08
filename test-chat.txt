@@ -1,0 +1,16 @@
+i need to implement a support function for my e-commerce business so that urgent messages sent to our support email address receive high priority attention
+
+we have offshore staff that review and triage support emails. it's difficult for them to find the most urgent messages consistently
+
+we sell art products and get a lot of messages complaining about missing shipments. to find out if a message is urgent, we just look at what the customer wrote
+
+yeah we search for swear words in the messages. also keywords like 'disappointed' and 'frustrated'. we measure the support teams effectiveness by how quickly issues are closed out, and by satisfaction ratings
+
+The emails go into a centralised inbox. Issues are recorded in a issue tracker. Keyword lists are kept in a shared document. matching keywords are listed on individual tickets
+
+we have a head of support who will want to be involved. also support team leads. after that it's myself and my business partner
+
+the sooner the better, but 2 months would be a good timeframe
+
+We have 20K to spend on a proof of concept. We'll expand after that
+

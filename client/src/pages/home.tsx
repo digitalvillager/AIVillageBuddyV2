@@ -417,6 +417,23 @@ export default function Home() {
     setLocation(`/projects/${projectId}/edit`);
   };
 
+  // Handle action button clicks
+  const handleActionButtonClick = (action: string) => {
+    const actionMap: Record<string, OutputType> = {
+      "Resources": "implementation",
+      "Detailed Plan": "implementation", 
+      "Business Case": "business"
+    };
+    
+    const outputType = actionMap[action] || "implementation";
+    setActiveTab(outputType);
+    
+    // Generate outputs if not already generated
+    if (!generateOutputsMutation.isPending) {
+      generateOutputsMutation.mutate();
+    }
+  };
+
   // Function to load a specific project's session
   const loadProjectSession = async (projectId: string) => {
     try {
@@ -647,6 +664,7 @@ export default function Home() {
                       onClearChat={clearConversation}
                       currentProject={currentProject}
                       onEditProject={handleEditProject}
+                      onActionButtonClick={handleActionButtonClick}
                     />
                   </ErrorBoundary>
                 </div>

@@ -285,7 +285,9 @@ function generateSummary(session: Session): string {
   const summary = [];
 
   if (session.businessProblem) {
-    summary.push(`Business Problem: ${session.businessProblem}`);
+    summary.push(
+      `<strong>Business Problem</strong>: ${session.businessProblem}`,
+    );
   }
   if (session.industry) {
     summary.push(`Industry: ${session.industry}`);

@@ -121,7 +121,8 @@ export function OutputPanel({
             <ImplementationPlan
               output={implementationOutput}
               sessionState={sessionState}
-              isLoading={isLoading || isGenerating}
+              isLoading={isLoading}
+              isGenerating={isGenerating}
               outputType={activeTab}
             />
           </div>

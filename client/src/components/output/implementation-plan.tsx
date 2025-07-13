@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { OutputDocument, OutputType, SessionState } from "@/types";
-import { Download, User, AlertCircle } from "lucide-react";
+import { Download, User, AlertCircle, Loader2 } from "lucide-react";
 import {
   generatePdfFromElement,
   getFileNameForOutputType,
@@ -31,11 +31,9 @@ export function ImplementationPlan({
           </h3>
         </div>
 
-        <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-neutral-200 rounded w-3/4"></div>
-          <div className="h-32 bg-neutral-200 rounded"></div>
-          <div className="h-48 bg-neutral-200 rounded"></div>
-          <div className="h-24 bg-neutral-200 rounded"></div>
+        <div className="flex flex-col items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+          <h4 className="text-lg font-medium text-neutral-800">Reviewing information</h4>
         </div>
       </div>
     );

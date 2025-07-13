@@ -285,30 +285,28 @@ function generateSummary(session: Session): string {
   const summary = [];
 
   if (session.businessProblem) {
-    summary.push(
-      `<strong>Business Problem</strong>: ${session.businessProblem}`,
-    );
+    summary.push(`- **Business Problem**: ${session.businessProblem}`);
   }
   if (session.industry) {
-    summary.push(`Industry: ${session.industry}`);
+    summary.push(`- **Industry**: ${session.industry}`);
   }
   if (session.timeline) {
-    summary.push(`Timeline: ${session.timeline}`);
+    summary.push(`- **Timeline**: ${session.timeline}`);
   }
   if (session.budget) {
-    summary.push(`Budget: ${session.budget}`);
+    summary.push(`- **Budget**: ${session.budget}`);
   }
   if (session.currentProcess) {
-    summary.push(`Current Process: ${session.currentProcess}`);
+    summary.push(`- **Current Process**: ${session.currentProcess}`);
   }
   if (session.availableData) {
-    summary.push(`Available Data: ${session.availableData}`);
+    summary.push(`- **Available Data**: ${session.availableData}`);
   }
   if (session.successMetrics) {
-    summary.push(`Success Metrics: ${session.successMetrics}`);
+    summary.push(`- **Success Metrics**: ${session.successMetrics}`);
   }
   if (session.stakeholders) {
-    summary.push(`Stakeholders: ${session.stakeholders}`);
+    summary.push(`- **Stakeholders**: ${session.stakeholders}`);
   }
 
   return summary.join("\n");

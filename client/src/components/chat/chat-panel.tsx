@@ -97,14 +97,13 @@ const ChatMessage = ({
           </ReactMarkdown>
         </div>
         {actionButtons.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap justify-center" style={{ gap: '2em' }}>
             {actionButtons.map((buttonText, index) => (
               <Button
                 key={index}
-                variant="outline"
                 size="sm"
                 onClick={() => onActionButtonClick?.(buttonText)}
-                className="text-xs"
+                className="bg-primary hover:bg-primary-dark text-white text-xs transition"
               >
                 {buttonText}
               </Button>

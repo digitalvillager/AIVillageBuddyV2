@@ -199,7 +199,7 @@ export function OutputPanel({
         </Button>
       </div>
       
-      <div className="border-b">
+      <div className="border-b" style={{ display: 'none' }}>
         <div className="flex overflow-x-auto">
           <div 
             className={`py-2 px-4 cursor-pointer font-medium text-sm ${activeTab === 'implementation' ? 'border-b-2 border-primary' : ''}`}

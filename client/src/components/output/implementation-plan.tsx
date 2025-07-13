@@ -4,7 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { OutputDocument, OutputType, SessionState } from "@/types";
 import { Download, User, AlertCircle } from "lucide-react";
-import { generatePdfFromElement, getFileNameForOutputType } from "@/utils/pdf-generator";
+import {
+  generatePdfFromElement,
+  getFileNameForOutputType,
+} from "@/utils/pdf-generator";
 
 interface ImplementationPlanProps {
   output: OutputDocument | null | undefined;
@@ -13,14 +16,21 @@ interface ImplementationPlanProps {
   outputType: OutputType;
 }
 
-export function ImplementationPlan({ output, sessionState, isLoading, outputType }: ImplementationPlanProps) {
+export function ImplementationPlan({
+  output,
+  sessionState,
+  isLoading,
+  outputType,
+}: ImplementationPlanProps) {
   if (isLoading || !output) {
     return (
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h3 className="text-xl font-semibold text-neutral-800">AI Solution - Implementation Plan</h3>
+          <h3 className="text-xl font-semibold text-neutral-800">
+            AI Solution - Implementation Plan
+          </h3>
         </div>
-        
+
         <div className="animate-pulse space-y-4">
           <div className="h-4 bg-neutral-200 rounded w-3/4"></div>
           <div className="h-32 bg-neutral-200 rounded"></div>
@@ -30,32 +40,38 @@ export function ImplementationPlan({ output, sessionState, isLoading, outputType
       </div>
     );
   }
-  
+
   // Debug the content we've received
   console.log("Implementation tab received output:", output);
-  
+
   // Safe default structure to prevent errors
   let implementationData = {
     title: "",
     overview: "",
     timeline: {
       overall: "",
-      phases: []
+      phases: [],
     },
     roles: [],
     deliverables: [],
-    dependencies: []
+    dependencies: [],
   };
-  
+
   if (output && output.content) {
-    console.log("Implementation component received content type:", typeof output.content);
+    console.log(
+      "Implementation component received content type:",
+      typeof output.content,
+    );
     console.log("Implementation content sample:", output.content);
-    
-    if (typeof output.content === 'string') {
+
+    if (typeof output.content === "string") {
       try {
         // Try to parse if it's a JSON string
         const parsedContent = JSON.parse(output.content);
-        console.log("Successfully parsed implementation JSON string:", typeof parsedContent);
+        console.log(
+          "Successfully parsed implementation JSON string:",
+          typeof parsedContent,
+        );
         implementationData = parsedContent;
       } catch (e) {
         console.error("Failed to parse implementation output content:", e);
@@ -63,19 +79,22 @@ export function ImplementationPlan({ output, sessionState, isLoading, outputType
         implementationData = {
           ...implementationData,
           overview: output.content,
-          title: "Implementation Plan"
+          title: "Implementation Plan",
         };
       }
-    } else if (typeof output.content === 'object') {
+    } else if (typeof output.content === "object") {
       // Use the object directly
       console.log("Using object directly for implementation data");
       implementationData = output.content;
     }
-    
+
     // Debug the structure we ended up with
-    console.log("Final implementationData structure has keys:", Object.keys(implementationData));
+    console.log(
+      "Final implementationData structure has keys:",
+      Object.keys(implementationData),
+    );
   }
-  
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -94,57 +113,71 @@ export function ImplementationPlan({ output, sessionState, isLoading, outputType
           <Download className="h-4 w-4 mr-1" /> Download PDF
         </Button>
       </div>
-      
+
       <Card className="bg-neutral-100">
         <CardContent className="p-4">
           <h4 className="font-medium text-primary mb-2">Project Overview</h4>
           <p className="text-neutral-700">
-            {implementationData.overview || "This implementation plan outlines the steps required to develop your AI solution."}
+            {implementationData.overview ||
+              "This implementation plan outlines the steps required to develop your AI solution."}
           </p>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader className="bg-neutral-100 p-3 border-b border-neutral-200">
-          <CardTitle className="font-medium text-base">Timeline Estimation</CardTitle>
+          <CardTitle className="font-medium text-base">
+            Timeline Estimation
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-4">
           <div className="mb-3">
             <div className="flex justify-between mb-1">
               <span className="text-sm font-medium">
-                {implementationData.timeline?.overall || "Overall Duration: 16-20 weeks"}
+                {implementationData.timeline?.overall ||
+                  "Overall Duration: 16-20 weeks"}
               </span>
             </div>
             <Progress value={100} className="h-2.5 bg-neutral-200" />
           </div>
-          
+
           <div className="space-y-3 mt-4">
-            {implementationData.timeline?.phases?.map((phase: any, index: number) => (
-              <div key={index}>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm font-medium">{phase.name}</span>
-                  <span className="text-sm text-neutral-500">{phase.percentage}%</span>
+            {implementationData.timeline?.phases?.map(
+              (phase: any, index: number) => (
+                <div key={index}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm font-medium">{phase.name}</span>
+                    <span className="text-sm text-neutral-500">
+                      {phase.percentage}%
+                    </span>
+                  </div>
+                  <Progress
+                    value={phase.percentage}
+                    className="h-2.5 bg-neutral-200"
+                    indicatorClassName={`${
+                      index % 5 === 0
+                        ? "bg-primary"
+                        : index % 5 === 1
+                          ? "bg-primary"
+                          : index % 5 === 2
+                            ? "bg-primary"
+                            : index % 5 === 3
+                              ? "bg-primary"
+                              : "bg-primary"
+                    }`}
+                  />
                 </div>
-                <Progress 
-                  value={phase.percentage} 
-                  className="h-2.5 bg-neutral-200" 
-                  indicatorClassName={`${
-                    index % 5 === 0 ? "bg-info" : 
-                    index % 5 === 1 ? "bg-secondary" : 
-                    index % 5 === 2 ? "bg-primary" : 
-                    index % 5 === 3 ? "bg-warning" : 
-                    "bg-success"
-                  }`}
-                />
-              </div>
-            ))}
+              ),
+            )}
           </div>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader className="bg-neutral-100 p-3 border-b border-neutral-200">
-          <CardTitle className="font-medium text-base">Required Roles and Responsibilities</CardTitle>
+          <CardTitle className="font-medium text-base">
+            Required Roles and Responsibilities
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-4">
           <ul className="space-y-2">
@@ -160,43 +193,55 @@ export function ImplementationPlan({ output, sessionState, isLoading, outputType
           </ul>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader className="bg-neutral-100 p-3 border-b border-neutral-200">
-          <CardTitle className="font-medium text-base">Key Deliverables</CardTitle>
+          <CardTitle className="font-medium text-base">
+            Key Deliverables
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-4">
           <div className="space-y-3">
-            {implementationData.deliverables?.map((deliverable: any, index: number) => (
-              <div key={index} className="flex items-start gap-2">
-                <div className="w-5 h-5 rounded-full bg-info flex items-center justify-center text-white flex-shrink-0">
-                  {index + 1}
+            {implementationData.deliverables?.map(
+              (deliverable: any, index: number) => (
+                <div key={index} className="flex items-start gap-2">
+                  <div className="w-5 h-5 rounded-full bg-info flex items-center justify-center text-white flex-shrink-0">
+                    {index + 1}
+                  </div>
+                  <div>
+                    <p className="font-medium">{deliverable.title}</p>
+                    <p className="text-sm text-neutral-600">
+                      {deliverable.description}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium">{deliverable.title}</p>
-                  <p className="text-sm text-neutral-600">{deliverable.description}</p>
-                </div>
-              </div>
-            ))}
+              ),
+            )}
           </div>
         </CardContent>
       </Card>
-      
+
       <Card className="mb-4">
         <CardHeader className="bg-neutral-100 p-3 border-b border-neutral-200">
-          <CardTitle className="font-medium text-base">Dependencies and Critical Path Items</CardTitle>
+          <CardTitle className="font-medium text-base">
+            Dependencies and Critical Path Items
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-4">
           <ul className="space-y-2">
-            {implementationData.dependencies?.map((dependency: any, index: number) => (
-              <li key={index} className="flex items-start gap-2">
-                <AlertCircle className="text-warning h-5 w-5 mt-1 flex-shrink-0" />
-                <div>
-                  <span className="font-medium">{dependency.title}</span>
-                  <p className="text-sm text-neutral-600">{dependency.description}</p>
-                </div>
-              </li>
-            ))}
+            {implementationData.dependencies?.map(
+              (dependency: any, index: number) => (
+                <li key={index} className="flex items-start gap-2">
+                  <AlertCircle className="text-warning h-5 w-5 mt-1 flex-shrink-0" />
+                  <div>
+                    <span className="font-medium">{dependency.title}</span>
+                    <p className="text-sm text-neutral-600">
+                      {dependency.description}
+                    </p>
+                  </div>
+                </li>
+              ),
+            )}
           </ul>
         </CardContent>
       </Card>

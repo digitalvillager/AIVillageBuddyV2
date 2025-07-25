@@ -43,8 +43,10 @@ export function setupAuth(app: Express) {
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production",
+      secure: false, // Set to false for Docker HTTP environment
+      httpOnly: true, // Prevent XSS attacks
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+      sameSite: 'lax', // Allow cross-origin requests with credentials
     },
   };
 

@@ -1,29 +1,15 @@
 import { Pool } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from "@shared/schema";
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
-// Get directory name in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Load environment variables with explicit path
-const envPath = path.resolve(__dirname, '.env');
-console.log('Loading .env file from:', envPath);
-const result = dotenv.config({ path: envPath });
-
-if (result.error) {
-  console.error('Error loading .env file:', result.error);
-} else {
-  console.log('Environment variables loaded successfully');
-}
+// In Docker/production, environment variables are provided by the container runtime
+// No need to load .env files in this context
+console.log('Environment check - NODE_ENV:', process.env.NODE_ENV);
+console.log('Environment check - DATABASE_URL:', process.env.DATABASE_URL ? 'Set' : 'Not set');
 
 let pool: Pool | null = null;
 let db: any = null;
 
-console.log('DATABASE_URL value:', process.env.DATABASE_URL ? 'Set' : 'Not set');
 
 if (process.env.DATABASE_URL) {
   // If DATABASE_URL is available, use PostgreSQL database

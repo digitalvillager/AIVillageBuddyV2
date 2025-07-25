@@ -5,6 +5,7 @@ import { ChatPanel } from "@/components/chat/chat-panel";
 import { OutputPanel } from "@/components/output/output-panel";
 import { ProjectsPanel } from "@/components/projects/projects-panel";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { Message, OutputType, SessionState } from "@/types";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -23,6 +24,7 @@ import {
 
 export default function Home() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [sessionId, setSessionId] = useState<string>("");
   const [projectId, setProjectId] = useState<string>("");
@@ -170,8 +172,11 @@ export default function Home() {
       }
     };
 
-    initSession();
-  }, [toast]);
+    // Only initialize session when user is authenticated
+    if (user) {
+      initSession();
+    }
+  }, [toast, user]);
 
   // Fetch messages when sessionId changes
   const { data: fetchedMessages, isLoading: isLoadingMessages } = useQuery({

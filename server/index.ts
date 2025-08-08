@@ -11,7 +11,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // CORS middleware for Docker environment
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.header('Access-Control-Allow-Origin', 'http://localhost:3001');
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -75,7 +75,7 @@ app.use((req, res, next) => {
   }
 
   // Use port from environment variables or fallback to 4000
-  const port = process.env.PORT || 4000;
+  const port = process.env.PORT || 4001;
   server.listen({
     port,
     host: "0.0.0.0",

@@ -27,7 +27,8 @@ COPY postcss.config.js ./postcss.config.js
 
 # Build the client application only
 # Set environment variable for build time
-ENV VITE_API_URL=http://localhost:4000
+# ENV VITE_API_URL=https://ai-buddy.digitalvillage.network // luke fix this
+ENV VITE_API_URL=http://localhost:3001
 RUN npx vite build
 
 # Production image, serve with a simple static server
@@ -39,14 +40,14 @@ COPY --from=builder /app/dist/public /usr/share/nginx/html
 
 # Create nginx config for SPA with API proxy
 RUN echo 'server { \
-    listen 3000; \
+    listen 3001; \
     server_name localhost; \
     root /usr/share/nginx/html; \
     index index.html; \
     \
     # Proxy API requests to server container \
     location /api/ { \
-        proxy_pass http://server:4000; \
+        proxy_pass http://server:4001; \
         proxy_http_version 1.1; \
         proxy_set_header Upgrade $http_upgrade; \
         proxy_set_header Connection "upgrade"; \
@@ -63,6 +64,6 @@ RUN echo 'server { \
     } \
 }' > /etc/nginx/conf.d/default.conf
 
-EXPOSE 3000
+EXPOSE 3001
 
 CMD ["nginx", "-g", "daemon off;"]

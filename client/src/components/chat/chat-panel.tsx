@@ -168,6 +168,8 @@ export function ChatPanel({
     e.preventDefault();
     if (!email.trim()) return;
 
+    console.log(e);
+
     console.log("Email submitted:", email);
 
     setEmail("");

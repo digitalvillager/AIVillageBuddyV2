@@ -177,11 +177,27 @@ export function ChatPanel({
     setShowEmailPopover(true);
   };
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
 
-    console.log("Email submitted:", email);
+    try {
+      const response = await fetch('/api/email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit email');
+      }
+
+      console.log("Email submitted successfully:", email);
+    } catch (error) {
+      console.error("Error submitting email:", error);
+    }
 
     setEmail("");
     setShowEmailPopover(false);

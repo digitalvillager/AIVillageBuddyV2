@@ -1,7 +1,9 @@
 import type { Express, Request, Response, NextFunction } from "express";
+import validator from "validator";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { generateAIResponse } from "./lib/openai";
+import { MailchimpEmailService } from "./lib/MailchimpEmailService";
 import {
   generateImplementationPlan,
   /*generateCostEstimate,
@@ -962,6 +964,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     },
   );
+
+  app.post("/api/email", (req, res) => {
+    console.log("sending an email");
+    console.log(req.body.email);
+
+    MailchimpEmailService.sendEmail(req.body.email);
+
+    return res.status(200).json({
+      message: "Email processed successfully",
+      contentLength: req.body.email.length,
+    });
+  });
 
   return httpServer;
 }

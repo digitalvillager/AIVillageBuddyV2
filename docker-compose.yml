@@ -29,6 +29,7 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - SESSION_SECRET=${SESSION_SECRET}
+      - MAILCHIMP_API_KEY=${MAILCHIMP_API_KEY}
       - PORT=4001
       - PGPASSWORD=buddy
     ports:

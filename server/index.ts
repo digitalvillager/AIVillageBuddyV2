@@ -1,9 +1,12 @@
+// MUST import config first to ensure environment variables are loaded
+import { config } from "./config";
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 // In Docker/production, environment variables are provided by the container runtime
-console.log('Server starting - NODE_ENV:', process.env.NODE_ENV);
+console.log("Server starting - NODE_ENV:", process.env.NODE_ENV);
 
 const app = express();
 app.use(express.json());
@@ -11,13 +14,16 @@ app.use(express.urlencoded({ extended: false }));
 
 // CORS middleware for Docker environment
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:3001');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  
+  res.header("Access-Control-Allow-Origin", "http://localhost:3001");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+  );
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+
   // Handle preflight requests
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     res.sendStatus(200);
   } else {
     next();
@@ -74,13 +80,16 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Use port from environment variables or fallback to 4000
-  const port = process.env.PORT || 4001;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
+  // Use port from config
+  const port = config.PORT;
+  server.listen(
+    {
+      port,
+      host: "0.0.0.0",
+      reusePort: true,
+    },
+    () => {
+      log(`serving on port ${port}`);
+    },
+  );
 })();

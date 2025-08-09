@@ -11,6 +11,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Avatar } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Message } from "@/types";
 import { Send, Trash2, Bot, User, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -97,7 +102,10 @@ const ChatMessage = ({
           </ReactMarkdown>
         </div>
         {actionButtons.length > 0 && (
-          <div className="mt-4 flex flex-wrap justify-center" style={{ gap: '2em' }}>
+          <div
+            className="mt-4 flex flex-wrap justify-center"
+            style={{ gap: "2em" }}
+          >
             {actionButtons.map((buttonText, index) => (
               <Button
                 key={index}
@@ -135,6 +143,8 @@ export function ChatPanel({
   onActionButtonClick,
 }: ChatPanelProps) {
   const [input, setInput] = useState("");
+  const [showEmailPopover, setShowEmailPopover] = useState(false);
+  const [email, setEmail] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -148,6 +158,20 @@ export function ChatPanel({
 
     onSendMessage(input);
     setInput("");
+  };
+
+  const handleActionButtonClick = (action: string) => {
+    setShowEmailPopover(true);
+  };
+
+  const handleEmailSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+
+    console.log("Email submitted:", email);
+
+    setEmail("");
+    setShowEmailPopover(false);
   };
 
   // Scroll to bottom whenever messages change
@@ -202,7 +226,7 @@ export function ChatPanel({
                     key={i}
                     message={message}
                     isLast={i === messages.length - 1}
-                    onActionButtonClick={onActionButtonClick}
+                    onActionButtonClick={handleActionButtonClick}
                   />
                 ))}
               </>
@@ -224,6 +248,42 @@ export function ChatPanel({
           </div>
         </ScrollArea>
       </div>
+
+      {showEmailPopover && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-80 max-w-sm mx-4">
+            <form onSubmit={handleEmailSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="email" className="text-sm font-medium">
+                  Email Address
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email address"
+                  className="mt-1"
+                  required
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowEmailPopover(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" className="flex-1">
+                  Send
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <div className="p-3 border-t">
         <form onSubmit={handleSubmit} className="w-full flex gap-2">

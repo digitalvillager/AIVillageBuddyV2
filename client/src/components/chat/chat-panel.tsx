@@ -26,7 +26,7 @@ import rehypeSanitize from "rehype-sanitize";
 interface ChatMessageProps {
   message: Message;
   isLast: boolean;
-  onActionButtonClick?: (action: string) => void;
+  onActionButtonClick?: (action: string, actionNumber?: string) => void;
 }
 
 const ChatMessage = ({
@@ -106,16 +106,25 @@ const ChatMessage = ({
             className="mt-4 flex flex-wrap justify-center"
             style={{ gap: "2em" }}
           >
-            {actionButtons.map((buttonText, index) => (
-              <Button
-                key={index}
-                size="sm"
-                onClick={() => onActionButtonClick?.(buttonText)}
-                className="bg-primary hover:bg-primary-dark text-white text-xs transition"
-              >
-                {buttonText}
-              </Button>
-            ))}
+            {actionButtons.map((buttonText, index) => {
+              const parts = buttonText.split("-");
+              const actionNumber = parts.length > 1 ? parts[0].trim() : "";
+              const displayText =
+                parts.length > 1 ? parts.slice(1).join("-").trim() : buttonText;
+
+              return (
+                <Button
+                  key={index}
+                  size="sm"
+                  onClick={() =>
+                    onActionButtonClick?.(displayText, actionNumber)
+                  }
+                  className="bg-primary hover:bg-primary-dark text-white text-xs transition"
+                >
+                  {displayText}
+                </Button>
+              );
+            })}
           </div>
         )}
       </div>
@@ -130,7 +139,7 @@ interface ChatPanelProps {
   onClearChat: () => void;
   currentProject?: any;
   onEditProject?: (e: React.MouseEvent, projectId: string) => void;
-  onActionButtonClick?: (action: string) => void;
+  onActionButtonClick?: (action: string, actionNumber?: string) => void;
 }
 
 export function ChatPanel({
@@ -145,6 +154,9 @@ export function ChatPanel({
   const [input, setInput] = useState("");
   const [showEmailPopover, setShowEmailPopover] = useState(false);
   const [email, setEmail] = useState("");
+  const [selectedActionNumber, setSelectedActionNumber] = useState<
+    string | null
+  >(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -160,15 +172,14 @@ export function ChatPanel({
     setInput("");
   };
 
-  const handleActionButtonClick = (action: string) => {
+  const handleActionButtonClick = (action: string, actionNumber?: string) => {
+    setSelectedActionNumber(actionNumber || null);
     setShowEmailPopover(true);
   };
 
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
-
-    console.log(e);
 
     console.log("Email submitted:", email);
 
@@ -253,7 +264,20 @@ export function ChatPanel({
 
       {showEmailPopover && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-80 max-w-sm mx-4">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-120 max-w-sm mx-4">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">
+              Get more detailed project information
+            </h3>
+            <div className="mb-4 rounded-lg">
+              <p className="text-sm">
+                {selectedActionNumber === "1" &&
+                  "Enter you email and we'll get back to you with a information on the team best suited to implement your project."}
+                {selectedActionNumber === "2" &&
+                  "Enter you email and we'll get back to you with a detailed implementation plan."}
+                {selectedActionNumber === "3" &&
+                  "Enter your email below and we'll get back to you with a detailed business case demonstrating your project's ROI."}
+              </p>
+            </div>
             <form onSubmit={handleEmailSubmit} className="space-y-4">
               <div>
                 <label htmlFor="email" className="text-sm font-medium">

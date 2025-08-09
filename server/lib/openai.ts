@@ -339,7 +339,7 @@ ${summary}
 
 When you're ready, you can choose from the following options to get detailed insights:
 
-**SHOW_BUTTONS:Resources,Detailed Plan,Business Case**`;
+**SHOW_BUTTONS:1-Team Members,2-Detailed Plan,3-Business Case**`;
     } else {
       // Convert messages to OpenAI format with project and user context
       const openAIMessages = convertMessagesToOpenAIFormat(

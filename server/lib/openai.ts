@@ -337,8 +337,6 @@ export async function generateAIResponse(
 
 ${summary}
 
-Would you like to have any additional discussion or ask more questions before we proceed?
-
 When you're ready, you can choose from the following options to get detailed insights:
 
 **SHOW_BUTTONS:Resources,Detailed Plan,Business Case**`;

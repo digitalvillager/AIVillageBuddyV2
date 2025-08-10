@@ -29,6 +29,7 @@ export function OutputPanel({
   sessionState,
 }: OutputPanelProps) {
   // Fetch output documents
+  console.log(`output-panel.tsx sessionid ${sessionId}`);
   const { data: outputs, isLoading } = useQuery({
     queryKey: ["/api/outputs", sessionId],
     queryFn: async () => {

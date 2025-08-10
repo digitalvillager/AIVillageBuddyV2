@@ -140,6 +140,7 @@ interface ChatPanelProps {
   currentProject?: any;
   onEditProject?: (e: React.MouseEvent, projectId: string) => void;
   onActionButtonClick?: (action: string, actionNumber?: string) => void;
+  sessionId: string;
 }
 
 export function ChatPanel({
@@ -150,6 +151,7 @@ export function ChatPanel({
   currentProject,
   onEditProject,
   onActionButtonClick,
+  sessionId,
 }: ChatPanelProps) {
   const [input, setInput] = useState("");
   const [showEmailPopover, setShowEmailPopover] = useState(false);
@@ -181,17 +183,33 @@ export function ChatPanel({
     e.preventDefault();
     if (!email.trim()) return;
 
+    console.log(`chat-panel.tsx handleEmailSubmit sessionid ${sessionId}`);
     try {
-      const response = await fetch('/api/email', {
-        method: 'POST',
+      // Retrieve the OutputDocument by sessionId
+      const outputsResponse = await fetch(
+        `/api/outputs?sessionId=${sessionId}`,
+      );
+      let outputs = [];
+
+      if (outputsResponse.ok) {
+        outputs = await outputsResponse.json();
+      }
+      const implementation_plan = JSON.stringify(outputs[0].content);
+      console.log(implementation_plan);
+
+      const response = await fetch("/api/email", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({
+          email,
+          implementation_plan,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit email');
+        throw new Error("Failed to submit email");
       }
 
       console.log("Email submitted successfully:", email);

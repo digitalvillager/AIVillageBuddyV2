@@ -670,6 +670,7 @@ export default function Home() {
                       currentProject={currentProject}
                       onEditProject={handleEditProject}
                       onActionButtonClick={handleActionButtonClick}
+                      sessionId={sessionId}
                     />
                   </ErrorBoundary>
                 </div>

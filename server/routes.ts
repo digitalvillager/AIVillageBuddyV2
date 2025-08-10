@@ -966,14 +966,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   );
 
   app.post("/api/email", (req, res) => {
-    console.log("sending an email");
-    console.log(req.body.email);
+    const emailData = JSON.stringify({
+      submitted_by: req.body.email,
+      implementation_plan: req.body.implementation_plan,
+    });
 
-    MailchimpEmailService.sendEmail(req.body.email);
+    MailchimpEmailService.sendEmail(emailData);
 
     return res.status(200).json({
       message: "Email processed successfully",
-      contentLength: req.body.email.length,
+      contentLength: emailData.length,
     });
   });
 

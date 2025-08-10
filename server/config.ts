@@ -3,7 +3,10 @@ import path from "path";
 
 // Load environment variables from server/.env for local development
 // This module MUST be imported before any other modules that depend on env vars
-const ENV_FILE_PATH = path.join(import.meta.dirname, ".env");
+//
+// Note hard-coded path BS because imrtport.meta.dirname is undefined in
+// Docker environment.
+const ENV_FILE_PATH = path.join(import.meta.dirname || "/app/dist", ".env");
 console.log(`Loading environment from: ${ENV_FILE_PATH}`);
 
 const result = dotenv.config({ path: ENV_FILE_PATH });
